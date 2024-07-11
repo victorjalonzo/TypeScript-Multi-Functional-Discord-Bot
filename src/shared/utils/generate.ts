@@ -1,0 +1,1 @@
+export const createRandomId = (): string => String(Math.random()).substring(2,15)
