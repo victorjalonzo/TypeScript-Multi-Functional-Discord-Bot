@@ -1,6 +1,5 @@
 import { Client, Interaction } from 'discord.js'
 import { CommandHandler } from './commands/CommandHandler.js';
-import controllers from './Controllers.js';
 import { TextChannel, VoiceChannel } from 'discord.js';
 
 interface IProps {
@@ -50,19 +49,19 @@ export class DiscordAdapter {
 
         this.client.on('channelCreate', async (channel) => {
           if(channel instanceof TextChannel || channel instanceof VoiceChannel){
-            return await controllers.channelController.createChannel(channel)
+            return await this.controllers.channelController.createChannel(channel)
           }
         })
 
         this.client.on('channelUpdate', async (oldChannel, newChannel) => {
           if ((oldChannel instanceof TextChannel || oldChannel instanceof VoiceChannel) && (newChannel instanceof TextChannel || newChannel instanceof VoiceChannel)) {
-            return await controllers.channelController.updateChannel(oldChannel, newChannel);
+            return await this.controllers.channelController.updateChannel(oldChannel, newChannel);
           }
         })
 
         this.client.on('channelDelete', async (channel) => {
           if (channel instanceof TextChannel || channel instanceof VoiceChannel) {
-            return await controllers.channelController.deleteChannel(channel)
+            return await this.controllers.channelController.deleteChannel(channel)
           }
         })
     }
