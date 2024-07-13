@@ -3,17 +3,23 @@ import { CommandHandler } from './commands/CommandHandler.js';
 import controllers from './Controllers.js';
 import { TextChannel, VoiceChannel } from 'discord.js';
 
+interface IProps {
+  client: Client
+  token: string | undefined
+  controllers: Record<string,any>
+}
+
 export class DiscordAdapter {
     private client: Client;
-    private token: string
+    private token: string | undefined;
     private commandHandler: CommandHandler;
     private controllers: Record<string,any>
   
-    constructor({client, token}: {client: Client, token: string | undefined}) {
+    constructor({client, token, controllers}: IProps) {
 
-      if (!client || !token) {
-        throw new Error('Missing client or bot token');
-      }
+      if (!client) throw new Error('Missing client');
+      if (!token) throw new Error('Missing bot token');
+      if (!controllers) throw new Error('Missing controllers');
 
       this.token = token;
       this.client = client;
