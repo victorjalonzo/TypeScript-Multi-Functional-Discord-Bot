@@ -98,4 +98,7 @@ PaymentCommand
             )
         );
 
+PaymentCommand.setDefaultMemberPermissions(8)
+PaymentCommand.setDMPermission(false)
+
 export  { PaymentCommand }
