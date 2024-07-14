@@ -1,27 +1,28 @@
-import { UpdateWriteOpResult } from 'mongoose';
-import { Channel} from '../domain/Channel.js';
+import { Channel } from '../domain/Channel.js';
 import { ChannelModel } from './ChannelSchema.js';
-import { DeleteResult } from 'mongodb';
 import { IChannelRepository } from '../domain/IChannelRepository.js';
+import { UpdateResult, DeleteResult } from 'mongodb';
 
 export class MongoChannelRepository implements IChannelRepository {
     async find(filter: Record<string, any> = {}): Promise<Channel[]> {
-        return await ChannelModel.find(filter);
+        return await ChannelModel.find(filter).lean().exec(); // Añadir lean() para mejor rendimiento
     }
 
-    async findOne(filter: Record<string, any>): Promise<Channel | null>{
-        return await ChannelModel.findOne(filter);
+    async findOne(filter: Record<string, any>): Promise<Channel | null> {
+        return await ChannelModel.findOne(filter).lean().exec();
     }
 
     async insertOne(channel: Channel): Promise<Channel> {
-        return await ChannelModel.create(channel);
+        const createdChannel = new ChannelModel(channel);
+        await createdChannel.save();
+        return createdChannel.toObject();
     }
 
-    async update(filter: Record<string, any>, channel: Channel): Promise<UpdateWriteOpResult> {
-        return await ChannelModel.updateOne(filter, channel);
+    async update(filter: Record<string, any>, channel: Channel): Promise<UpdateResult> {
+        return await ChannelModel.updateOne(filter, channel).exec();
     }
 
     async deleteOne(filter: Record<string, any>): Promise<DeleteResult> {
-        return await ChannelModel.deleteOne(filter);
+        return await ChannelModel.deleteOne(filter).exec();
     }
 }

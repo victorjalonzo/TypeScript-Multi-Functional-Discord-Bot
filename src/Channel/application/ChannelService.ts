@@ -1,4 +1,4 @@
-import { ChannelInputPort } from "../domain/ChannelInput.js";
+import { IChannelInputPort } from "../domain/IChannelInput.js";
 import { IChannelRepository } from "../domain/IChannelRepository.js";
 import { Channel } from "../domain/Channel.js";
 
@@ -9,13 +9,13 @@ import {
     ChannelTypeNotSupported 
 } from "../domain/ChannelExceptions.js";
 
-export class ChannelService implements ChannelInputPort {
+export class ChannelService implements IChannelInputPort {
     constructor(private repository: IChannelRepository){}
 
     async createChannel(channel: Channel): Promise<Channel> {
-        const supportChannelTypes = [0, 2, 4,];
+        const supportedChannelTypes = [0, 2, 4,];
 
-        if (!supportChannelTypes.includes(channel.type)) throw new ChannelTypeNotSupported(channel);
+        if (!supportedChannelTypes.includes(channel.type)) throw new ChannelTypeNotSupported(channel);
 
         try {
             return await this.repository.insertOne(channel);
