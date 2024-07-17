@@ -4,7 +4,7 @@ const IntegratedPaymentCommand = new RichSlashCommand()
 
 IntegratedPaymentCommand
     .setName('payment-integrated')
-    .setDescription('Command for Payments management')
+    .setDescription('Command for Integrated Payments management')
 
     .addSubcommand(subcommand =>
         subcommand
@@ -13,7 +13,7 @@ IntegratedPaymentCommand
 
             .addStringOption(option => option
                 .setName('name')
-                .setDescription('The name of the payment integration')
+                .setDescription('The name of service to integrate')
                 .setRequired(true)
                 .addChoices (
                     { name: 'Stripe', value: 'stripe' },
@@ -22,12 +22,12 @@ IntegratedPaymentCommand
             )
             .addStringOption(option => option
                 .setName('public-key')
-                .setDescription('The public key of the payment integration')
+                .setDescription('The public key of your account')
                 .setRequired(true)
             )
             .addStringOption(option => option
                 .setName('secret-key')
-                .setDescription('The secret key of the payment integration')
+                .setDescription('The secret key of your account')
                 .setRequired(true)
             )
     )
@@ -35,10 +35,10 @@ IntegratedPaymentCommand
     .addSubcommand(subcommand =>
         subcommand
             .setName('remove')
-            .setDescription('Remove a payment integration')
+            .setDescription('Remove an integrated payment')
             .addStringOption(option => option
                 .setName('name')
-                .setDescription('The name of the payment integration')
+                .setDescription('The name of the integrated payment')
                 .setRequired(true)
                 .addChoices (
                     { name: 'Stripe', value: 'stripe' },
@@ -51,7 +51,7 @@ IntegratedPaymentCommand
     .addSubcommand(subcommand =>
         subcommand
             .setName('list')
-            .setDescription('List all payment integrations')
+            .setDescription('List all integrated payments')
     )
 
 IntegratedPaymentCommand.setDefaultMemberPermissions(8)
