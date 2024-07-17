@@ -1,6 +1,7 @@
-import { Client, Interaction } from 'discord.js'
-import { CommandHandler } from './commands/CommandHandler.js';
+import { Client, BaseInteraction } from 'discord.js'
+import { CommandHandler } from './CommandHandler.js';
 import { TextChannel, VoiceChannel } from 'discord.js';
+import { logger } from '../../shared/utils/logger.js';
 
 interface IProps {
   client: Client
@@ -41,10 +42,13 @@ export class DiscordAdapter {
             console.log(`Logged in as ${this.client.user?.tag}!`);
         })
 
-        this.client.on('interactionCreate', async (interaction: Interaction) => {
-            if (interaction.isCommand()) {
-                await this.commandHandler.handle(interaction);
+        this.client.on('interactionCreate', async (interaction: BaseInteraction) => {
+
+            if (interaction.isChatInputCommand()) {
+                return await this.commandHandler.handle(interaction);
             }
+
+            return logger.warn(`Unknow interaction received... ${interaction}`)
         });
 
         this.client.on('channelCreate', async (channel) => {

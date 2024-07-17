@@ -1,10 +1,13 @@
-import { BaseSlashCommand } from "../SlashCommandBase.js"
+import { RichSlashCommand } from "../../shared/intraestructure/RichSlashCommand.js";
+import { GuildActions } from "./GuildActions.js";
 
-const GuildCommand = new BaseSlashCommand()
+const GuildCommand = new RichSlashCommand()
+const actions = new GuildActions()
 
 GuildCommand
     .setName('guild')
     .setDescription('Commands for guilds management')
+    .setCallback(actions.execute)
     
     .addSubcommand(subcommand =>
         subcommand

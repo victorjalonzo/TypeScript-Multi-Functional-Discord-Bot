@@ -1,6 +1,6 @@
-import { BaseSlashCommand } from "../SlashCommandBase.js"
+import { RichSlashCommand } from "../../shared/intraestructure/RichSlashCommand.js"
 
-const PaymentCommand = new BaseSlashCommand()
+const PaymentCommand = new RichSlashCommand()
 
 PaymentCommand
     .setName('payment')

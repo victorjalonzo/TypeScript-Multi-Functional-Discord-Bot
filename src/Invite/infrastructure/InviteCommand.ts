@@ -1,6 +1,6 @@
-import { BaseSlashCommand } from "../SlashCommandBase.js"
+import { RichSlashCommand } from "../../shared/intraestructure/RichSlashCommand.js"
 
-const InviteCommand = new BaseSlashCommand()
+const InviteCommand = new RichSlashCommand()
 
 InviteCommand
     .setName('invite')
