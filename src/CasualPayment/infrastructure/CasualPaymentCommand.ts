@@ -1,8 +1,8 @@
 import { RichSlashCommand } from "../../shared/intraestructure/RichSlashCommand.js"
 
-const PaymentCommand = new RichSlashCommand()
+const CasualPaymentCommand = new RichSlashCommand()
 
-PaymentCommand
+CasualPaymentCommand
     .setName('payment-casual')
     .setDescription('Command for Casual Payments management')
 
@@ -56,7 +56,7 @@ PaymentCommand
                 .setDescription('List all casual payments')
         );
 
-PaymentCommand.setDefaultMemberPermissions(8)
-PaymentCommand.setDMPermission(false)
+CasualPaymentCommand.setDefaultMemberPermissions(8)
+CasualPaymentCommand.setDMPermission(false)
 
-export  { PaymentCommand }
+export  { CasualPaymentCommand }

@@ -1,9 +1,9 @@
 import { RichSlashCommand } from "../../shared/intraestructure/RichSlashCommand.js"
 
-const PaymentCommand = new RichSlashCommand()
+const IntegratedPaymentCommand = new RichSlashCommand()
 
-PaymentCommand
-    .setName('payment')
+IntegratedPaymentCommand
+    .setName('payment-integrated')
     .setDescription('Command for Payments management')
 
     .addSubcommand(subcommand =>
@@ -54,7 +54,7 @@ PaymentCommand
             .setDescription('List all payment integrations')
     )
 
-PaymentCommand.setDefaultMemberPermissions(8)
-PaymentCommand.setDMPermission(false)
+IntegratedPaymentCommand.setDefaultMemberPermissions(8)
+IntegratedPaymentCommand.setDMPermission(false)
 
-export  { PaymentCommand }
+export  { IntegratedPaymentCommand }
