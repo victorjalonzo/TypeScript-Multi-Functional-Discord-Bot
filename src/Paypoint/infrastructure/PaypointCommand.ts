@@ -1,6 +1,6 @@
-import { RichSlashCommand } from "../../shared/intraestructure/RichSlashCommand.js"
+import { SlashCommandCallable } from "../../shared/intraestructure/SlashCommandCallable.js"
 
-const PaypointCommand = new RichSlashCommand()
+const PaypointCommand = new SlashCommandCallable()
 
 PaypointCommand
     .setName('paypoint')

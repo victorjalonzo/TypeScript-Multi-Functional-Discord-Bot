@@ -1,4 +1,4 @@
-import { RichSlashCommand } from '../../shared/intraestructure/RichSlashCommand.js';
+import { SlashCommandCallable } from '../../shared/intraestructure/SlashCommandCallable.js';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
 import { Client } from 'discord.js';
@@ -7,7 +7,7 @@ import { ChatInputCommandInteraction } from 'discord.js';
 import { availableCommands } from './AvailableCommands.js';
 
 export class CommandHandler {
-  private commands: RichSlashCommand[]
+  private commands: SlashCommandCallable[]
   private client: Client;
   private token: string;
 

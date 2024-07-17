@@ -1,6 +1,6 @@
-import { RichSlashCommand } from "../../shared/intraestructure/RichSlashCommand.js"
+import { SlashCommandCallable } from "../../shared/intraestructure/SlashCommandCallable.js"
 
-const IntegratedPaymentCommand = new RichSlashCommand()
+const IntegratedPaymentCommand = new SlashCommandCallable()
 
 IntegratedPaymentCommand
     .setName('payment-integrated')

@@ -1,6 +1,15 @@
-import { RichSlashCommand } from "../../shared/intraestructure/RichSlashCommand.js"
+import { SlashCommandCallable } from "../../shared/intraestructure/SlashCommandCallable.js"
 
-const CasualPaymentCommand = new RichSlashCommand()
+const CasualPaymentCommand = new SlashCommandCallable()
+
+const choices = [
+    {name: 'Cash App', value: 'cashapp'},
+    {name: 'Zelle', value: 'zelle'},
+    {name: 'PayPal', value: 'paypal'},
+    {name: 'Venmo', value: 'venmo'},
+    {name: 'Apple Pay', value: 'applepay'},
+    {name: 'Google Pay', value: 'googlepay'}
+]
 
 CasualPaymentCommand
     .setName('payment-casual')
@@ -14,14 +23,7 @@ CasualPaymentCommand
                 .setName('name')
                 .setDescription('The name of the payment')
                 .setRequired(true)
-                .addChoices(
-                    {name: 'Cash App', value: 'cashapp'},
-                    {name: 'Zelle', value: 'zelle'},
-                    {name: 'PayPal', value: 'paypal'},
-                    {name: 'Venmo', value: 'venmo'},
-                    {name: 'Apple Pay', value: 'applepay'},
-                    {name: 'Google Pay', value: 'googlepay'}
-                )
+                .addChoices(...choices)
             )
             .addStringOption(option => option
                 .setName('value')
@@ -38,15 +40,7 @@ CasualPaymentCommand
                 .setName('name')
                 .setDescription('The name of the payment')
                 .setRequired(true)
-                .addChoices(
-                    {name: 'Cash App', value: 'cashapp'},
-                    {name: 'Zelle', value: 'zelle'},
-                    {name: 'PayPal', value: 'paypal'},
-                    {name: 'Venmo', value: 'venmo'},
-                    {name: 'Apple Pay', value: 'applepay'},
-                    {name: 'Google Pay', value: 'googlepay'},
-                    {name: 'All', value: 'all'}
-                )
+                .addChoices(...choices)
             )
         )
 

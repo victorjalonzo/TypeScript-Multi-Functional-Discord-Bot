@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, ChatInputCommandInteraction } from "discord.js"
 
-export class RichSlashCommand extends SlashCommandBuilder {
+export class SlashCommandCallable extends SlashCommandBuilder {
     private callbackFn: null | ((interaction: ChatInputCommandInteraction) => Promise<void>) = null;
 
     setCallback(callback: (interaction: ChatInputCommandInteraction) => Promise<void>) {

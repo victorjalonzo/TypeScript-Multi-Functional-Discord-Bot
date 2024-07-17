@@ -1,6 +1,6 @@
-import { RichSlashCommand } from "../../shared/intraestructure/RichSlashCommand.js"
+import { SlashCommandCallable } from "../../shared/intraestructure/SlashCommandCallable.js"
 
-const RewardCommand = new RichSlashCommand()
+const RewardCommand = new SlashCommandCallable()
 
 RewardCommand
     .setName('reward')

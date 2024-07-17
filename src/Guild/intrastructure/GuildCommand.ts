@@ -1,7 +1,7 @@
-import { RichSlashCommand } from "../../shared/intraestructure/RichSlashCommand.js";
+import { SlashCommandCallable } from "../../shared/intraestructure/SlashCommandCallable.js";
 import { GuildActions } from "./GuildActions.js";
 
-const GuildCommand = new RichSlashCommand()
+const GuildCommand = new SlashCommandCallable()
 const actions = new GuildActions()
 
 GuildCommand
