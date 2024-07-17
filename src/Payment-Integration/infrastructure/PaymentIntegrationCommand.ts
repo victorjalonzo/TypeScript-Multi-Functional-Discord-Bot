@@ -8,7 +8,7 @@ PaymentCommand
 
     .addSubcommand(subcommand =>
         subcommand
-            .setName('add-integration')
+            .setName('add')
             .setDescription('Add a payment integration')
 
             .addStringOption(option => option
@@ -34,7 +34,7 @@ PaymentCommand
 
     .addSubcommand(subcommand =>
         subcommand
-            .setName('remove-integration')
+            .setName('remove')
             .setDescription('Remove a payment integration')
             .addStringOption(option => option
                 .setName('name')
@@ -50,53 +50,9 @@ PaymentCommand
 
     .addSubcommand(subcommand =>
         subcommand
-            .setName('list-integrations')
+            .setName('list')
             .setDescription('List all payment integrations')
     )
-
-    .addSubcommand(subcommand => 
-        subcommand
-            .setName('add-casual')
-            .setDescription('Add a casual payment')
-            .addStringOption(option => option
-                .setName('name')
-                .setDescription('The name of the payment')
-                .setRequired(true)
-                .addChoices(
-                    {name: 'Cash App', value: 'cashapp'},
-                    {name: 'Zelle', value: 'zelle'},
-                    {name: 'PayPal', value: 'paypal'},
-                    {name: 'Venmo', value: 'venmo'},
-                    {name: 'Apple Pay', value: 'applepay'},
-                    {name: 'Google Pay', value: 'googlepay'}
-                )
-            )
-            .addStringOption(option => option
-                .setName('value')
-                .setDescription('The value of the payment')
-                .setRequired(true)
-            )
-        )
-        
-    .addSubcommand(subcommand => 
-        subcommand
-            .setName('remove-casual')
-            .setDescription('Remove a casual payment')
-            .addStringOption(option => option
-                .setName('name')
-                .setDescription('The name of the payment')
-                .setRequired(true)
-                .addChoices(
-                    {name: 'Cash App', value: 'cashapp'},
-                    {name: 'Zelle', value: 'zelle'},
-                    {name: 'PayPal', value: 'paypal'},
-                    {name: 'Venmo', value: 'venmo'},
-                    {name: 'Apple Pay', value: 'applepay'},
-                    {name: 'Google Pay', value: 'googlepay'},
-                    {name: 'All', value: 'all'}
-                )
-            )
-        );
 
 PaymentCommand.setDefaultMemberPermissions(8)
 PaymentCommand.setDMPermission(false)
