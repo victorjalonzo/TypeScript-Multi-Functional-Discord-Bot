@@ -1,51 +1,31 @@
 import { IGuildInput } from "../domain/IGuildInputPort.js";
-import { Guild } from "../domain/Guild.js";
+import { IRepository } from "../../shared/domain/IRepository.js";
+import { IGuild } from "../domain/IGuild.js";
+
+import { CreateGuildRecordError, UpdateGuildRecordError } from "../domain/GuildExceptions.js";
 
 export class GuildService implements IGuildInput {
-    constructor(private readonly repository: any) {}
+    constructor(private repository: IRepository<IGuild>) {}
 
-    async getAll(): Promise<Guild[]> {
-        try {
-            return this.repository.getAll();
-        } 
-        catch (e) {
-            throw e
-        }
-    }
-
-    async get(id: string): Promise<Guild | null> {
-        try{
-            return this.repository.get(id);
-        }
-        catch (e) {
-            throw e
-        }
-    }
-
-    async create(guild: Guild): Promise<Guild> {
+    create = async (guild: IGuild): Promise<Partial<IGuild>> => {
         try {
             return this.repository.create(guild);
         }
         catch (e) {
-            throw e
+            throw new CreateGuildRecordError(guild, String(e))
         }
     }
 
-    async update(guild: Guild): Promise<Guild> {
-        try{
-            return this.repository.update(guild);
+    update = async (oldGuild: IGuild, newGuild: IGuild): Promise<Partial<IGuild>> =>{
+        try {
+            const filters = { id: oldGuild.id }
+            const record = await this.repository.update(filters, newGuild);
+            
+            if (!record) throw new UpdateGuildRecordError(oldGuild, `The error could not be found`)
+            return record
         }
         catch (e) {
-            throw e
-        }
-    }
-
-    async delete(id: string): Promise<Guild> {
-        try{
-            return this.repository.delete(id);
-        }
-        catch (e) {
-            throw e
+            throw new UpdateGuildRecordError(oldGuild, String(e))
         }
     }
 }
