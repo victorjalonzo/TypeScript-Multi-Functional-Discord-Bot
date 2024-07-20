@@ -17,16 +17,19 @@ describe("GuildController", async () => {
     const guildController = new GuildController(guildService)
 
     const mock = createMockGuild();
-    console.log(mock)
 
     it("Create a guild record", async () => {
-        await guildController.createRecord(mock)
+        expect(await guildController.createRecord(mock)).toBeTypeOf('object')
     })
 
     it("Update a guild record", async () => {
-        const newMock = createMockGuild()
+        const newMock = Object.assign({}, mock)
         newMock.name = "Name modified"
 
-        await guildController.updateRecord(mock, newMock)
+        expect(await guildController.updateRecord(mock, newMock)).toBeTypeOf('object')
+    })
+
+    it("Delete a guild record", async () => {
+        expect(await guildController.deleteRecord(mock)).toBeTypeOf('object')
     })
 })
