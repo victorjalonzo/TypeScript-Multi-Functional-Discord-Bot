@@ -35,3 +35,12 @@ export class DeleteGuildRecordError extends CustomException {
         });
     }
 }
+
+export class GuildRecordNotFound extends CustomException {
+    constructor(guild: Record<string, any>, dueTo?: string) {
+        super({
+            message:`The guild record ${guild.name} (${guild.id}) could not be found.`,
+            dueTo: dueTo
+        });
+    }
+}
