@@ -13,7 +13,7 @@ export class DiscordAdapter {
     private client: Client;
     private token: string | undefined;
     private commandHandler: CommandHandler;
-    private controllers: Record<string,any>
+    private controllers : Record<string,any>
   
     constructor({client, token, controllers}: IProps) {
 
@@ -29,8 +29,8 @@ export class DiscordAdapter {
 
     async start(): Promise<void> {
         await this.client.login(this.token)
-        await this.registerCommands();
         await this.setupEventHandlers();
+        await this.registerCommands();
     }
 
     async registerCommands(): Promise<void> {
@@ -39,7 +39,10 @@ export class DiscordAdapter {
   
     async setupEventHandlers(): Promise<void> {
         this.client.on('ready', async () => {
-            console.log(`Logged in as ${this.client.user?.tag}!`);
+            logger.info(`Logged in as ${this.client.user?.tag}!`);
+
+            const guildManager = this.client.guilds
+            await this.controllers.guildController.createCache(guildManager)
         })
 
         this.client.on('interactionCreate', async (interaction: BaseInteraction) => {

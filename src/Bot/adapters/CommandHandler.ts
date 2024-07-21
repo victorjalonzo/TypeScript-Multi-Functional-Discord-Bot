@@ -3,8 +3,8 @@ import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
 import { Client } from 'discord.js';
 import { ChatInputCommandInteraction } from 'discord.js';
-
 import { availableCommands } from './AvailableCommands.js';
+import { logger } from '../../shared/utils/logger.js';
 
 export class CommandHandler {
   private commands: SlashCommandCallable[]
@@ -20,16 +20,15 @@ export class CommandHandler {
 
   async registerCommands(): Promise<void> {
       const commands = this.commands.map(command => (command.toJSON()));
-      console.log(commands)
 
       try {
-        console.log('Started refreshing application (/) commands.');
+        logger.info('Started refreshing application (/) commands.');
 
         await this.register({commands: commands, guildId: "1096621006686277662" });
   
-        console.log('Successfully reloaded application (/) commands.');
+        logger.info('Successfully reloaded application (/) commands.');
       } catch (error) {
-        console.error(error);
+        logger.warn(error);
       }
   }
 
