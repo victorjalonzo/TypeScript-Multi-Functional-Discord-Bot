@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import {IChannel} from "../domain/Channel.js";
+import {IChannel} from "../domain/IChannel.js";
 
 const channelSchema = new Schema<IChannel & Document>({
     name: { type: String, required: true },

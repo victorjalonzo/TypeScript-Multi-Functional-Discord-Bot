@@ -1,20 +1,4 @@
-/*
-0: TextChannel, 
-2: VoiceChannel, 
-4: CategoryChannel
-*/
-
-export interface IChannel {
-    name: string
-    id: string
-    type: number
-    position: number
-    permissionOverwrites: Record<any, any>[] | []
-    createdAt: Date
-    parentId: string | null
-    guildId: string
-}
-
+import { IChannel } from "../domain/IChannel.js";
 
 export class Channel implements IChannel {
     constructor (

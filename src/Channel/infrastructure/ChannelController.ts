@@ -1,6 +1,7 @@
 import { ChannelService } from "../application/ChannelService.js";
 import { logger } from "../../shared/utils/logger.js";
 import { ChannelTransformer } from "./ChannelTransformer.js";
+import { IChannel } from "../domain/IChannel.js";
 
 import {TextChannel, VoiceChannel, CategoryChannel} from "discord.js"
 
@@ -8,15 +9,22 @@ type ChannelType = TextChannel | VoiceChannel | CategoryChannel
 
 export class ChannelController {
     service: ChannelService
+    
     constructor(service: ChannelService) {
         this.service = service
     }
 
-    async createChannel(channel: ChannelType): Promise<void> {
+    async createChannel(channel: ChannelType): Promise<Partial<IChannel> | undefined> {
         const parsedChannel = ChannelTransformer.parse(channel)
         try {
-            await this.service.createChannel(parsedChannel)
-            logger.info(`The channel ${parsedChannel.name} (${parsedChannel.id}) was created`)
+            const result = await this.service.create(parsedChannel)
+
+            if (!result.isSuccess()) throw new Error(result.error)
+            
+            const record = result.value
+
+            logger.info(`The channel ${record.name} (${record.id}) was created`)
+            return result.value
         }
         catch (e) {
             logger.warn(e)
@@ -28,8 +36,13 @@ export class ChannelController {
         const newParsedChannel = ChannelTransformer.parse(newChannel)
 
         try {
-            await this.service.modifyChannel(oldParsedChannel, newParsedChannel)
-            logger.info(`The channel ${newParsedChannel.name} (${newParsedChannel.id}) was updated`)
+            const result = await this.service.update(oldParsedChannel, newParsedChannel)
+
+            if (!result.isSuccess()) throw new Error(result.error)
+            
+            const record = result.value
+
+            logger.info(`The channel ${record.name} (${record.id}) was updated`)
         }
         catch (e) {
             logger.warn(e)
@@ -39,8 +52,13 @@ export class ChannelController {
     async deleteChannel(channel: ChannelType): Promise<void> {
         const parsedChannel = ChannelTransformer.parse(channel)
         try {
-            await this.service.deleteChannel({id: parsedChannel.id, guildId: parsedChannel.guildId}, parsedChannel)
-            logger.info(`The channel ${parsedChannel.name} (${parsedChannel.id}) was deleted`)
+            const filters = {id: parsedChannel.id, guildId: parsedChannel.guildId}
+            const result = await this.service.delete(filters)
+
+            if (!result.isSuccess()) throw new Error(result.error)
+
+            const record = result.value
+            logger.info(`The channel ${record.name} (${record.id}) was deleted`)
         }
         catch (e) {
             logger.warn(e)
