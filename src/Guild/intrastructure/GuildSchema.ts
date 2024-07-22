@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
 import { IGuild } from '../domain/IGuild.js'; 
 
 const guildSchema = new Schema<IGuild & Document>({
@@ -7,7 +7,7 @@ const guildSchema = new Schema<IGuild & Document>({
     icon: { type: String, default: null },
     createdAt: { type: Date, required: true },
     
-    casualPayments: [{type: Schema.Types.ObjectId, ref: "CasualPayment", required: true}]
+    casualPayments: [{type: Schema.Types.ObjectId, ref: "CasualPayments", required: true}]
 });
 
-export const GuildModel = mongoose.model<IGuild & Document>('Guild', guildSchema);
+export const GuildModel = model<IGuild & Document>('Guilds', guildSchema);
