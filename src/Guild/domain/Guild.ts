@@ -7,6 +7,6 @@ export class Guild implements IGuild {
         public name: string,
         public icon: string | null,
         public createdAt: Date,
-        public casualPayments?: ICasualPayment[]
+        public casualPayments: ICasualPayment[] = [],
     ){}
 }

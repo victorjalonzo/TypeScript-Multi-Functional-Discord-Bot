@@ -5,5 +5,5 @@ export interface IGuild {
     name: string
     icon: string | null
     createdAt: Date
-    casualPayments?: ICasualPayment[]
+    casualPayments: ICasualPayment[]
 }
