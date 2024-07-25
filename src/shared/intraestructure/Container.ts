@@ -25,7 +25,7 @@ const channelService = new ChannelService(channelRepository);
 const channelController = new ChannelController(channelService);
 
 const casualPaymentRepository = new Repository(CasualPaymentModel);
-const casualPaymentService = new CasualPaymentService(casualPaymentRepository);
+const casualPaymentService = new CasualPaymentService(casualPaymentRepository, guildRepository);
 
 export const Services = {
     guildService,
