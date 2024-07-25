@@ -1,19 +1,25 @@
 import { SlashCommandCallable } from "../../shared/intraestructure/SlashCommandCallable.js"
+import { Services } from "../../shared/intraestructure/Container.js"
+import { CasualPaymentActions } from "./CasualPaymentActions.js"
+
+const { casualPaymentService } = Services
 
 const CasualPaymentCommand = new SlashCommandCallable()
+const actions = new CasualPaymentActions(casualPaymentService)
 
 const choices = [
-    {name: 'Cash App', value: 'cashapp'},
-    {name: 'Zelle', value: 'zelle'},
-    {name: 'PayPal', value: 'paypal'},
-    {name: 'Venmo', value: 'venmo'},
-    {name: 'Apple Pay', value: 'applepay'},
-    {name: 'Google Pay', value: 'googlepay'}
+    {name: 'Cash App', value: 'Cash App'},
+    {name: 'Zelle', value: 'Zelle'},
+    {name: 'PayPal', value: 'PayPal'},
+    {name: 'Venmo', value: 'Venmo'},
+    {name: 'Apple Pay', value: 'Apple Pay'},
+    {name: 'Google Pay', value: 'Google Pay'}
 ]
 
 CasualPaymentCommand
     .setName('payment-casual')
     .setDescription('Command for Casual Payments management')
+    .setCallback(actions.execute)
 
     .addSubcommand(subcommand => 
         subcommand
