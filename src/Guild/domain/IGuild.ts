@@ -1,6 +1,6 @@
 import { ICasualPayment } from "../../CasualPayment/domain/ICasualPayment.js";
 
-export interface IGuild {
+export interface IGuild  {
     id: string
     name: string
     icon: string | null
