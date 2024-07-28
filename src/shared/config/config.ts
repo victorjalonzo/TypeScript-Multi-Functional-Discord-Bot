@@ -22,6 +22,10 @@ export const Config = {
         get url(){
             return `${this.provider}://${this.user}:${this.password}@${this.host}:${this.port}/${this.name}`
         }
+    },
+
+    asset: {
+        path: process.env.ASSETS_PATH
     }
 }
 
