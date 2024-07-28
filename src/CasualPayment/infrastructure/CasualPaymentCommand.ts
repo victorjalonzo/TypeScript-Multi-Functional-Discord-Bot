@@ -13,7 +13,9 @@ const choices = [
     {name: 'PayPal', value: 'PayPal'},
     {name: 'Venmo', value: 'Venmo'},
     {name: 'Apple Pay', value: 'Apple Pay'},
-    {name: 'Google Pay', value: 'Google Pay'}
+    {name: 'Google Pay', value: 'Google Pay'},
+    {name: 'Bitcoin', value: 'Bitcoin'},
+    {name: 'Ethereum', value: 'Ethereum'},
 ]
 
 CasualPaymentCommand

@@ -4,6 +4,7 @@ import { ICasualPayment } from "../domain/ICasualPayment.js";
 const casualPaymentSchema = new Schema<ICasualPayment & Document>({
     name: { type: String, required: true },
     value: { type: String, required: true },
+    guildId: { type: String, required: true },
     guild: { 
         type: Schema.Types.ObjectId, 
         ref: "Guilds", 

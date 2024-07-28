@@ -21,9 +21,34 @@ export class CasualPaymentService implements ICasualPaymentInput {
             if (!guild) throw new Error(`The guild record ${casualPayment.guild.name} (${casualPayment.guild.id}) could not be found.`)
 
             guild.casualPayments.push(createdCasualPayment);
-            await this.guildRepository.update({id: guild.id },  guild);
+            await this.guildRepository.update({id: guild.id },  {casualPayments: guild.casualPayments });
+
+            createdCasualPayment.guild = guild;
         
             return Result.success(createdCasualPayment);
+        }
+        catch(e) {
+            return Result.failure(String(e));
+        }
+    }
+
+    getAll = async (guildId: string): Promise<Result<ICasualPayment[]>> => {
+        try {
+            const casualPaymentList = await this.repository.getAll({ guildId: guildId });
+            return Result.success(casualPaymentList);
+        }
+        catch(e) {
+            return Result.failure(String(e));
+        }
+    }
+
+    delete = async ({name, guildId }: { name: string, guildId: string }): Promise<Result<Record<string, any>>> => {
+        try {
+            const casualPaymentDeleted = await this.repository.delete({ name, guildId });
+
+            if (!casualPaymentDeleted) throw new Error(`No method found to delete`)
+
+            return Result.success(casualPaymentDeleted);
         }
         catch(e) {
             return Result.failure(String(e));

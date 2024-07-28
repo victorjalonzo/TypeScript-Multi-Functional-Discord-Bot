@@ -1,10 +1,23 @@
-import { CustomException } from "../../shared/domain/CustomException.js";
+export class MethodNotProvidedError extends Error {
+    constructor() {
+        super('The method was not provided');
+    }
+}
 
-export class CreateCasualPaymentError extends CustomException {
-    constructor(casualPayment: Record<string, any>, dueTo?: string) {
-        super({
-            message:`The method ${casualPayment.name} with value ${casualPayment.value} could not be set as an casual payment method.`,
-            dueTo: dueTo
-        });
+export class ValueNotProvidedError extends Error {
+    constructor() {
+        super('The value for the method was not provided');
+    }
+}
+
+export class GuildNotFoundError extends Error {
+    constructor() {
+        super('The guild was not found');
+    }
+}
+
+export class UnexpectedError extends Error {
+    constructor() {
+        super('Something went wrong while executing the command');
     }
 }
