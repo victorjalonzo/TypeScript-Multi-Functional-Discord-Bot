@@ -23,7 +23,7 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
         return await this.model.findOneAndUpdate(filter, data, { new: true }).exec();
     }
 
-    async delete(filter: Record<string, any>): Promise<DeleteResult> {
-        return await this.model.deleteOne(filter).exec();
+    async delete(filter: Record<string, any>): Promise<T | null> {
+        return await this.model.findOneAndDelete(filter).exec();
     }
 }
