@@ -42,7 +42,7 @@ export class GuildService implements IGuildInput {
             const filters = { id: oldGuild.id }
             const record = await this.repository.update(filters, newGuild);
             
-            if (!record) throw new Error(`The record could not be update`)
+            if (!record) throw new Error(`The guild record could not be update`)
 
             return Result.success(record);
         }
@@ -54,11 +54,11 @@ export class GuildService implements IGuildInput {
     delete = async (guild: IGuild): Promise<Result<Record<string, any>>> => {
         try {
             const filters = { id: guild.id }
-            const record = await this.repository.delete(filters);
+            const guildDeleted = await this.repository.delete(filters);
 
-            if (record.deletedCount === 0) throw Error(`The record could not be deleted`)
+            if (!guildDeleted) throw new Error(`No guild record found to delete`)
 
-            return Result.success(record)
+            return Result.success(guildDeleted)
         }
         catch (e) {
             return Result.failure(String(e))
