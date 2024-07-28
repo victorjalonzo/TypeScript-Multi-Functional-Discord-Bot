@@ -1,26 +1,37 @@
+import { ICachedGuild } from "../../shared/intraestructure/ICachedGuild.js";
 import { IGuild } from "../../Guild/domain/IGuild.js";
 
 class Cache {
-    private cache: Record<string, any>;
+    private cache: ICachedGuild[];
 
     constructor() {
-      this.cache = {};
+      this.cache = [];
     }
 
     create = (guild: IGuild): void => {
-      this.cache[guild.id] = guild;
+      const index = this.cache.findIndex(g => g.id === guild.id);
+      if (index !== -1) return
+
+      this.cache.push(<ICachedGuild>guild);
     }
 
-    getAll = (): Record<string, any> => {
+    update = (guild: ICachedGuild): void => {
+      const index = this.cache.findIndex(g => g.id === guild.id);
+      if (index !== -1) this.create(guild);
+      this.cache[index] = guild;
+    }
+
+    getAll = (): ICachedGuild[] => {
         return this.cache;
     }
 
-    get = (guildId: string): IGuild => {
-        return this.cache[guildId];
+    get = (guildId: string): ICachedGuild | undefined => {
+      return this.cache.find(guild => guild.id === guildId);
     }
 
-    delete = (guildId: string): void => {
-        delete this.cache[guildId];
+    delete = (guildId: string): ICachedGuild | undefined => {
+        const index = this.cache.findIndex(guild => guild.id === guildId);
+        if (index !== -1) return this.cache.splice(index, 1)[0];
     }
 }
 
