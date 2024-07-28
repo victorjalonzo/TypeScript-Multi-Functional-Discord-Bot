@@ -5,7 +5,6 @@ import { CasualPayment } from "../domain/CasualPayment.js";
 import { TPaymentMethods } from "../domain/ICasualPayment.js";
 import { ICasualPaymentInput } from "../domain/ICasualPaymentInput.js";
 import { ICachedGuild } from "../../shared/intraestructure/ICachedGuild.js";
-import { SlashCommandAction } from "../../shared/intraestructure/SlashCommandAction.js";
 import { EmbedResult } from "../../shared/intraestructure/EmbedResult.js";
 
 import { 
@@ -15,10 +14,8 @@ import {
 } from "../domain/CasualPaymentExceptions.js";
 import { InlineBlockText } from "../../shared/utils/textFormating.js";
 
-export class CasualPaymentActions extends SlashCommandAction {
-    constructor (private service: ICasualPaymentInput) {
-        super();
-    }
+export class CasualPaymentActions {
+    constructor (private service: ICasualPaymentInput) {}
 
     execute = async (interaction: ChatInputCommandInteraction): Promise<unknown> => {
         const subcommand = interaction.options.getSubcommand();
