@@ -7,7 +7,8 @@ const guildSchema = new Schema<IGuild & Document>({
     icon: { type: String, default: null },
     createdAt: { type: Date, required: true },
     
-    casualPayments: [{type: Schema.Types.ObjectId, ref: "CasualPayments", required: true}]
+    casualPayments: [{type: Schema.Types.ObjectId, ref: "CasualPayments", required: true}],
+    credits: [{type: Schema.Types.ObjectId, ref: "Credits", required: true}]
 });
 
 export const GuildModel = model<IGuild & Document>('Guilds', guildSchema);

@@ -1,5 +1,6 @@
 import { IGuild } from "./IGuild.js";
 import { ICasualPayment } from "../../CasualPayment/domain/ICasualPayment.js";
+import { ICredit } from "../../Credit/domain/ICredit.js";
 
 export class Guild implements IGuild {
     constructor(
@@ -8,5 +9,6 @@ export class Guild implements IGuild {
         public icon: string | null,
         public createdAt: Date,
         public casualPayments: ICasualPayment[] = [],
+        public credits: ICredit[] = []
     ){}
 }
