@@ -13,15 +13,13 @@ export class CasualPaymentService implements ICasualPaymentInput {
     create = async (casualPayment:ICasualPayment): Promise<Result<ICasualPayment>> => {
         try {
             const createdCasualPayment = await this.repository.create(casualPayment);
-
             if (!createdCasualPayment) throw new Error(`The casual payment record could not be created`)
             
             const guild = await this.guildRepository.get({ id: casualPayment.guild.id });
-
             if (!guild) throw new Error(`The guild record ${casualPayment.guild.name} (${casualPayment.guild.id}) could not be found.`)
 
             guild.casualPayments.push(createdCasualPayment);
-            await this.guildRepository.update({id: guild.id },  {casualPayments: guild.casualPayments });
+            await this.guildRepository.update({ id: guild.id },  {casualPayments: guild.casualPayments });
 
             createdCasualPayment.guild = guild;
         

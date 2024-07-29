@@ -6,13 +6,10 @@ import { TPaymentMethods } from "../domain/ICasualPayment.js";
 import { ICasualPaymentInput } from "../domain/ICasualPaymentInput.js";
 import { ICachedGuild } from "../../shared/intraestructure/ICachedGuild.js";
 import { EmbedResult } from "../../shared/intraestructure/EmbedResult.js";
-
-import { 
-    MethodNotProvidedError,
-    ValueNotProvidedError,
-    GuildNotFoundError
-} from "../domain/CasualPaymentExceptions.js";
 import { InlineBlockText } from "../../shared/utils/textFormating.js";
+
+import {GuildNotFoundError} from "../../shared/domain/Exceptions.js";
+import { MethodNotProvidedError,ValueNotProvidedError} from "../domain/CasualPaymentExceptions.js";
 
 export class CasualPaymentActions {
     constructor (private service: ICasualPaymentInput) {}
@@ -23,8 +20,6 @@ export class CasualPaymentActions {
         if (subcommand === 'list') return await this.list(interaction)
         if (subcommand === 'add') return await this.add(interaction)
         if (subcommand === 'remove') return await this.remove(interaction)
-
-        return await interaction.reply({content: "Unknown subcommand", ephemeral: true})
     }
 
     list = async (interaction: ChatInputCommandInteraction) => {
