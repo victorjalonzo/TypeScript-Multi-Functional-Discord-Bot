@@ -6,6 +6,7 @@ import { PaypointCommand } from '../../Paypoint/infrastructure/PaypointCommand.j
 import { RewardCommand } from '../../Reward/infrastructure/RewardCommand.js';
 import { IntegratedPaymentCommand } from '../../IntegratedPayment/infrastructure/IntegratedPaymentCommand.js';
 import { CasualPaymentCommand } from '../../CasualPayment/infrastructure/CasualPaymentCommand.js';
+import { CreditCommand } from '../../Credit/infrastructure/CreditCommand.js';
 
 export const availableCommands: SlashCommandCallable[] = [ 
     GuildCommand, 
@@ -13,5 +14,6 @@ export const availableCommands: SlashCommandCallable[] = [
     PaypointCommand, 
     RewardCommand,
     IntegratedPaymentCommand,
-    CasualPaymentCommand
+    CasualPaymentCommand,
+    CreditCommand
 ]
