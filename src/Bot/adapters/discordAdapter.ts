@@ -1,5 +1,6 @@
 import { Client, BaseInteraction } from 'discord.js'
 import { CommandHandler } from './CommandHandler.js';
+import { ButtonHandler } from './ButtonHandler.js';
 import { TextChannel, VoiceChannel } from 'discord.js';
 import { logger } from '../../shared/utils/logger.js';
 
@@ -13,6 +14,7 @@ export class DiscordAdapter {
     private client: Client;
     private token: string | undefined;
     private commandHandler: CommandHandler;
+    private buttonHandler: ButtonHandler
     private controllers : Record<string,any>
   
     constructor({client, token, controllers}: IProps) {
@@ -24,6 +26,7 @@ export class DiscordAdapter {
       this.token = token;
       this.client = client;
       this.commandHandler = new CommandHandler({client: this.client, token: this.token});
+      this.buttonHandler = new ButtonHandler();
       this.controllers = controllers
     }
 
@@ -49,6 +52,10 @@ export class DiscordAdapter {
 
             if (interaction.isChatInputCommand()) {
                 return await this.commandHandler.handle(interaction);
+            }
+
+            if (interaction.isButton()) {
+                return await this.buttonHandler.handle(interaction);
             }
 
             return logger.warn(`Unknow interaction received... ${interaction}`)

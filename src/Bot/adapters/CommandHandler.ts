@@ -1,9 +1,8 @@
 import { SlashCommandCallable } from '../../shared/intraestructure/SlashCommandCallable.js';
 import { REST } from '@discordjs/rest';
 import { Routes } from 'discord-api-types/v9';
-import { Client } from 'discord.js';
-import { ChatInputCommandInteraction } from 'discord.js';
-import { availableCommands } from './AvailableCommands.js';
+import { Client, ChatInputCommandInteraction } from 'discord.js';
+import { Commands } from '../../shared/intraestructure/Container.js';
 import { logger } from '../../shared/utils/logger.js';
 
 export class CommandHandler {
@@ -15,7 +14,7 @@ export class CommandHandler {
     this.token = token;
     this.client = client;
 
-    this.commands = availableCommands;
+    this.commands = Commands;
   }
 
   async registerCommands(): Promise<void> {

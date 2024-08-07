@@ -1,4 +1,3 @@
-import { DeleteResult } from 'mongodb';
 import { Model, Document } from 'mongoose';
 import { IRepository } from '../domain/IRepository.js';
 

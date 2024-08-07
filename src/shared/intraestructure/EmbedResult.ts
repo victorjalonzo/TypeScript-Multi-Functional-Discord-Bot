@@ -1,7 +1,8 @@
-import { EmbedBuilder, RawFile } from 'discord.js';
-import { Asset } from './Asset.js';
-import { ChatInputCommandInteraction } from 'discord.js';
+import { EmbedBuilder } from 'discord.js';
+import { ChatInputCommandInteraction, ButtonInteraction } from 'discord.js';
 import { AttachmentBuilder } from 'discord.js';
+
+import { Asset } from './Asset.js';
 
 interface Author {
     name: string
@@ -17,8 +18,12 @@ interface BaseProps {
     thumbnail?: string
 }
 
+interface ActionProps extends BaseProps {
+    interaction: ChatInputCommandInteraction | ButtonInteraction
+}
+
 export class EmbedResult {
-    static async success ({title, description, thumbnail, interaction}: {title?: string, description: string, interaction: ChatInputCommandInteraction, thumbnail?: string}) {
+    static async success ({title, description, thumbnail, interaction}: ActionProps) {
         const response =  await new EmbedResult().base({
             color: 0x3cb11f,
             author: {name: 'Success', icon: 'success'},
@@ -30,7 +35,7 @@ export class EmbedResult {
         return interaction.reply({ embeds: [response.embed], files: response.files, ephemeral: true })
     }
 
-    static async fail ({title, description, thumbnail, interaction}: {title?: string, description: string, interaction: ChatInputCommandInteraction, thumbnail?: string}) {
+    static async fail ({title, description, thumbnail, interaction}: ActionProps) {
         const response =  await new EmbedResult().base({
             color: 0xee3030,
             author: {name: 'Failed', icon: 'failed'},
@@ -42,7 +47,7 @@ export class EmbedResult {
         return interaction.reply({ embeds: [response.embed], files: response.files, ephemeral: true })
     }
 
-    static async info ({title, description, thumbnail, interaction}: {title?: string, description: string, interaction: ChatInputCommandInteraction, thumbnail?: string}) {
+    static async info ({title, description, thumbnail, interaction}: ActionProps) {
         const response =  await new EmbedResult().base({
             color: 0x48a2a8,
             author: {name: 'Info', icon: 'info'},
@@ -61,30 +66,22 @@ export class EmbedResult {
 
         if (author) {
             if (author.icon) {
-                try {
-                    const {attachment, attachmentURL } = await Asset.get(author.icon)
-                    author.iconURL = attachmentURL
-                    files.push(attachment)
-                }
-                catch (e) {}
+                const {attachment, attachmentURL } = await Asset.get(author.icon)
+                author.iconURL = attachmentURL
+                files.push(attachment)
             }
 
             embed.setAuthor({ name: author.name, iconURL: author.iconURL })
         }
             
         if (color) embed.setColor(color)
-
         if (title) embed.setTitle(title)
-
         if (description) embed.setDescription(description)
 
         if (thumbnail) {
-            try {
-                const {attachment, attachmentURL } = await Asset.get(thumbnail)
-                embed.setThumbnail(attachmentURL)
-                files.push(attachment)
-            }
-            catch (e) {}
+            const {attachment, attachmentURL } = await Asset.get(thumbnail)
+            embed.setThumbnail(attachmentURL)
+            files.push(attachment)
         }
 
         return { embed, files }
