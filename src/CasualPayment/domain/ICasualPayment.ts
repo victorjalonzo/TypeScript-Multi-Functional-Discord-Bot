@@ -7,6 +7,7 @@ export interface ICasualPayment {
     name: TPaymentMethods
     value: string
     guildId: string
-    guild: IGuild | ICachedGuild;
+    guild: IGuild | ICachedGuild
+    rawName: string
 }
 

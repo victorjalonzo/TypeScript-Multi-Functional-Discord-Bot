@@ -1,11 +1,6 @@
 import { SlashCommandCallable } from "../../shared/intraestructure/SlashCommandCallable.js"
-import { Services } from "../../shared/intraestructure/Container.js"
-import { CasualPaymentActions } from "./CasualPaymentActions.js"
-
-const { casualPaymentService } = Services
 
 const CasualPaymentCommand = new SlashCommandCallable()
-const actions = new CasualPaymentActions(casualPaymentService)
 
 const choices = [
     {name: 'Cash App', value: 'Cash App'},
@@ -21,7 +16,6 @@ const choices = [
 CasualPaymentCommand
     .setName('payment-casual')
     .setDescription('Command for Casual Payments management')
-    .setCallback(actions.execute)
 
     .addSubcommand(subcommand => 
         subcommand

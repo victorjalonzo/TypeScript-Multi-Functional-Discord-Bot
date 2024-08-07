@@ -11,7 +11,7 @@ import { InlineBlockText } from "../../shared/utils/textFormating.js";
 import {GuildNotFoundError} from "../../shared/domain/Exceptions.js";
 import { MethodNotProvidedError,ValueNotProvidedError} from "../domain/CasualPaymentExceptions.js";
 
-export class CasualPaymentActions {
+export class CasualPaymentCommandActions {
     constructor (private service: ICasualPaymentInput) {}
 
     execute = async (interaction: ChatInputCommandInteraction): Promise<unknown> => {
