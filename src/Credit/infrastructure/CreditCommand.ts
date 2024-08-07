@@ -1,16 +1,10 @@
 import { SlashCommandCallable } from "../../shared/intraestructure/SlashCommandCallable.js"
-import { Services } from "../../shared/intraestructure/Container.js"
-import { CreditActions } from "./CreditActions.js"
-
-const { creditService } = Services
 
 const CreditCommand = new SlashCommandCallable()
-const actions = new CreditActions(creditService)
 
 CreditCommand
     .setName('credit')
     .setDescription('Command for credit management')
-    .setCallback(actions.execute)
 
     .addSubcommand(subcommand => 
         subcommand

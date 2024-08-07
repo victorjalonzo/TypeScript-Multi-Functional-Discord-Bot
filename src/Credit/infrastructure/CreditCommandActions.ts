@@ -8,7 +8,7 @@ import { logger } from "../../shared/utils/logger.js";
 import { CreditAmountNotProvidedError, PriceNotProvidedError } from "../domain/CreditExceptions.js";
 import { GuildNotFoundError } from "../../shared/domain/Exceptions.js";
 
-export class CreditActions {
+export class CreditCommandActions {
     constructor (private service: ICreditInput, private thumbnail:string="credit") {}
 
     execute = async (interaction: ChatInputCommandInteraction): Promise<unknown> => {
@@ -31,7 +31,7 @@ export class CreditActions {
 
             if (!result.isSuccess()) return new Error("It was not possible to get the list of credits")
 
-            const title = "CURRENT CREDIT LIST"
+            const title = "CREDITS PACKAGES"
             let description: string = ""
 
             if (result.value.length === 0) {
