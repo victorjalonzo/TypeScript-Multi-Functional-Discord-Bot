@@ -49,17 +49,15 @@ export class DiscordAdapter {
         })
 
         this.client.on('interactionCreate', async (interaction: BaseInteraction) => {
-
-            if (interaction.isChatInputCommand()) {
-                return await this.commandHandler.handle(interaction);
-            }
-
-            if (interaction.isButton()) {
-                return await this.buttonHandler.handle(interaction);
-            }
+            if (interaction.isChatInputCommand()) return await this.commandHandler.handle(interaction);
+            if (interaction.isButton()) return await this.buttonHandler.handle(interaction);
 
             return logger.warn(`Unknow interaction received... ${interaction}`)
         });
+
+        this.client.on('guildMemberAdd', async (member) => {
+            return await this.controllers.memberController.createMember(member)
+        })
 
         this.client.on('channelCreate', async (channel) => {
           if(channel instanceof TextChannel || channel instanceof VoiceChannel){

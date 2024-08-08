@@ -7,7 +7,7 @@ export class ButtonHandler {
 
     constructor () {
         this.actions = ButtonActions
-    }   
+    }
 
     async handle(interaction: ButtonInteraction) {
         for (const action of this.actions) {
