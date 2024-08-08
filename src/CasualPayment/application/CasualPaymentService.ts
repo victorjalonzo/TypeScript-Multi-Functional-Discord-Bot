@@ -30,7 +30,7 @@ export class CasualPaymentService implements ICasualPaymentInput {
         }
     }
     getByRawName = async (rawName: string, guildId: string): Promise<Result<ICasualPayment>> => {
-        return await this.get({ name: rawName, guildId: guildId });
+        return await this.get({ rawName: rawName, guildId: guildId });
     }
 
     get = async (filters: Record<string, any>): Promise<Result<ICasualPayment>> => {
