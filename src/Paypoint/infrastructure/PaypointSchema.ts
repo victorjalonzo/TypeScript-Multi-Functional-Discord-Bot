@@ -3,6 +3,7 @@ import { IPaypoint } from '../domain/IPaypoint.js';
 
 const PaypointSchema = new Schema<IPaypoint & Document>({
     image: { type: String, required: true },
+    title: { type: String, required: true },
     description: { type: String, required: true },
     payment_method_type: { type: String, required: true },
     sale_type: { type: String, required: true },
@@ -17,4 +18,4 @@ const PaypointSchema = new Schema<IPaypoint & Document>({
     }
 });
 
-export const CreditModel = mongoose.model<IPaypoint & Document>('Paypoint', PaypointSchema);
+export const PaypointModel = mongoose.model<IPaypoint & Document>('Paypoint', PaypointSchema);

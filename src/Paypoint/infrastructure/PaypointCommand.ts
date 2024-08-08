@@ -11,34 +11,47 @@ PaypointCommand
             .setName('create')
             .setDescription('Create a new paypoint')
 
-            .addRoleOption(option => option
-                .setName('role')
-                .setDescription('The role that will be selled')
+            .addStringOption(option => option
+                .setName('sale_type')
+                .setDescription('The type of sale')
                 .setRequired(true)
+                .addChoices({
+                    name: 'Credit',
+                    value: 'Credit'
+                }, 
+                {
+                    name: 'Role',
+                    value: 'Role'
+                })
             )
-
-            .addIntegerOption(option => option
-                .setName('price')
-                .setDescription('The price of the role')
+            .addStringOption(option => option
+                .setName('payment_method_type')
+                .setDescription('The type of payment method')
                 .setRequired(true)
+                .addChoices({
+                    name: 'Casual',
+                    value: 'Casual'
+                }, {
+                    name: 'Integrated',
+                    value: 'Integrated'
+                }, {
+                    name: 'Both',
+                    value: 'Both'
+                })
             )
-
-            .addAttachmentOption(option => option
-                .setName('image')
-                .setDescription('The image of the role as product')
-                .setRequired(true)
+            .addStringOption(option => option
+                .setName('title')
+                .setDescription('The title of the paypoint')
             )
 
             .addStringOption(option => option
                 .setName('description')
-                .setDescription('The description of the role as product')
-                .setRequired(true)
+                .setDescription('The description of the paypoint')
             )
-            
-            .addChannelOption(option => option
-                .setName('channel')
-                .setDescription('The channel where the notification paypoint will be sent')
-                .setRequired(false)
+
+            .addAttachmentOption(option => option
+                .setName('image')
+                .setDescription('The image of the paypoint')
             )
     )
 

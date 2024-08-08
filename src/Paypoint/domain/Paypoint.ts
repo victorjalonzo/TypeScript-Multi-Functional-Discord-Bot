@@ -1,21 +1,20 @@
-export interface IPaypoint {
-    id: string
-    image: string
-    channelId: string
-    product: {roleId: string, price: number}[]
-    guildId: string
-    invoiceChannelId?: string
-    createdAt: Date
-}
+import { IPaypoint } from './IPaypoint.js';
+import { IGuild } from '../../Guild/domain/IGuild.js';
+import { createRandomId } from '../../shared/utils/generate.js';
 
 export class Paypoint implements IPaypoint {
+    public id: string = createRandomId();
+    public createdAt: Date = new Date();
+
     constructor (
-        public id: string,
         public image: string,
-        public product: {roleId: string, price: number}[],
-        public channelId: string,
+        public title: string,
+        public description: string,
+        public payment_method_type: "Casual" | "Integrated" | "Both",
+        public sale_type: "Credit" | "Roles",
         public guildId: string,
-        public createdAt: Date,
-        public invoiceChannelId?: string,
+        public guild: IGuild,
+        public messageId?: string,
+        public channelId?: string,
     ) {}
 }
