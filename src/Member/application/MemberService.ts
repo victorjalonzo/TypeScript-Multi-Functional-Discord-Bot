@@ -1,0 +1,56 @@
+import { IMember } from "../domain/IMember.js";
+import { IRepository } from "../../shared/domain/IRepository.js";
+import { IMemberInput } from "../domain/IMemberInput.js"
+import { Result } from "../../shared/domain/Result.js";
+
+export class MemberService implements IMemberInput {
+    constructor (private repository: IRepository<IMember>){}
+
+    async create(member: IMember): Promise<Result<IMember>> {
+        try {
+            const createdMember = await this.repository.create(member);
+            if (!createdMember) throw new Error(`The member record could not be created`)
+            return Result.success(createdMember);
+        }
+        catch (e) {
+            return Result.failure(String(e));
+        }
+    }
+
+    async get(filters: Record<string, any>): Promise<Result<IMember>> {
+        try {
+            const member = await this.repository.get(filters);
+            if (!member) throw new Error(`The member record could not be found`)
+            
+            return Result.success(member);
+        }
+        catch (e) {
+            return Result.failure(String(e));
+        }
+    }
+
+    async update(filters: Record<string, any>, data: IMember): Promise<Result<IMember>> {
+        try {
+            const member = await this.repository.update(filters, data);
+            if (!member) throw new Error(`The member record could not be updated`)
+            
+            return Result.success(member);
+        }
+        catch (e) {
+            return Result.failure(String(e));
+        }
+    }
+
+    async delete(filters: Record<string, any>): Promise<Result<IMember>> {
+        try {
+            const member = await this.repository.delete(filters);
+            if (!member) throw new Error(`The member record could not be deleted`)
+            
+            return Result.success(member);
+        }
+        catch (e) {
+            return Result.failure(String(e));
+        }
+    }
+
+}
