@@ -56,7 +56,13 @@ export class DiscordAdapter {
         });
 
         this.client.on('guildMemberAdd', async (member) => {
-            return await this.controllers.memberController.createMember(member)
+            return await this.controllers.memberController.create(member)
+        })
+        this.client.on('GuildMemberUpdate', async (oldMember, newMember) => {
+            return await this.controllers.memberController.update(oldMember, newMember)
+        })
+        this.client.on('GuildMemberRemove', async (member) => {
+            return await this.controllers.memberController.delete(member)
         })
 
         this.client.on('channelCreate', async (channel) => {
@@ -64,13 +70,11 @@ export class DiscordAdapter {
             return await this.controllers.channelController.createChannel(channel)
           }
         })
-
         this.client.on('channelUpdate', async (oldChannel, newChannel) => {
           if ((oldChannel instanceof TextChannel || oldChannel instanceof VoiceChannel) && (newChannel instanceof TextChannel || newChannel instanceof VoiceChannel)) {
             return await this.controllers.channelController.updateChannel(oldChannel, newChannel);
           }
         })
-
         this.client.on('channelDelete', async (channel) => {
           if (channel instanceof TextChannel || channel instanceof VoiceChannel) {
             return await this.controllers.channelController.deleteChannel(channel)
