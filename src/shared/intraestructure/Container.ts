@@ -23,6 +23,10 @@ import { GuildService } from "../../Guild/application/GuildService.js";
 import { GuildController } from "../../Guild/infrastructure/GuildController.js";
 import { GuildCommand } from '../../Guild/infrastructure/GuildCommand.js';
 
+import { memberModel } from "../../Member/infrastructure/MemberSchema.js";
+import { MemberService } from "../../Member/application/MemberService.js";
+import { MemberController } from "../../Member/infrastructure/MemberController.js";
+
 import { ChannelModel } from "../../Channel/infrastructure/ChannelSchema.js";
 import { ChannelService } from "../../Channel/application/ChannelService.js";
 import { ChannelController } from "../../Channel/infrastructure/ChannelController.js";
@@ -38,6 +42,10 @@ const Repository = MongoRepository
 const guildRepository = new Repository(GuildModel);
 const guildService = new GuildService(guildRepository);
 const guildController = new GuildController(guildService);
+
+const memberRepository = new Repository(memberModel);
+const memberService = new MemberService(memberRepository);
+const memberController = new MemberController(memberService);
 
 const channelRepository = new Repository(ChannelModel);
 const channelService = new ChannelService(channelRepository);
@@ -62,6 +70,7 @@ PaypointCommand.setCallback(paypointCommandAction.execute);
 
 export const Services = {
     guildService,
+    memberService,
     channelService,
     casualPaymentService,
     creditService,
@@ -70,6 +79,7 @@ export const Services = {
 
 export const Controllers = {
     guildController,
+    memberController,
     channelController
 }
 
