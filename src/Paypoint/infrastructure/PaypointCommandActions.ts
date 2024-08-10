@@ -62,12 +62,11 @@ export class PaypointCommandActions {
     
             if (!result.isSuccess()) return new Error(result.error)
 
-            const {embed, selectRow, buttonRow, files} = await createGUI({title, description, image, credits, casualPaymentMethods})
+            const {embed, buttonRow, files} = await createGUI({title, description, image, credits, casualPaymentMethods})
 
             return await interaction.channel?.send({
                 embeds: [embed],
                 components: [<any>buttonRow], 
-                //ephemeral: true,
                 files: files
             })
         }
