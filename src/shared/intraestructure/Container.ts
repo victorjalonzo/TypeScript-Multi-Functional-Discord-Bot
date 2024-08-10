@@ -32,6 +32,8 @@ import { ChannelService } from "../../Channel/application/ChannelService.js";
 import { ChannelController } from "../../Channel/infrastructure/ChannelController.js";
 
 import { InviteCommand } from '../../Invite/infrastructure/InviteCommand.js';
+import { InviteCommandActions } from "../../Invite/infrastructure/InviteCommandActions.js";
+
 import { RewardCommand } from '../../Reward/infrastructure/RewardCommand.js';
 import { IntegratedPaymentCommand } from '../../IntegratedPayment/infrastructure/IntegratedPaymentCommand.js';
 
@@ -66,6 +68,9 @@ const paypointService = new PaypointService(paypointRepository, guildRepository,
 const paypointCommandAction = new PaypointCommandActions(paypointService, creditService, casualPaymentService);
 const paypointButtonAction = new PaypointButtonActions(paypointService, creditService, casualPaymentService);
 PaypointCommand.setCallback(paypointCommandAction.execute);
+
+const inviteCommandActions = new InviteCommandActions(memberService);
+InviteCommand.setCallback(inviteCommandActions.execute);
 
 
 export const Services = {
