@@ -29,6 +29,18 @@ export class MemberService implements IMemberInput {
         }
     }
 
+    async getInviteMembersCount(inviterId: string, guildId: string): Promise<Result<number>> {
+        try {
+            const members = await this.repository.getAll({InvitedBy: inviterId, guildId: guildId});
+            const totalCount = members.length;
+            
+            return Result.success(totalCount);
+        }
+        catch (e) {
+            return Result.failure(String(e));
+        }
+    }
+
     async update(filters: Record<string, any>, data: IMember): Promise<Result<IMember>> {
         try {
             const member = await this.repository.update(filters, data);
