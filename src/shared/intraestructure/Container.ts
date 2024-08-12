@@ -31,10 +31,14 @@ import { ChannelModel } from "../../Channel/infrastructure/ChannelSchema.js";
 import { ChannelService } from "../../Channel/application/ChannelService.js";
 import { ChannelController } from "../../Channel/infrastructure/ChannelController.js";
 
+import { RewardRoleModel } from "../../RewardRole/infrastructure/RewardRoleSchema.js";
+import { RewardRoleCommand } from '../../RewardRole/infrastructure/RewardRoleCommand.js';
+import { RewardRoleCommandActions } from "../../RewardRole/infrastructure/RewardRoleCommandActions.js";
+import { RewardRoleService } from "../../RewardRole/application/RewardRoleService.js";
+
 import { InviteCommand } from '../../Invite/infrastructure/InviteCommand.js';
 import { InviteCommandActions } from "../../Invite/infrastructure/InviteCommandActions.js";
 
-import { RewardCommand } from '../../Reward/infrastructure/RewardCommand.js';
 import { IntegratedPaymentCommand } from '../../IntegratedPayment/infrastructure/IntegratedPaymentCommand.js';
 
 await Database.connect()
@@ -69,7 +73,12 @@ const paypointCommandAction = new PaypointCommandActions(paypointService, credit
 const paypointButtonAction = new PaypointButtonActions(paypointService, creditService, casualPaymentService);
 PaypointCommand.setCallback(paypointCommandAction.execute);
 
-const inviteCommandActions = new InviteCommandActions(memberService);
+const rewardRoleRespository = new Repository(RewardRoleModel);
+const rewardRoleService = new RewardRoleService(rewardRoleRespository);
+const rewardRoleCommandAction = new RewardRoleCommandActions(rewardRoleService);
+RewardRoleCommand.setCallback(rewardRoleCommandAction.execute);
+
+const inviteCommandActions = new InviteCommandActions(memberService, rewardRoleService);
 InviteCommand.setCallback(inviteCommandActions.execute);
 
 
@@ -79,7 +88,8 @@ export const Services = {
     channelService,
     casualPaymentService,
     creditService,
-    paypointService
+    paypointService,
+    rewardRoleService
 }
 
 export const Controllers = {
@@ -95,12 +105,15 @@ export const Commands: SlashCommandCallable[] = [
 
     GuildCommand, 
     InviteCommand, 
-    RewardCommand,
+    RewardRoleCommand,
     IntegratedPaymentCommand,
 ]
 
 export const CommandActions = {
-    paypointCommandAction
+    paypointCommandAction,
+    creditCommandAction,
+    rewardRoleCommandAction,
+    casualPaymentCommandAction
 }
 
 export const ButtonActions = [
