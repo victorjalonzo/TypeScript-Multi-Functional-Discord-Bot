@@ -3,9 +3,9 @@ import { createMockGuild } from "../mock/guildMock.js";
 
 import { Database } from "../../shared/intraestructure/Database.js";
 import { MongoRepository } from "../../shared/intraestructure/MongoRepository.js";
-import { GuildController } from "../../Guild/intrastructure/GuildController.js";
+import { GuildController } from "../../Guild/infrastructure/GuildController.js";
 import { GuildService } from "../../Guild/application/GuildService.js";
-import { GuildModel } from '../../Guild/intrastructure/GuildSchema.js';
+import { GuildModel } from '../../Guild/infrastructure/GuildSchema.js';
 
 describe("GuildController", async () => {
     beforeAll(async () => {
