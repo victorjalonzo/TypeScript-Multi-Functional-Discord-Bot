@@ -35,9 +35,11 @@ import { RewardRoleModel } from "../../RewardRole/infrastructure/RewardRoleSchem
 import { RewardRoleCommand } from '../../RewardRole/infrastructure/RewardRoleCommand.js';
 import { RewardRoleCommandActions } from "../../RewardRole/infrastructure/RewardRoleCommandActions.js";
 import { RewardRoleService } from "../../RewardRole/application/RewardRoleService.js";
+import { RewardRoleEventController } from "../../RewardRole/infrastructure/RewardRoleEventController.js";
 
 import { InviteCommand } from '../../Invite/infrastructure/InviteCommand.js';
 import { InviteCommandActions } from "../../Invite/infrastructure/InviteCommandActions.js";
+import { InviteEventController } from "../../Invite/infrastructure/InviteEventController.js";
 
 import { IntegratedPaymentCommand } from '../../IntegratedPayment/infrastructure/IntegratedPaymentCommand.js';
 
@@ -76,9 +78,11 @@ PaypointCommand.setCallback(paypointCommandAction.execute);
 const rewardRoleRespository = new Repository(RewardRoleModel);
 const rewardRoleService = new RewardRoleService(rewardRoleRespository);
 const rewardRoleCommandAction = new RewardRoleCommandActions(rewardRoleService);
+const rewardRoleEventController = new RewardRoleEventController(rewardRoleService, memberService);
 RewardRoleCommand.setCallback(rewardRoleCommandAction.execute);
 
 const inviteCommandActions = new InviteCommandActions(memberService, rewardRoleService);
+const inviteEventController = new InviteEventController(memberService);
 InviteCommand.setCallback(inviteCommandActions.execute);
 
 
@@ -95,7 +99,9 @@ export const Services = {
 export const Controllers = {
     guildController,
     memberController,
-    channelController
+    channelController,
+    rewardRoleEventController,
+    inviteEventController
 }
 
 export const Commands: SlashCommandCallable[] = [ 
