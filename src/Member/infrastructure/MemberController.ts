@@ -34,8 +34,7 @@ export class MemberController {
         const newParsedMember = MemberTransformer.parse(newMember, cachedGuild)
 
         try {
-            const filter = { id: oldMember.id, guildId: oldMember.guild.id }
-            const result = await this.service.update(filter, newParsedMember)
+            const result = await this.service.update(newParsedMember)
 
             if (!result.isSuccess()) throw new Error(result.error)
             const record = result.value

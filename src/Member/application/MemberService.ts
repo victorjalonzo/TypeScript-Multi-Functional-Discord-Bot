@@ -17,9 +17,9 @@ export class MemberService implements IMemberInput {
         }
     }
 
-    async get(filters: Record<string, any>): Promise<Result<IMember>> {
+    async get(id: string, guildId: string): Promise<Result<IMember>> {
         try {
-            const member = await this.repository.get(filters);
+            const member = await this.repository.get({id, guildId});
             if (!member) throw new Error(`The member record could not be found`)
             
             return Result.success(member);
@@ -41,9 +41,9 @@ export class MemberService implements IMemberInput {
         }
     }
 
-    async update(filters: Record<string, any>, data: IMember): Promise<Result<IMember>> {
+    async update(data: IMember): Promise<Result<IMember>> {
         try {
-            const member = await this.repository.update(filters, data);
+            const member = await this.repository.update({id: data.id, guildId:data.guildId}, data);
             if (!member) throw new Error(`The member record could not be updated`)
             
             return Result.success(member);
