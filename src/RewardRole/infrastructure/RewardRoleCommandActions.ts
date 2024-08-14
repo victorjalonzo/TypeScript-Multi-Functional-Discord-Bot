@@ -36,7 +36,7 @@ export class RewardRoleCommandActions {
 
             const result = await this.service.create(reward)
 
-            if (!result.isSuccess()) throw new Error(result.error)
+            if (!result.isSuccess()) throw result.error
             
             const description = InlineBlockText(`The reward role ${role.name} (${reward.id}) was created`)
             
@@ -56,7 +56,7 @@ export class RewardRoleCommandActions {
             if (!guild) throw new Error("The guild was not found")
 
             const result = await this.service.delete(role.id, guild.id)
-            if (!result.isSuccess()) throw new Error(result.error)
+            if (!result.isSuccess()) throw result.error
             
             const description = InlineBlockText(`The reward role ${role.name} (${role.id}) was deleted`)
 
@@ -76,7 +76,7 @@ export class RewardRoleCommandActions {
             if (!cachedGuild) throw new Error("The guild was not found")
 
             const result = await this.service.getAll(guild.id)
-            if (!result.isSuccess()) throw new Error(result.error)
+            if (!result.isSuccess()) throw result.error
 
             const rewards = result.value
             if (!rewards) throw new Error("The rewards were not found")
