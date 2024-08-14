@@ -22,12 +22,12 @@ export class InviteCommandActions {
             let invitesCount = 0
 
             const memberCountResult = await this.memberService.getInviteMembersCount(user.id, guild.id)
-            if (!memberCountResult.isSuccess()) throw new Error(memberCountResult.error)
+            if (!memberCountResult.isSuccess()) throw memberCountResult.error
 
             invitesCount = memberCountResult.value
 
             const rewardRolesResult = await this.rewardRoleService.getAll(guild.id)
-            if (!rewardRolesResult.isSuccess()) throw new Error(rewardRolesResult.error)
+            if (!rewardRolesResult.isSuccess()) throw rewardRolesResult.error
             
             const rewardRoles = rewardRolesResult.value
 
