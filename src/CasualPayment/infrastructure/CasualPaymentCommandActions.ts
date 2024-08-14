@@ -100,7 +100,7 @@ export class CasualPaymentCommandActions {
     
             const result = await this.service.delete({name: method, guildId: guildId})
 
-            if (!result.isSuccess()) throw new Error(result.error)
+            if (!result.isSuccess()) throw result.error
 
             const title = "METHOD REMOVED"
 

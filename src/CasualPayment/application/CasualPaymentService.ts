@@ -4,6 +4,12 @@ import { ICasualPaymentInput } from "../domain/ICasualPaymentInput.js";
 import { IRepository } from "../../shared/domain/IRepository.js";
 import { Result } from "../../shared/domain/Result.js";
 
+import { 
+    CasualPaymentCreationError,
+    CasualPaymentNotFoundError,
+    CasualPaymentUpdateError
+} from "../domain/CasualPaymentExceptions.js";
+
 export class CasualPaymentService implements ICasualPaymentInput {
     constructor (
         private repository: IRepository<ICasualPayment>,
@@ -13,7 +19,7 @@ export class CasualPaymentService implements ICasualPaymentInput {
     create = async (casualPayment:ICasualPayment): Promise<Result<ICasualPayment>> => {
         try {
             const createdCasualPayment = await this.repository.create(casualPayment);
-            if (!createdCasualPayment) throw new Error(`The casual payment record could not be created`)
+            if (!createdCasualPayment) throw new CasualPaymentCreationError()
             
             const guild = await this.guildRepository.get({ id: casualPayment.guild.id });
             if (!guild) throw new Error(`The guild record ${casualPayment.guild.name} (${casualPayment.guild.id}) could not be found.`)
@@ -26,7 +32,7 @@ export class CasualPaymentService implements ICasualPaymentInput {
             return Result.success(createdCasualPayment);
         }
         catch(e) {
-            return Result.failure(String(e));
+            return Result.failure(e);
         }
     }
     getByRawName = async (rawName: string, guildId: string): Promise<Result<ICasualPayment>> => {
@@ -36,12 +42,12 @@ export class CasualPaymentService implements ICasualPaymentInput {
     get = async (filters: Record<string, any>): Promise<Result<ICasualPayment>> => {
         try {
             const casualPayment = await this.repository.get(filters);
-            if (!casualPayment) throw new Error(`No method found`)
+            if (!casualPayment) throw new CasualPaymentNotFoundError()
             
             return Result.success(casualPayment);
         }
         catch(e) {
-            return Result.failure(String(e));
+            return Result.failure(e);
         }
     }
 
@@ -51,20 +57,19 @@ export class CasualPaymentService implements ICasualPaymentInput {
             return Result.success(casualPaymentList);
         }
         catch(e) {
-            return Result.failure(String(e));
+            return Result.failure(e);
         }
     }
 
     delete = async ({name, guildId }: { name: string, guildId: string }): Promise<Result<Record<string, any>>> => {
         try {
             const casualPaymentDeleted = await this.repository.delete({ name, guildId });
-
-            if (!casualPaymentDeleted) throw new Error(`No method found to delete`)
+            if (!casualPaymentDeleted) throw new CasualPaymentUpdateError()
 
             return Result.success(casualPaymentDeleted);
         }
         catch(e) {
-            return Result.failure(String(e));
+            return Result.failure(e);
         }
     }
 }
