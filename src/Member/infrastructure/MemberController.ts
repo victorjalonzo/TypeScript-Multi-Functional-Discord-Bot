@@ -16,10 +16,10 @@ export class MemberController {
             const parsedMember = MemberTransformer.parse(member, cachedGuild)
             const resul = await this.service.create(parsedMember)
 
-            if (!resul.isSuccess()) throw new Error(resul.error)
+            if (!resul.isSuccess()) throw resul.error
             const record = resul.value
 
-            logger.info(`The member ${record.username} (${record.id}) was created`)
+            logger.info(`The member ${record.username} (${record.id}) just joined`)
         }
         catch (e) {
             logger.warn(e)
@@ -36,7 +36,7 @@ export class MemberController {
         try {
             const result = await this.service.update(newParsedMember)
 
-            if (!result.isSuccess()) throw new Error(result.error)
+            if (!result.isSuccess()) throw result.error
             const record = result.value
 
             logger.info(`The member ${record.username} (${record.id}) was updated`)
@@ -51,7 +51,7 @@ export class MemberController {
             const filter = { id: member.id, guildId: member.guild.id }
             const result = await this.service.delete(filter)
 
-            if (!result.isSuccess()) throw new Error(result.error)
+            if (!result.isSuccess()) throw result.error
             const record = result.value
 
             logger.info(`The member ${record.username} (${record.id}) was deleted`)
