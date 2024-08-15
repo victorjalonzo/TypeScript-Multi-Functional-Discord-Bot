@@ -2,11 +2,11 @@ import { Database } from "./Database.js";
 import { MongoRepository } from "./MongoRepository.js";
 import { SlashCommandCallable } from '../../shared/intraestructure/SlashCommandCallable.js';
 
-import { PaypointModel } from "../../Paypoint/infrastructure/PaypointSchema.js";
-import { PaypointService } from "../../Paypoint/application/PaypointService.js";
-import { PaypointCommand } from '../../Paypoint/infrastructure/PaypointCommand.js';
-import { PaypointCommandActions } from "../../Paypoint/infrastructure/PaypointCommandActions.js";
-import { PaypointButtonActions } from "../../Paypoint/infrastructure/PaypointButtonActions.js";
+import { PaypointModel } from "../../PaypointRole/infrastructure/PaypointSchema.js";
+import { PaypointService } from "../../PaypointRole/application/PaypointService.js";
+import { PaypointCommand } from '../../PaypointRole/infrastructure/PaypointCommand.js';
+import { PaypointCommandActions } from "../../PaypointRole/infrastructure/PaypointCommandActions.js";
+import { PaypointButtonActions } from "../../PaypointRole/infrastructure/PaypointButtonActions.js";
 
 import { CasualPaymentModel } from "../../CasualPayment/infrastructure/CasualPaymentSchema.js";
 import { CasualPaymentService } from "../../CasualPayment/application/CasualPaymentService.js";
@@ -27,9 +27,21 @@ import { memberModel } from "../../Member/infrastructure/MemberSchema.js";
 import { MemberService } from "../../Member/application/MemberService.js";
 import { MemberController } from "../../Member/infrastructure/MemberController.js";
 
-import { ChannelModel } from "../../Channel/infrastructure/ChannelSchema.js";
-import { ChannelService } from "../../Channel/application/ChannelService.js";
-import { ChannelController } from "../../Channel/infrastructure/ChannelController.js";
+import { CategoryChannelModel } from "../../CategoryChannel/infrastructure/CategoryChannelSchema.js";
+import { CategoryChannelService } from "../../CategoryChannel/application/CategoryChannelService.js";
+import { CategoryChannelEventController } from "../../CategoryChannel/infrastructure/CategoryChannelEventController.js";
+
+import { TextChannelModel } from "../../TextChannel/infrastructure/TextChannelSchema.js";
+import { TextChannelService } from "../../TextChannel/application/TextChannelService.js";
+import { TextChannelEventController } from "../../TextChannel/infrastructure/TextChannelEventController.js";
+
+import { VoiceChannelModel } from "../../VoiceChannel/infrastructure/VoiceChannelSchema.js";
+import { VoiceChannelService } from "../../VoiceChannel/application/VoiceChannelService.js";
+import { VoiceChannelEventController } from "../../VoiceChannel/infrastructure/VoiceChannelController.js";
+
+import { RoleRecordService } from "../../Role/application/RoleRecordService.js";
+import { RoleRecordModel } from "../../Role/infrastructure/RoleRecordSchema.js";
+import { RoleRecordEventController } from "../../Role/infrastructure/RoleRecordEventController.js";
 
 import { RewardRoleModel } from "../../RewardRole/infrastructure/RewardRoleSchema.js";
 import { RewardRoleCommand } from '../../RewardRole/infrastructure/RewardRoleCommand.js';
@@ -55,9 +67,21 @@ const memberRepository = new Repository(memberModel);
 const memberService = new MemberService(memberRepository);
 const memberController = new MemberController(memberService);
 
-const channelRepository = new Repository(ChannelModel);
-const channelService = new ChannelService(channelRepository);
-const channelController = new ChannelController(channelService);
+const categoryChannelRepository = new Repository(CategoryChannelModel);
+const categoryChannelService = new CategoryChannelService(categoryChannelRepository);
+const categoryChannelEventController = new CategoryChannelEventController(categoryChannelService);
+
+const textChannelRepository = new Repository(TextChannelModel);
+const textChannelService = new TextChannelService(textChannelRepository);
+const textChannelEventController = new TextChannelEventController(textChannelService);
+
+const voiceChannelRepository = new Repository(VoiceChannelModel);
+const voiceChannelService = new VoiceChannelService(voiceChannelRepository);
+const voiceChannelEventController = new VoiceChannelEventController(voiceChannelService);
+
+const roleRecordRepository = new Repository(RoleRecordModel);
+const roleRecordService = new RoleRecordService(roleRecordRepository);
+const roleRecordEventController = new RoleRecordEventController(roleRecordService);
 
 const casualPaymentRepository = new Repository(CasualPaymentModel);
 const casualPaymentService = new CasualPaymentService(casualPaymentRepository, guildRepository);
@@ -89,7 +113,10 @@ InviteCommand.setCallback(inviteCommandActions.execute);
 export const Services = {
     guildService,
     memberService,
-    channelService,
+    categoryChannelService,
+    textChannelService,
+    voiceChannelService,
+    roleRecordService,
     casualPaymentService,
     creditService,
     paypointService,
@@ -99,7 +126,10 @@ export const Services = {
 export const Controllers = {
     guildController,
     memberController,
-    channelController,
+    categoryChannelEventController,
+    textChannelEventController,
+    voiceChannelEventController,
+    roleRecordEventController,
     rewardRoleEventController,
     inviteEventController
 }
