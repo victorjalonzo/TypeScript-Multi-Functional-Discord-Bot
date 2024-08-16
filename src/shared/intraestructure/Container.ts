@@ -39,9 +39,9 @@ import { VoiceChannelModel } from "../../VoiceChannel/infrastructure/VoiceChanne
 import { VoiceChannelService } from "../../VoiceChannel/application/VoiceChannelService.js";
 import { VoiceChannelEventController } from "../../VoiceChannel/infrastructure/VoiceChannelController.js";
 
-import { RoleRecordService } from "../../Role/application/RoleRecordService.js";
-import { RoleRecordModel } from "../../Role/infrastructure/RoleRecordSchema.js";
-import { RoleRecordEventController } from "../../Role/infrastructure/RoleRecordEventController.js";
+import { RoleService } from "../../Role/application/RoleService.js";
+import { RoleRecordModel } from "../../Role/infrastructure/RoleSchema.js";
+import { RoleEventController } from "../../Role/infrastructure/RoleEventController.js";
 
 import { RewardRoleModel } from "../../RewardRole/infrastructure/RewardRoleSchema.js";
 import { RewardRoleCommand } from '../../RewardRole/infrastructure/RewardRoleCommand.js';
@@ -80,8 +80,8 @@ const voiceChannelService = new VoiceChannelService(voiceChannelRepository);
 const voiceChannelEventController = new VoiceChannelEventController(voiceChannelService);
 
 const roleRecordRepository = new Repository(RoleRecordModel);
-const roleRecordService = new RoleRecordService(roleRecordRepository);
-const roleRecordEventController = new RoleRecordEventController(roleRecordService);
+const roleRecordService = new RoleService(roleRecordRepository);
+const roleRecordEventController = new RoleEventController(roleRecordService);
 
 const casualPaymentRepository = new Repository(CasualPaymentModel);
 const casualPaymentService = new CasualPaymentService(casualPaymentRepository, guildRepository);
@@ -94,9 +94,9 @@ const creditCommandAction = new CreditCommandActions(creditService);
 CreditCommand.setCallback(creditCommandAction.execute);
 
 const paypointRepository = new Repository(PaypointModel);
-const paypointService = new PaypointService(paypointRepository, guildRepository, creditRepository, casualPaymentRepository);
-const paypointCommandAction = new PaypointCommandActions(paypointService, creditService, casualPaymentService);
-const paypointButtonAction = new PaypointButtonActions(paypointService, creditService, casualPaymentService);
+const paypointService = new PaypointService(paypointRepository, guildRepository, casualPaymentRepository);
+const paypointCommandAction = new PaypointCommandActions(paypointService, casualPaymentService);
+const paypointButtonAction = new PaypointButtonActions(paypointService, casualPaymentService);
 PaypointCommand.setCallback(paypointCommandAction.execute);
 
 const rewardRoleRespository = new Repository(RewardRoleModel);
