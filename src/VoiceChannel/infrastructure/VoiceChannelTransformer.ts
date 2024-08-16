@@ -3,7 +3,8 @@ import { IVoiceChannel } from "../domain/IVoiceChannel.js"
 import { VoiceChannel } from "../domain/VoiceChannel.js"
 import { VoiceChannelTransformationError } from "../domain/VoiceChannelExceptions.js"
 import { cache } from "../../shared/intraestructure/Cache.js"
-import { Channel } from "../../shared/intraestructure/Channel.js"
+import { ChannelUtility } from "../../shared/utils/ChannelUtility.js"
+import { CachedGuildNotFoundError } from "../../shared/domain/CachedGuildException.js"
 
 export class VoiceChannelTransformer {
     static parse = (voiceChannel: DiscordVoiceChannel): IVoiceChannel => {
@@ -14,10 +15,9 @@ export class VoiceChannelTransformer {
             } = voiceChannel
 
             const cachedGuild = cache.get(voiceChannel.guild.id);
+            if (!cachedGuild) throw new CachedGuildNotFoundError();
 
-            if (!cachedGuild) throw new Error("The cached guild was not found")
-
-            const permissionOverwrites = Channel.getPermissionOverwrites(voiceChannel)
+            const permissionOverwrites = ChannelUtility.getPermissionOverwrites(voiceChannel)
     
             return new VoiceChannel(
                 id, name, position, bitrate, joinable, manageable, permissionOverwrites, 
