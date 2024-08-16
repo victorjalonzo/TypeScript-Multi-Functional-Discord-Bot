@@ -1,46 +1,29 @@
-import { CustomException } from "../../shared/domain/CustomException.js";
-
-export class GuildTransformationError extends CustomException {
-    constructor(guild: Record<string, any>, dueTo?: string) {
-        super({
-            message:`The object received as guild ${guild.name} (${guild.id}) could not be transformed into a guild record.`,
-            dueTo: dueTo
-        });
+export class GuildRecordCreationError extends Error {
+    constructor () {
+        super('The guild record could not be created.');
     }
 }
 
-export class CreateGuildRecordError extends CustomException {
-    constructor(guild: Record<string, any>, dueTo?: string) {
-        super({
-            message:`The guild record ${guild.name} (${guild.id}) could not be created.`,
-            dueTo: dueTo
-        });
+export class GuildRecordNotFoundError extends Error {
+    constructor () {
+        super('The guild record could not be found.');
     }
 }
 
-export class UpdateGuildRecordError extends CustomException {
-    constructor(guild: Record<string, any>, dueTo?: string) {
-        super({
-            message:`The guild record ${guild.name} (${guild.id}) could not be updated.`,
-            dueTo: dueTo
-        });
+export class GuildRecordUpdateError extends Error {
+    constructor () {
+        super('The guild record could not be updated.');
     }
 }
 
-export class DeleteGuildRecordError extends CustomException {
-    constructor(guild: Record<string, any>, dueTo?: string) {
-        super({
-            message:`The guild record ${guild.name} (${guild.id}) could not be deleted.`,
-            dueTo: dueTo
-        });
+export class GuildRecordDeletionError extends Error {
+    constructor () {
+        super('The guild record could not be deleted.');
     }
 }
 
-export class GuildRecordNotFound extends CustomException {
-    constructor(guild: Record<string, any>, dueTo?: string) {
-        super({
-            message:`The guild record ${guild.name} (${guild.id}) could not be found.`,
-            dueTo: dueTo
-        });
+export class GuildRecordTransformationError extends Error {
+    constructor () {
+        super('The guild record could not be transformed.');
     }
 }

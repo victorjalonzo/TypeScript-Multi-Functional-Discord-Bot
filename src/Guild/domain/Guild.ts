@@ -1,9 +1,11 @@
 import { IGuild } from "./IGuild.js";
 import { ICasualPayment } from "../../CasualPayment/domain/ICasualPayment.js";
 import { ICredit } from "../../Credit/domain/ICredit.js";
-import { IPaypoint } from "../../Paypoint/domain/IPaypoint.js";
+import { IPaypoint } from "../../PaypointRole/domain/IPaypoint.js";
 
 export class Guild implements IGuild {
+    inviteData: unknown
+
     constructor(
         public id: string,
         public name: string,

@@ -1,5 +1,5 @@
-import { IGuildInput } from "../domain/IGuildInputPort.js";
-import { Guild as DiscordGuild, GuildManager } from "discord.js";
+import { IGuildInput } from "../domain/IGuildInput.js";
+import { Guild as DiscordGuild, GuildManager, Invite } from "discord.js";
 import { GuildTransformer } from "./GuildTransformer.js";
 import { logger } from "../../shared/utils/logger.js";
 import { IGuild } from "../domain/IGuild.js";
@@ -12,23 +12,40 @@ export class GuildController {
         const collection = guildManager.cache
 
         for (const guildId of collection.keys()) {
+            let guildRecord: IGuild | undefined = undefined
+            const guild = <DiscordGuild>collection.get(guildId)
+
             let result = await this.service.get({id: guildId})
 
             if (result.isSuccess()) {
-                const guildRecord = result.value
-                cache.create(guildRecord)
-                logger.info(`The guild ${guildRecord.name} (${guildRecord.id}) was cached`)
+                guildRecord = result.value
             }
             else {
-                const guild = <DiscordGuild>collection.get(guildId)
                 const guildParsed = GuildTransformer.parse(guild)
                 result = await this.service.create(guildParsed)
 
                 if (!result.isSuccess()) continue
-                const guildRecord = result.value
-                cache.create(guildRecord)
-                logger.info(`The guild ${guildRecord.name} (${guildRecord.id}) was cached`)
+                guildRecord = result.value
             }
+
+            if (!guildRecord) continue
+
+            const inviteData = await guild.invites.fetch()
+
+            const cacheInviteData = new Map()
+
+            for (const [code, invite] of inviteData.entries()) {
+                cacheInviteData.set(code, {
+                    code: code,
+                    inviter: invite.inviter,
+                    uses: invite.uses
+                })
+            }
+
+            guildRecord.inviteData = cacheInviteData
+
+            cache.create(guildRecord)
+            logger.info(`The guild ${guildRecord.name} (${guildRecord.id}) was cached`)
         }
     }
 
@@ -37,7 +54,7 @@ export class GuildController {
             const parsedGuild = GuildTransformer.parse(guild)
             const result = await this.service.create(parsedGuild)
 
-            if (!result.isSuccess()) throw new Error(result.error)
+            if (!result.isSuccess()) throw result.error
 
             const partialGuild = result.value
 
@@ -57,7 +74,7 @@ export class GuildController {
     
             const result = await this.service.update(oldParsedGuild, newParsedGuild)
 
-            if (!result.isSuccess()) throw new Error(result.error)
+            if (!result.isSuccess()) throw result.error
 
             const partialGuild = result.value
 
@@ -75,7 +92,7 @@ export class GuildController {
             const parsedGuild = GuildTransformer.parse(guild)
             const result = await this.service.delete(parsedGuild)
 
-            if (!result.isSuccess()) throw new Error(result.error)
+            if (!result.isSuccess()) throw result.error
 
             const partialGuild = result.value
 

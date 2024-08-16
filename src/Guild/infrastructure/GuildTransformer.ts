@@ -1,6 +1,6 @@
 import {Guild as discordGuild} from "discord.js";
 import { Guild } from "../domain/Guild.js";
-import { GuildTransformationError } from "../domain/GuildExceptions.js";
+import { GuildRecordTransformationError } from "../domain/GuildExceptions.js";
 
 export class GuildTransformer {
     static parse = (guild: discordGuild): Guild => {
@@ -9,7 +9,7 @@ export class GuildTransformer {
             return new Guild(id, name, icon, createdAt);
         }
         catch (e) {
-            throw new GuildTransformationError(guild, String(e))
+            throw new GuildRecordTransformationError()
         }
     }
 }
