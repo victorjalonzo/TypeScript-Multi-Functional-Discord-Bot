@@ -1,7 +1,6 @@
 import { DiscordAdapter } from "./Bot/adapters/discordAdapter.js";
 import { Client, GatewayIntentBits } from "discord.js";
 import { Config } from './shared/config/config.js'
-import { Controllers } from "./shared/intraestructure/Container.js";
 
 const main = async () => {
     const client = new Client({
@@ -16,8 +15,7 @@ const main = async () => {
 
     const discordAdapter = new DiscordAdapter({
         client: client, 
-        token: Config.discord.token,
-        controllers: Controllers
+        token: Config.discord.token
     })
     
     await discordAdapter.start()
