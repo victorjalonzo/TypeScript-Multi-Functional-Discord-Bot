@@ -1,13 +1,13 @@
-import { Client, BaseInteraction } from 'discord.js'
+import { Client, BaseInteraction, CategoryChannel } from 'discord.js'
 import { CommandHandler } from './CommandHandler.js';
 import { ButtonHandler } from './ButtonHandler.js';
 import { TextChannel, VoiceChannel } from 'discord.js';
 import { logger } from '../../shared/utils/logger.js';
+import { Controllers } from '../../shared/intraestructure/Container.js';
 
 interface IProps {
   client: Client
   token: string | undefined
-  controllers: Record<string,any>
 }
 
 export class DiscordAdapter {
@@ -15,19 +15,18 @@ export class DiscordAdapter {
     private token: string | undefined;
     private commandHandler: CommandHandler;
     private buttonHandler: ButtonHandler
-    private controllers : Record<string,any>
+    private controllers: typeof Controllers
   
-    constructor({client, token, controllers}: IProps) {
+    constructor({client, token}: IProps) {
 
       if (!client) throw new Error('Missing client');
       if (!token) throw new Error('Missing bot token');
-      if (!controllers) throw new Error('Missing controllers');
 
       this.token = token;
       this.client = client;
       this.commandHandler = new CommandHandler({client: this.client, token: this.token});
       this.buttonHandler = new ButtonHandler();
-      this.controllers = controllers
+      this.controllers = Controllers
     }
 
     async start(): Promise<void> {
@@ -56,7 +55,9 @@ export class DiscordAdapter {
         });
 
         this.client.on('guildMemberAdd', async (member) => {
-            return await this.controllers.memberController.create(member)
+            await this.controllers.memberController.create(member)
+            await this.controllers.inviteEventController.increaseInviteCount(member)
+            await this.controllers.rewardRoleEventController.giveReward(member)
         })
         this.client.on('GuildMemberUpdate', async (oldMember, newMember) => {
             return await this.controllers.memberController.update(oldMember, newMember)
@@ -66,19 +67,49 @@ export class DiscordAdapter {
         })
 
         this.client.on('channelCreate', async (channel) => {
-          if(channel instanceof TextChannel || channel instanceof VoiceChannel){
-            return await this.controllers.channelController.createChannel(channel)
+          if (channel instanceof TextChannel) {
+            return await this.controllers.textChannelEventController.createRecord(channel)
           }
+          if (channel instanceof VoiceChannel) {
+            return await this.controllers.voiceChannelEventController.createRecord(channel)
+          }
+          if (channel instanceof CategoryChannel) {
+            return await this.controllers.categoryChannelEventController.createRecord(channel)
+          }
+
         })
         this.client.on('channelUpdate', async (oldChannel, newChannel) => {
-          if ((oldChannel instanceof TextChannel || oldChannel instanceof VoiceChannel) && (newChannel instanceof TextChannel || newChannel instanceof VoiceChannel)) {
-            return await this.controllers.channelController.updateChannel(oldChannel, newChannel);
+          if (oldChannel instanceof TextChannel && newChannel instanceof TextChannel) {
+            return await this.controllers.textChannelEventController.updateRecord(oldChannel, newChannel)
           }
+          if (oldChannel instanceof VoiceChannel && newChannel instanceof VoiceChannel) {
+            return await this.controllers.voiceChannelEventController.updateRecord(oldChannel, newChannel)
+          }
+          if (oldChannel instanceof CategoryChannel && newChannel instanceof CategoryChannel) {
+            return await this.controllers.categoryChannelEventController.updateRecord(oldChannel, newChannel)
+          }
+
         })
         this.client.on('channelDelete', async (channel) => {
-          if (channel instanceof TextChannel || channel instanceof VoiceChannel) {
-            return await this.controllers.channelController.deleteChannel(channel)
+          if (channel instanceof TextChannel) {
+            return await this.controllers.textChannelEventController.deleteRecord(channel)
           }
+          if (channel instanceof VoiceChannel) {
+            return await this.controllers.voiceChannelEventController.deleteRecord(channel)
+          }
+          if (channel instanceof CategoryChannel) {
+            return await this.controllers.categoryChannelEventController.deleteRecord(channel)
+          }
+        })
+
+        this.client.on('roleCreate', async (role) => {
+          return await this.controllers.roleEventController.create(role)
+        })
+        this.client.on('roleUpdate', async (oldRole, newRole) => {
+          return await this.controllers.roleEventController.update(oldRole, newRole)
+        })
+        this.client.on('roleDelete', async (role) => {
+          return await this.controllers.roleEventController.delete(role)
         })
     }
   }
