@@ -54,6 +54,8 @@ import { InviteCommandActions } from "../../Invite/infrastructure/InviteCommandA
 import { InviteEventController } from "../../Invite/infrastructure/InviteEventController.js";
 
 import { IntegratedPaymentCommand } from '../../IntegratedPayment/infrastructure/IntegratedPaymentCommand.js';
+import { RoleProductModel } from "../../RoleProduct/infrastructure/RoleProductSchema.js";
+import { RoleProductService } from "../../RoleProduct/application/RoleProductService.js";
 
 await Database.connect()
 
@@ -79,9 +81,9 @@ const voiceChannelRepository = new Repository(VoiceChannelModel);
 const voiceChannelService = new VoiceChannelService(voiceChannelRepository);
 const voiceChannelEventController = new VoiceChannelEventController(voiceChannelService);
 
-const roleRecordRepository = new Repository(RoleRecordModel);
-const roleRecordService = new RoleService(roleRecordRepository);
-const roleRecordEventController = new RoleEventController(roleRecordService);
+const roleRepository = new Repository(RoleRecordModel);
+const roleService = new RoleService(roleRepository);
+const roleEventController = new RoleEventController(roleService);
 
 const casualPaymentRepository = new Repository(CasualPaymentModel);
 const casualPaymentService = new CasualPaymentService(casualPaymentRepository, guildRepository);
@@ -94,8 +96,12 @@ const creditCommandAction = new CreditCommandActions(creditService);
 CreditCommand.setCallback(creditCommandAction.execute);
 
 const paypointRepository = new Repository(PaypointModel);
+
+const roleProductRepository = new Repository(RoleProductModel);
+const roleProductService = new RoleProductService(roleProductRepository, paypointRepository);
+
 const paypointService = new PaypointService(paypointRepository, guildRepository, casualPaymentRepository);
-const paypointCommandAction = new PaypointCommandActions(paypointService, casualPaymentService);
+const paypointCommandAction = new PaypointCommandActions(paypointService, roleService, roleProductService, casualPaymentService);
 const paypointButtonAction = new PaypointButtonActions(paypointService, casualPaymentService);
 PaypointCommand.setCallback(paypointCommandAction.execute);
 
@@ -116,7 +122,7 @@ export const Services = {
     categoryChannelService,
     textChannelService,
     voiceChannelService,
-    roleRecordService,
+    roleService,
     casualPaymentService,
     creditService,
     paypointService,
@@ -129,7 +135,7 @@ export const Controllers = {
     categoryChannelEventController,
     textChannelEventController,
     voiceChannelEventController,
-    roleRecordEventController,
+    roleEventController,
     rewardRoleEventController,
     inviteEventController
 }
