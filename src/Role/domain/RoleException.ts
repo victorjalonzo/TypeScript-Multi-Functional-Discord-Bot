@@ -4,6 +4,12 @@ export class RoleCreationError extends Error {
     }
 }
 
+export class RoleNotFoundError extends Error {
+    constructor() {
+        super('The role record could not be found');
+    }
+}
+
 export class RoleUpdateError extends Error {
     constructor() {
         super('The role record could not be updated');

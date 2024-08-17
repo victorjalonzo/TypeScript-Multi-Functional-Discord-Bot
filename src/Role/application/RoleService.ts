@@ -5,6 +5,7 @@ import { IRoleInput } from "../domain/IRoleInput.js";
 
 import {
     RoleCreationError,
+    RoleNotFoundError,
     RoleUpdateError,
     RoleDeletionError
 }
@@ -41,7 +42,7 @@ export class RoleService implements IRoleInput {
     get = async (roleId: string, guildId: string): Promise<Result<IRole>> => {
         try {
             const role = await this.repository.get({id: roleId, guildId});
-            if (!role) throw new RoleDeletionError()
+            if (!role) throw new RoleNotFoundError()
 
             return Result.success(role);
         }
