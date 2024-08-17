@@ -1,7 +1,7 @@
 export class Result<T> {
     constructor(
       public readonly isSuccessOperation: boolean,
-      public readonly error?: string,
+      public readonly error?: Error | unknown,
       public readonly value?: T
     ) {}
   
@@ -9,7 +9,7 @@ export class Result<T> {
       return new Result<U>(true, undefined, value);
     }
   
-    public static failure<U>(error: string): Result<U> {
+    public static failure<U>(error: Error | unknown): Result<U> {
       return new Result<U>(false, error);
     }
 
