@@ -1,37 +1,29 @@
-import { CustomException } from "../../shared/domain/CustomException.js";
-
-export class ChannelRecordCanNotBeCreated extends CustomException {
-    constructor(channel: Record<string, any>, dueTo?: string) {
-        super({
-            message:`The channel record ${channel.name} (${channel.id}) from the guild ${channel.guildId} could not be created`,
-            dueTo: dueTo
-        });
+export class ChannelRecordCreationError extends Error {
+    constructor (){
+        super('The channel record could not be created');
     }
 }
 
-export class ChannelRecordCanNotBeModified extends CustomException {
-    constructor(channel: Record<string, any>, dueTo?: string) {
-        super({
-            message:`The channel record ${channel.name} (${channel.id}) from the guild ${channel.guildId} could not be modified`,
-            dueTo: dueTo
-        });
+export class ChannelRecordNotFoundError extends Error {
+    constructor (){
+        super('The channel record could not be found');
     }
 }
 
-export class ChannelRecordCanNotBeDeleted extends CustomException {
-    constructor(channel: Record<string, any>, dueTo?: string) {
-        super({
-            message:`The channel record ${channel.name} (${channel.id}) from the guild ${channel.guildId} could not be deleted`,
-            dueTo: dueTo
-        });
+export class ChannelRecordUpdateError extends Error {
+    constructor (){
+        super('The channel record could not be updated');
     }
 }
 
-export class ChannelTypeNotSupported extends CustomException {
-    constructor(channel: Record<string, any>, dueTo?: string) {
-        super({
-            message:`The channel ${channel.name} (${channel.id}) from the guild ${channel.guildId} it is not supported`,
-            dueTo: dueTo
-        });
+export class ChannelRecordDeleteError extends Error {
+    constructor (){
+        super('The channel record could not be deleted');
+    }
+}
+
+export class ChannelTypeNotSupported extends Error {
+    constructor (){
+        super('The channel type is not supported');
     }
 }

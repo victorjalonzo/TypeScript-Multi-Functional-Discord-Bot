@@ -4,10 +4,9 @@ import { IChannel } from "../domain/IChannel.js";
 import { Result } from "../../shared/domain/Result.js";
 
 import { 
-    ChannelRecordCanNotBeCreated, 
-    ChannelRecordCanNotBeModified, 
-    ChannelRecordCanNotBeDeleted, 
-    ChannelTypeNotSupported 
+    ChannelRecordCreationError,
+    ChannelRecordUpdateError,
+    ChannelRecordDeleteError
 } from "../domain/ChannelExceptions.js";
 
 export class ChannelService implements IChannelInputPort {
@@ -15,40 +14,38 @@ export class ChannelService implements IChannelInputPort {
 
     async create(channel: IChannel): Promise<Result<IChannel>> {
         try {
-            const record = await this.repository.create(channel);
-            if (!record) throw new Error(`The channel record could not be created`)
+            const createdChannelRecord = await this.repository.create(channel);
+            if (!createdChannelRecord) throw new ChannelRecordCreationError()
 
-            return Result.success(record);
+            return Result.success(createdChannelRecord);
         }
         catch (e) {
-            return Result.failure(String(e));
+            return Result.failure(e);
         }
     }
 
     async update(oldChannel: IChannel, newChannel: IChannel): Promise<Result<IChannel>> {
-        
-        const filters = {id: oldChannel.id, guildId: oldChannel.guildId};
-
         try {
-            const record = await this.repository.update(filters, newChannel)
-            if (!record) throw new Error (`The channel record could not be updated`)
+            const filters = {id: oldChannel.id, guildId: oldChannel.guildId};
+            const updatedChannelRecord = await this.repository.update(filters, newChannel)
+            if (!updatedChannelRecord) throw new ChannelRecordUpdateError()
 
-            return Result.success(record);
+            return Result.success(updatedChannelRecord);
         }
         catch (e) {
-            return Result.failure(String(e));
+            return Result.failure(e);
         }
     }
 
     async delete(filters: Record<string, any>): Promise<Result<Record<string, any>>>{
         try {
-            const record = await this.repository.delete(filters);
-            if (!record) throw new Error (`The channel record could not be deleted`)
+            const deletedChannelRecord = await this.repository.delete(filters);
+            if (!deletedChannelRecord) throw new ChannelRecordDeleteError()
 
-            return Result.success(record);
+            return Result.success(deletedChannelRecord);
         }
         catch (e) {
-            return Result.failure(String(e));
+            return Result.failure(e);
         }
     }
 }

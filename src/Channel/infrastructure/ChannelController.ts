@@ -19,7 +19,7 @@ export class ChannelController {
         try {
             const result = await this.service.create(parsedChannel)
 
-            if (!result.isSuccess()) throw new Error(result.error)
+            if (!result.isSuccess()) throw result.error
             
             const record = result.value
 
@@ -38,7 +38,7 @@ export class ChannelController {
         try {
             const result = await this.service.update(oldParsedChannel, newParsedChannel)
 
-            if (!result.isSuccess()) throw new Error(result.error)
+            if (!result.isSuccess()) throw result.error
             
             const record = result.value
 
@@ -55,7 +55,7 @@ export class ChannelController {
             const filters = {id: parsedChannel.id, guildId: parsedChannel.guildId}
             const result = await this.service.delete(filters)
 
-            if (!result.isSuccess()) throw new Error(result.error)
+            if (!result.isSuccess()) throw result.error
 
             const record = result.value
             logger.info(`The channel ${record.name} (${record.id}) was deleted`)
