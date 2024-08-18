@@ -126,6 +126,7 @@ export const Services = {
     casualPaymentService,
     creditService,
     paypointService,
+    roleProductService,
     rewardRoleService
 }
 
