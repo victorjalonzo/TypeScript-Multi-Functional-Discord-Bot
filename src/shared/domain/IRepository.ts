@@ -3,5 +3,5 @@ export interface IRepository <T> {
     update(filters: Record<string, any>, data: Record<string, any>): Promise<T | null>
     delete(filters: Record<string, any>): Promise<T | null>
     get(filters?: Record<string, any>): Promise<T | null>
-    getAll(filters?: Record<string, any>): Promise<T[]>
+    getAll(filters?: Record<string, any>, populate?: string): Promise<T[]>
 }
