@@ -31,6 +31,16 @@ export class RoleProductService implements IRoleProductInput {
         }
     }
 
+    getAll = async (paypointId: string): Promise<Result<IRoleProduct[]>> => {
+        try {
+            const roleProducts = await this.repository.getAll({paypointId}, 'role');
+            return Result.success(roleProducts);
+        }
+        catch (e) {
+            return Result.failure(e);
+        }
+    }
+
     delete = async (id: string): Promise<Result<IRoleProduct>> => {
         try {
             const deletedRoleProduct = await this.repository.delete({id});
