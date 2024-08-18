@@ -10,59 +10,53 @@ interface Author {
     iconURL?: string
 }
 
-interface BaseProps {
+interface Options {
     author?: Author
     color?: number,
     title?: string,
-    description?: string, 
+    description?: string
     thumbnail?: string
-}
-
-interface ActionProps extends BaseProps {
     interaction: ChatInputCommandInteraction | ButtonInteraction
 }
 
 export class EmbedResult {
-    static async success ({title, description, thumbnail, interaction}: ActionProps) {
-        const response =  await new EmbedResult().base({
+    static async success ({title, description, thumbnail, interaction}: Options) {
+        return await new EmbedResult().base({
             color: 0x3cb11f,
             author: {name: 'Success', icon: 'success'},
             title,
             description,
-            thumbnail
+            thumbnail,
+            interaction
         })
-
-        return interaction.reply({ embeds: [response.embed], files: response.files, ephemeral: true })
     }
 
-    static async fail ({title, description, thumbnail, interaction}: ActionProps) {
-        const response =  await new EmbedResult().base({
+    static async fail ({title, description, thumbnail, interaction}: Options) {
+        return await new EmbedResult().base({
             color: 0xee3030,
             author: {name: 'Failed', icon: 'failed'},
             title,
             description,
-            thumbnail
+            thumbnail,
+            interaction
         })
-
-        return interaction.reply({ embeds: [response.embed], files: response.files, ephemeral: true })
     }
 
-    static async info ({title, description, thumbnail, interaction}: ActionProps) {
-        const response =  await new EmbedResult().base({
+    static async info ({title, description, thumbnail, interaction}: Options) {
+        return await new EmbedResult().base({
             color: 0x48a2a8,
             author: {name: 'Info', icon: 'info'},
             title,
             description,
-            thumbnail
+            thumbnail,
+            interaction
         })
-
-        return interaction.reply({ embeds: [response.embed], files: response.files, ephemeral: true })
     }
 
-    async base ({author, color, title, description, thumbnail}: BaseProps): Promise<{embed: EmbedBuilder, files: AttachmentBuilder[]}> {
+    async base ({author, color, title, description, thumbnail, interaction}: Options) {
         let embed = new EmbedBuilder()
 
-        const files = []
+        const files: AttachmentBuilder[] = []
 
         if (author) {
             if (author.icon) {
@@ -84,6 +78,7 @@ export class EmbedResult {
             files.push(attachment)
         }
 
-        return { embed, files }
+        if (interaction.deferred) return await interaction.editReply({ embeds: [embed], files })
+        return await interaction.reply({ embeds: [embed], files, ephemeral: true })
     }
 }
