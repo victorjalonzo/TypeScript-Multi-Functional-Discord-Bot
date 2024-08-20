@@ -6,7 +6,7 @@ import { PaypointModel } from "../../PaypointRole/infrastructure/PaypointSchema.
 import { PaypointService } from "../../PaypointRole/application/PaypointService.js";
 import { PaypointCommand } from '../../PaypointRole/infrastructure/PaypointCommand.js';
 import { PaypointCommandActions } from "../../PaypointRole/infrastructure/PaypointCommandActions.js";
-import { PaypointButtonActions } from "../../PaypointRole/infrastructure/PaypointButtonActions.js";
+import { PaypointComponentActions } from "../../PaypointRole/infrastructure/PaypointComponentActions.js";
 
 import { CasualPaymentModel } from "../../CasualPayment/infrastructure/CasualPaymentSchema.js";
 import { CasualPaymentService } from "../../CasualPayment/application/CasualPaymentService.js";
@@ -102,7 +102,7 @@ const roleProductService = new RoleProductService(roleProductRepository, paypoin
 
 const paypointService = new PaypointService(paypointRepository, guildRepository, casualPaymentRepository);
 const paypointCommandAction = new PaypointCommandActions(paypointService, roleService, roleProductService, casualPaymentService);
-const paypointButtonAction = new PaypointButtonActions(paypointService, casualPaymentService);
+const paypointComponentAction = new PaypointComponentActions(paypointService, casualPaymentService, roleProductService);
 PaypointCommand.setCallback(paypointCommandAction.execute);
 
 const rewardRoleRespository = new Repository(RewardRoleModel);
@@ -159,6 +159,6 @@ export const CommandActions = {
     casualPaymentCommandAction
 }
 
-export const ButtonActions = [
-    paypointButtonAction
+export const ComponentActions = [
+    paypointComponentAction
 ]
