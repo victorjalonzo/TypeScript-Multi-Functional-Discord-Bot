@@ -2,7 +2,7 @@ import { IRepository } from "../../shared/domain/IRepository.js";
 import { IPaypoint } from "../../PaypointRole/domain/IPaypoint.js";
 import { IRoleProduct } from "../domain/IRoleProduct.js";
 import { Result } from "../../shared/domain/Result.js";
-import { RoleProductCreationError, RoleProductDeletionError } from "../domain/RoleProductExceptions.js";
+import { RoleProductCreationError, RoleProductDeletionError, RoleProductNotFound } from "../domain/RoleProductExceptions.js";
 import { IRoleProductInput } from "../domain/IRoleProductInput.js";
 
 export class RoleProductService implements IRoleProductInput {
@@ -25,6 +25,17 @@ export class RoleProductService implements IRoleProductInput {
             createdRoleProduct.paypoint = updatedPaypoint
             
             return Result.success(createdRoleProduct);
+        }
+        catch (e) {
+            return Result.failure(e);
+        }
+    }
+
+    get = async (id: string): Promise<Result<IRoleProduct>> => {
+        try {
+            const roleProduct = await this.repository.get({id}, 'role');
+            if (!roleProduct) throw new RoleProductNotFound();
+            return Result.success(roleProduct);
         }
         catch (e) {
             return Result.failure(e);

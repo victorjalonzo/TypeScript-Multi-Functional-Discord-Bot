@@ -5,6 +5,9 @@ export interface IRoleProduct {
     id: string
     role: IRole
     price: number
+    media?: Buffer | null
+    mediaFilename?: string | null
+    description?: string | null
     paypoint: IPaypoint
     paypointId: string
 }
