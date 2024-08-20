@@ -1,4 +1,4 @@
-import { EmbedBuilder } from 'discord.js';
+import { EmbedBuilder, StringSelectMenuInteraction } from 'discord.js';
 import { ChatInputCommandInteraction, ButtonInteraction } from 'discord.js';
 import { AttachmentBuilder } from 'discord.js';
 
@@ -16,7 +16,7 @@ interface Options {
     title?: string,
     description?: string
     thumbnail?: string
-    interaction: ChatInputCommandInteraction | ButtonInteraction
+    interaction: ChatInputCommandInteraction | ButtonInteraction | StringSelectMenuInteraction
 }
 
 export class EmbedResult {
