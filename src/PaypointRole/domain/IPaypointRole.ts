@@ -5,7 +5,8 @@ export type TPaymentMethodType = "Casual" | "Integrated" | "Both"
 
 export interface IPaypoint {
     id: string
-    image?: string
+    media?: Buffer
+    mediaCodec?: string
     title?: string
     description?: string
     paymentMethod?: TPaymentMethodType

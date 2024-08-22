@@ -1,4 +1,4 @@
-import { IPaypoint } from "./IPaypoint.js";
+import { IPaypoint } from "./IPaypointRole.js";
 import { Result } from "../../shared/domain/Result.js";
 
 export interface IPaypointInput {

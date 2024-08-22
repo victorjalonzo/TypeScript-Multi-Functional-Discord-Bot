@@ -8,6 +8,12 @@ PaypointCommand
 
     .addSubcommand(subcommand =>
         subcommand
+            .setName('products-list')
+            .setDescription('List roles as products')
+    )
+
+    .addSubcommand(subcommand =>
+        subcommand
             .setName('add-product')
             .setDescription('Add roles as products')
 
@@ -21,6 +27,16 @@ PaypointCommand
                 .setName('price')
                 .setDescription('The price of the role')
                 .setRequired(true)
+            )
+
+            .addAttachmentOption(option => option
+                .setName('media')
+                .setDescription('The image of the product')
+            )
+
+            .addStringOption(option => option
+                .setName('description')
+                .setDescription('The description of the role')
             )
     )
 
@@ -66,8 +82,8 @@ PaypointCommand
             )
 
             .addAttachmentOption(option => option
-                .setName('image')
-                .setDescription('The image of the paypoint')
+                .setName('media')
+                .setDescription('The video/image to show in the paypoint')
             )
     )
 
