@@ -1,9 +1,10 @@
 import mongoose, { Schema, Document } from 'mongoose';
-import { IPaypoint } from '../domain/IPaypoint.js';
+import { IPaypoint } from '../domain/IPaypointRole.js';
 
 const PaypointSchema = new Schema<IPaypoint & Document>({
     id: { type: String, required: true },
-    image: { type: String, default: null},
+    media: { type: Buffer, default: null},
+    mediaCodec: { type: String, default: null},
     title: { type: String, default: null },
     description: { type: String, default: null },
     paymentMethod: { type: String, default: null },
