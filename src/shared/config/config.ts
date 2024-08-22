@@ -26,6 +26,10 @@ export const Config = {
 
     asset: {
         path: process.env.ASSETS_PATH
+    },
+
+    googleGenerativeAI: {
+        apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY
     }
 }
 
