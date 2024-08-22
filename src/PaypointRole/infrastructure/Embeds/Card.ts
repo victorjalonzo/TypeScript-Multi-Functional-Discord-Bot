@@ -1,4 +1,4 @@
-import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js"
+import { AttachmentBuilder, EmbedBuilder } from "discord.js"
 import { Asset } from "../../../shared/intraestructure/Asset.js"
 import { InlineBlockText } from "../../../shared/utils/textFormating.js"
 
@@ -13,7 +13,7 @@ export const createCard = async (props: IProps) => {
     const files: AttachmentBuilder[] = []
 
     const askedBy = `Asked by @${props.memberUsername}`
-    const note = "**After make the payment, press the button below\nto mark the payment as sent.**"
+    const note = "After make the payment send me a screenshot\n to verify the payment."
     const title = `**${props.methodName.toUpperCase()}:**`
 
     const description = title + InlineBlockText(`${props.methodValue}`) + `\n${note}\n`
@@ -24,18 +24,13 @@ export const createCard = async (props: IProps) => {
     files.push(thumbnail.attachment)
 
     const embed = new EmbedBuilder()
+    //.setAuthor({ name: askedBy, iconURL: props.memberAvatarURL }) 
+    //.setTitle(title)
     .setDescription(description)
     .setThumbnail(thumbnail.attachmentURL)
-    //.setFooter({ text: askedBy, iconURL: props.memberAvatarURL })
+    .setFooter({ text: askedBy, iconURL: props.memberAvatarURL })
     .setColor(0x59cd3d)
 
-    const button = new ButtonBuilder()
-    .setStyle(ButtonStyle.Success)
-    .setCustomId(`paypoint_button_payment_done_${props.methodName}`)
-    .setLabel("MARK PAYMENT AS SENT ✅")
-
-    const buttonRow = new ActionRowBuilder().addComponents(button)
-
-    return { embed, files, buttonRow }
+    return { embed, files }
 
 }

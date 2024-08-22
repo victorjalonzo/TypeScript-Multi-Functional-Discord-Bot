@@ -1,6 +1,6 @@
 import { Paypoint } from "./Paypoint.js";
 import { Result } from "../../shared/domain/Result.js";
-import { IPaypoint } from "./IPaypointRole.js";
+import { IPaypoint } from "./IPaypoint.js";
 
 export interface IPaypointRepository {
     create(paypoint: Paypoint): Promise<Result<IPaypoint>>

@@ -1,4 +1,4 @@
-import { IPaypoint } from "../domain/IPaypointRole.js";
+import { IPaypoint } from "../domain/IPaypoint.js";
 import { IRepository } from "../../shared/domain/IRepository.js";
 import { IGuild } from "../../Guild/domain/IGuild.js";
 import { ICredit } from "../../Credit/domain/ICredit.js";
