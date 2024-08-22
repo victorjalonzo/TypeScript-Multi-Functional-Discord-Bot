@@ -1,6 +1,6 @@
 import { IRoleProduct } from "./IRoleProduct.js";
 import { IRole } from "../../Role/domain/IRole.js";
-import { IPaypoint } from "../../PaypointRole/domain/IPaypoint.js";
+import { IPaypoint } from "../../PaypointRole/domain/IPaypointRole.js";
 
 export class RoleProduct implements IRoleProduct {
     id: string

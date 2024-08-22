@@ -1,5 +1,5 @@
 import { IRole } from '../../Role/domain/IRole.js';
-import { IPaypoint } from '../../PaypointRole/domain/IPaypoint.js';
+import { IPaypoint } from '../../PaypointRole/domain/IPaypointRole.js';
 
 export interface IRoleProduct {
     id: string
