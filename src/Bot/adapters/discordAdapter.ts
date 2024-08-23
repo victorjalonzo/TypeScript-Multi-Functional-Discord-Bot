@@ -1,6 +1,6 @@
 import { Client, BaseInteraction, CategoryChannel } from 'discord.js'
 import { CommandHandler } from './CommandHandler.js';
-import { ButtonHandler } from './ButtonHandler.js';
+import { ComponentHandler } from './ComponentHandler.js';
 import { TextChannel, VoiceChannel } from 'discord.js';
 import { logger } from '../../shared/utils/logger.js';
 import { Controllers } from '../../shared/intraestructure/Container.js';
@@ -14,7 +14,7 @@ export class DiscordAdapter {
     private client: Client;
     private token: string | undefined;
     private commandHandler: CommandHandler;
-    private buttonHandler: ButtonHandler
+    private componentHandler: ComponentHandler
     private controllers: typeof Controllers
   
     constructor({client, token}: IProps) {
@@ -25,7 +25,7 @@ export class DiscordAdapter {
       this.token = token;
       this.client = client;
       this.commandHandler = new CommandHandler({client: this.client, token: this.token});
-      this.buttonHandler = new ButtonHandler();
+      this.componentHandler = new ComponentHandler();
       this.controllers = Controllers
     }
 
@@ -49,10 +49,28 @@ export class DiscordAdapter {
 
         this.client.on('interactionCreate', async (interaction: BaseInteraction) => {
             if (interaction.isChatInputCommand()) return await this.commandHandler.handle(interaction);
-            if (interaction.isButton()) return await this.buttonHandler.handle(interaction);
+
+            if (interaction.isButton() || interaction.isStringSelectMenu()) {
+              return await this.componentHandler.handle(interaction);
+            }
 
             return logger.warn(`Unknow interaction received... ${interaction}`)
         });
+
+        this.client.on('messageCreate', async (message) => {
+            if (message.author.bot) return;
+
+            const mentions = message.mentions
+            if (!mentions) return
+
+            const clientUser = this.client.user
+            if (!clientUser) return
+
+            const mention = mentions.has(clientUser)
+            if (!mention) return
+
+            await this.controllers.agentEventController.reply(message)
+        })
 
         this.client.on('guildMemberAdd', async (member) => {
             await this.controllers.memberController.create(member)
