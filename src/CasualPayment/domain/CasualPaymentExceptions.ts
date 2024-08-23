@@ -1,24 +1,24 @@
 export class CasualPaymentCreationError extends Error {
     constructor() {
-        super('The paypoint could not be created');
+        super('The casual method could not be created');
     }
 }
 
 export class CasualPaymentUpdateError extends Error {
     constructor() {
-        super('The paypoint could not be updated');
+        super('The casual method could not be updated');
     }
 }
 
 export class CasualPaymentDeletionError extends Error {
     constructor() {
-        super('The paypoint could not be deleted');
+        super('The casual method could not be deleted');
     }
 }
 
 export class CasualPaymentNotFoundError extends Error {
     constructor() {
-        super('The paypoint could not be found');
+        super('The casual method could not be found');
     }
 }
 
