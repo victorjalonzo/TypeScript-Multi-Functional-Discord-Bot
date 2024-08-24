@@ -15,7 +15,7 @@ export class GuildController {
             let guildRecord: IGuild | undefined = undefined
             const guild = <DiscordGuild>collection.get(guildId)
 
-            let result = await this.service.get({id: guildId})
+            let result = await this.service.get(guildId)
 
             if (result.isSuccess()) {
                 guildRecord = result.value
@@ -89,16 +89,13 @@ export class GuildController {
 
     deleteRecord = async (guild: DiscordGuild): Promise<Partial<IGuild> | undefined> => {
         try {
-            const parsedGuild = GuildTransformer.parse(guild)
-            const result = await this.service.delete(parsedGuild)
-
+            const result = await this.service.delete(guild.id)
             if (!result.isSuccess()) throw result.error
 
-            const partialGuild = result.value
+            const deletedGuild = result.value
 
-            logger.info(`The guild ${parsedGuild.name} (${parsedGuild.id}) was deleted`)
-
-            return partialGuild
+            logger.info(`The guild ${deletedGuild.name} (${deletedGuild.id}) was deleted`)
+            return deletedGuild
         }
         catch (e) {
             logger.warn(e)

@@ -25,9 +25,9 @@ export class GuildService implements IGuildInput {
         }
     }
 
-    get = async (filters: Record<string, any>): Promise<Result<IGuild>> => {
+    get = async (id: string): Promise<Result<IGuild>> => {
         try {
-            const guildRecord = await this.repository.get(filters);
+            const guildRecord = await this.repository.get({id});
             if (!guildRecord) throw new GuildRecordNotFoundError()
     
             return Result.success(guildRecord);
@@ -51,10 +51,9 @@ export class GuildService implements IGuildInput {
         }
     }
 
-    delete = async (guild: IGuild): Promise<Result<Record<string, any>>> => {
+    delete = async (id: string): Promise<Result<Record<string, any>>> => {
         try {
-            const filters = { id: guild.id }
-            const guildDeleted = await this.repository.delete(filters);
+            const guildDeleted = await this.repository.delete({id});
 
             if (!guildDeleted) throw new GuildRecordDeletionError()
 

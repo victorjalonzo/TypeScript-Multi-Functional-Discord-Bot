@@ -2,8 +2,8 @@ import { IGuild } from "./IGuild.js"
 import { Result } from "../../shared/domain/Result.js"
 
 export interface IGuildInput {
-    get (filters: Record<string, any>): Promise<Result<IGuild>>
+    get (id: string): Promise<Result<IGuild>>
     create (guild: IGuild): Promise<Result<IGuild>>
     update (oldGuild: IGuild, newGuild: IGuild): Promise<Result<IGuild>>
-    delete (guild: IGuild): Promise<Result<Record<string, any>>>
+    delete (id: string): Promise<Result<Record<string, any>>>
 }
