@@ -57,6 +57,11 @@ import { IntegratedPaymentCommand } from '../../IntegratedPayment/infrastructure
 import { RoleProductModel } from "../../RoleProduct/infrastructure/RoleProductSchema.js";
 import { RoleProductService } from "../../RoleProduct/application/RoleProductService.js";
 
+import { CasualTransactionModel } from "../../CasualTransaction/infrastructure/CasualTransactionSchema.js";
+import { CasualTransactionService } from "../../CasualTransaction/application/CasualTransactionService.js";
+
+import { AgentEventController } from "../../Agent/infrastructure/AgentEventController.js";
+
 await Database.connect()
 
 const Repository = MongoRepository
@@ -100,9 +105,12 @@ const paypointRepository = new Repository(PaypointModel);
 const roleProductRepository = new Repository(RoleProductModel);
 const roleProductService = new RoleProductService(roleProductRepository, paypointRepository);
 
+const casualTransactionRepository = new Repository(CasualTransactionModel);
+const casualTransactionService = new CasualTransactionService(casualTransactionRepository);
+
 const paypointService = new PaypointService(paypointRepository, guildRepository, casualPaymentRepository);
 const paypointCommandAction = new PaypointCommandActions(paypointService, roleService, roleProductService, casualPaymentService);
-const paypointComponentAction = new PaypointComponentActions(paypointService, casualPaymentService, roleProductService);
+const paypointComponentAction = new PaypointComponentActions(paypointService, casualPaymentService, roleProductService, casualTransactionService, memberService);
 PaypointCommand.setCallback(paypointCommandAction.execute);
 
 const rewardRoleRespository = new Repository(RewardRoleModel);
@@ -114,6 +122,8 @@ RewardRoleCommand.setCallback(rewardRoleCommandAction.execute);
 const inviteCommandActions = new InviteCommandActions(memberService, rewardRoleService);
 const inviteEventController = new InviteEventController(memberService);
 InviteCommand.setCallback(inviteCommandActions.execute);
+
+const agentEventController = new AgentEventController(casualTransactionService, paypointService, roleProductService, rewardRoleService);
 
 
 export const Services = {
@@ -138,7 +148,8 @@ export const Controllers = {
     voiceChannelEventController,
     roleEventController,
     rewardRoleEventController,
-    inviteEventController
+    inviteEventController,
+    agentEventController
 }
 
 export const Commands: SlashCommandCallable[] = [ 
