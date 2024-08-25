@@ -50,7 +50,7 @@ export const Menu = async (props: IProps) => {
 
     const selectRow = new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
-        .setCustomId('paypoint_select_roleproducts')
+        .setCustomId('PAYPOINT_SELECT_PRODUCTS')
         .setPlaceholder('Select the product')
         .addOptions(...options)
     )
