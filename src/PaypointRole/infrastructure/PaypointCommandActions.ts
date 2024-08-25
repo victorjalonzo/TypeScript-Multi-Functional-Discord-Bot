@@ -93,11 +93,16 @@ export class PaypointCommandActions {
                 casualPaymentMethods: casualPaymentMethods
             })
 
-            return await interaction.editReply({
+            const message =  await interaction.editReply({
                 embeds: [embed],
                 components: [<any>selectRow], 
                 files: files
             })
+
+            paypoint.channelId = message.channelId
+            paypoint.messageId = message.id
+            
+            await this.service.update(paypoint)
         }
         catch(e) {
             return await EmbedResult.fail({description: InlineBlockText(String(e)), interaction})
