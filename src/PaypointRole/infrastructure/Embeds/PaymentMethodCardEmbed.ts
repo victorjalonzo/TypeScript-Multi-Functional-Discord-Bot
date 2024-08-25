@@ -12,7 +12,6 @@ interface IProps {
 export const createCard = async (props: IProps) => {
     const files: AttachmentBuilder[] = []
 
-    const askedBy = `Asked by @${props.memberUsername}`
     const note = "**After make the payment, press the button below\nto mark the payment as sent.**"
     const title = `**${props.methodName.toUpperCase()}:**`
 
@@ -26,12 +25,11 @@ export const createCard = async (props: IProps) => {
     const embed = new EmbedBuilder()
     .setDescription(description)
     .setThumbnail(thumbnail.attachmentURL)
-    //.setFooter({ text: askedBy, iconURL: props.memberAvatarURL })
     .setColor(0x59cd3d)
 
     const button = new ButtonBuilder()
     .setStyle(ButtonStyle.Success)
-    .setCustomId(`paypoint_button_payment_done_${props.methodName}`)
+    .setCustomId(`PAYPOINT_BUTTON_MARK_PAYMENT_${props.methodName.toUpperCase()}`)
     .setLabel("MARK PAYMENT AS SENT ✅")
 
     const buttonRow = new ActionRowBuilder().addComponents(button)
