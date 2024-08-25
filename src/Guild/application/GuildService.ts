@@ -27,7 +27,7 @@ export class GuildService implements IGuildInput {
 
     get = async (id: string): Promise<Result<IGuild>> => {
         try {
-            const guildRecord = await this.repository.get({id});
+            const guildRecord = await this.repository.get({id}, );
             if (!guildRecord) throw new GuildRecordNotFoundError()
     
             return Result.success(guildRecord);
