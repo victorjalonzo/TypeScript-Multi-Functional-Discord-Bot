@@ -40,7 +40,7 @@ export const createProductCartEmbed = async (options: TOptions): Promise<{produc
     for (const paymentMethod of options.casualPaymentMethods) {
         const rawPaymentMethodName = paymentMethod.name.split(" ").join("").toLowerCase()
         
-        const customId = `paypoint_button_casualpayment_${rawPaymentMethodName}`
+        const customId = `PAYPOINT_BUTTON_CASUALMETHOD_${rawPaymentMethodName.toUpperCase()}`
 
         buttons.push(new ButtonBuilder()
             .setCustomId(customId)
