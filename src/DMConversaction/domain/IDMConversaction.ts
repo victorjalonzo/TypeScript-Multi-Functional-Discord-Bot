@@ -1,6 +1,6 @@
 import { IMember } from "../../Member/domain/IMember.js"
 
-export type TState = "WAITING_USER_TO_CONFIRM_MARKED_PAYMENT" | "WAITING_USER_TO_PROVIDE_ACCOUNT_NAME" | "WAITING_USER_TO_PROVIDE_INVOICE" | "WAITING_ADMIN_TO_APPROVE_PAYMENT"
+export type TState = "WAITING_USER_TO_CONFIRM_MARKED_PAYMENT" | "WAITING_USER_TO_PROVIDE_ACCOUNT_NAME" | "WAITING_USER_TO_PROVIDE_RECEIPT" | "WAITING_ADMIN_TO_APPROVE_PAYMENT"
 
 export interface IDMConversaction {
     id: string
@@ -10,6 +10,7 @@ export interface IDMConversaction {
     casualTransactionId?: string | null
 	botTurn: boolean
 	state?: TState
+    history: string[]
     createdAt?: Date
 
     paymentMethodName: string
