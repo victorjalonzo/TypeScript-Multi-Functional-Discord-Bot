@@ -10,6 +10,7 @@ const DMConversactionSchema = new Schema<IDMConversaction & Document>({
     amount: { type: Number, required: true },
     botTurn: { type: Boolean, required: true },
     state: { type: String, required: true },
+    history: { type: [String], required: true },
     paymentFrom: { type: String },
     invoiceAttachments: { type: [Buffer], default: null },
     casualTransactionId: { type: String },
