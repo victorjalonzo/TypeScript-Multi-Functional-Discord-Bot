@@ -13,8 +13,11 @@ export class Asset {
         
         if (!filename) throw new Error("Missing filename")
 
-        const codec = ["png", "jpg", "jpeg", "webp", "gif"]
-        if (!codec.includes(filename)) filename += ".png"
+        const codecs = ["png", "jpg", "jpeg", "webp", "gif"]
+
+        const codec = <string>filename.split(".").pop()
+
+        if (!codecs.includes(codec)) filename += ".png"
 
         const path = `${PATH}${filename}`
 
