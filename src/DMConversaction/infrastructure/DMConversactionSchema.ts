@@ -5,6 +5,7 @@ const DMConversactionSchema = new Schema<IDMConversaction & Document>({
     id: { type: String, required: true, unique: true },
     member: { type: Schema.Types.ObjectId, ref: "Members", required: true },
     memberId: { type: String, required: true },
+    guildId: { type: String, required: true },
     paymentMethodName: { type: String, required: true },
     paymentMethodValue: { type: String, required: true },
     amount: { type: Number, required: true },
@@ -14,6 +15,7 @@ const DMConversactionSchema = new Schema<IDMConversaction & Document>({
     paymentFrom: { type: String },
     invoiceAttachments: { type: [Buffer], default: null },
     casualTransactionId: { type: String },
+    updatableMessageId: { type: String, default: null },
     createdAt: { type: Date, required: true },
 
 });
