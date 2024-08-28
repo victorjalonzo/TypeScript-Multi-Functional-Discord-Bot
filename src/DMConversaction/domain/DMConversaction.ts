@@ -2,7 +2,7 @@ import { IMember } from "../../Member/domain/IMember.js"
 import { createRandomId } from "../../shared/utils/generate.js"
 import { IDMConversaction, TState } from "./IDMConversaction.js"
 
-interface IProps extends Omit<IDMConversaction, "id"| "states" | "botTurn" | "invoiceAttachments" | "history"> {}
+interface IOptions extends Omit<IDMConversaction, "id"| "states" | "botTurn" | "invoiceAttachments" | "history" | "updatableMessageId" | "createdAt"> {}
 
 export class DMConversaction implements IDMConversaction {
     public id: string = createRandomId()
@@ -18,15 +18,16 @@ export class DMConversaction implements IDMConversaction {
     public paymentFrom?: string | undefined
     public invoiceAttachments: Buffer[] = []
     public casualTransactionId?: string | null = null
-    public createdAt?: Date = new Date()
+    public updatableMessageId?: string
+    public createdAt: Date = new Date()
 
-    constructor (props: IProps) {
-        this.member = props.member
-        this.memberId = props.memberId
-        this.guildId = props.guildId
-        this.paymentMethodName = props.paymentMethodName
-        this.paymentMethodValue = props.paymentMethodValue
-        this.amount = props.amount
+    constructor (options: IOptions) {
+        this.member = options.member
+        this.memberId = options.memberId
+        this.guildId = options.guildId
+        this.paymentMethodName = options.paymentMethodName
+        this.paymentMethodValue = options.paymentMethodValue
+        this.amount = options.amount
 
     }
 }
