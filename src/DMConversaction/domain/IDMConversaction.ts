@@ -11,11 +11,11 @@ export interface IDMConversaction {
 	botTurn: boolean
 	state?: TState
     history: string[]
-    createdAt?: Date
-
     paymentMethodName: string
     paymentMethodValue: string
 	paymentFrom?: string
     amount: number
+    updatableMessageId?: string
 	invoiceAttachments: Buffer[]
+    createdAt: Date
 }
