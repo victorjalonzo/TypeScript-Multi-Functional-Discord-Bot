@@ -1,6 +1,6 @@
 import { IMember } from "../../Member/domain/IMember.js"
 
-export type TState = "UNCONFIRMED" | "CANCELLED" | "INCOMPLETE" |  "PENDING" | "APPROVED" | "REJECTED"
+export type TState = "PENDING" | "APPROVED" | "REJECTED"
 
 
 export interface ICasualTransaction {
@@ -11,9 +11,9 @@ export interface ICasualTransaction {
 	state: TState 
 	paymentMethodName: string
 	paymentMethodValue: string
-	paymentFrom?: string
-	amount?: string
-	invoices?: Buffer[]
-	createAt?: Date
-	expiredAt?: Date
+	paymentFrom: string
+	amount: number
+	invoices: Buffer[]
+	createAt: Date
+	expiredAt: Date
 }
