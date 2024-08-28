@@ -2,6 +2,8 @@ import { IMember } from "../../Member/domain/IMember.js";
 import { ICasualTransaction, TState } from "./ICasualTransaction.js";
 import { createRandomId } from "../../shared/utils/generate.js";
 
+interface IOptions extends Omit<ICasualTransaction, "id" | "expiredAt" | "createAt"> {}
+
 export class CasualTransaction implements ICasualTransaction {
     public id: string = createRandomId()
     public member: IMember
@@ -10,14 +12,13 @@ export class CasualTransaction implements ICasualTransaction {
     public state: TState
     public paymentMethodName: string
     public paymentMethodValue: string
-    public paymentFrom?: string
-    public amount?: string
-    public invoices?: Buffer[]
+    public paymentFrom: string
+    public amount: number
+    public invoices: Buffer[]
     public createAt: Date = new Date()
-    public expiredAt?: Date
+    public expiredAt: Date = new Date()
 
-    
-    constructor(options: Omit<ICasualTransaction, "id">) {
+    constructor(options: IOptions) {
         this.member = options.member
         this.memberId = options.memberId
         this.guildId = options.guildId
@@ -27,6 +28,7 @@ export class CasualTransaction implements ICasualTransaction {
         this.paymentFrom = options.paymentFrom
         this.amount = options.amount
         this.invoices = options.invoices
-        this.expiredAt = options.expiredAt
+
+        this.expiredAt.setHours(this.createAt.getHours() + 24);
     }
 }
