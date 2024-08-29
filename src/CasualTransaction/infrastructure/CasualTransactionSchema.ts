@@ -10,7 +10,7 @@ const CasualTransactionSchema = new Schema<Document & ICasualTransaction>({
     paymentMethodName: { type: String, default: null },
     paymentMethodValue: { type: String, default: null },
     paymentFrom: { type: String, default: null },
-    amount: { type: String, default: null },
+    amount: { type: Number, default: null },
     invoices: { type: [Buffer], default: null },
     createAt: { type: Date, required: true },
     expiredAt: { type: Date, default: null }
