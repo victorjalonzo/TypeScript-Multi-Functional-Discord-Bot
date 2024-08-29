@@ -9,3 +9,15 @@ export class UnexpectedError extends Error {
         super('Something went wrong while executing the command');
     }
 }
+
+export class UnknownButtonInteractionError extends Error {
+    constructor() {
+        super('The button interaction was not found');
+    }
+}
+
+export class UnknownInteractionError extends Error {
+    constructor() {
+        super('The interaction was not found');
+    }
+}
