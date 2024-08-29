@@ -7,4 +7,6 @@ export interface IDMConversactionInput {
     getByMember(memberId: string): Promise<Result<IDMConversaction>>
     update(DMConversaction: IDMConversaction): Promise<Result<IDMConversaction>>
     delete(memberId: string): Promise<Result<IDMConversaction>>
+    isAwaitingAdminApproval(memberId: string): Promise<Result<boolean>>
+    isAwaitingMemberApproval(memberId: string): Promise<Result<boolean>>
 }
