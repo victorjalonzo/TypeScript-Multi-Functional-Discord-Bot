@@ -68,4 +68,32 @@ export class DMConversactionService implements IDMConversactionInput {
             return Result.failure(e);
         }
     }
+
+    async isAwaitingMemberApproval(memberId: string): Promise<Result<boolean>> {
+        try {
+            const DMConversaction = await this.repository.get({memberId});
+            if (!DMConversaction) return Result.success(false)
+
+            if (DMConversaction.state != "WAITING_USER_TO_CONFIRM_MARKED_PAYMENT") return Result.success(false)
+
+            return Result.success(true)
+        }
+        catch (e) {
+            return Result.failure(e);
+        }
+    }
+
+    async isAwaitingAdminApproval(memberId: string): Promise<Result<boolean>> {
+        try {
+            const DMConversaction = await this.repository.get({memberId});
+            if (!DMConversaction) return Result.success(false)
+
+            if (DMConversaction.state != "WAITING_ADMIN_TO_APPROVE_PAYMENT") return Result.success(false)
+
+            return Result.success(true)
+        }
+        catch (e) {
+            return Result.failure(e);
+        }
+    }
 }
