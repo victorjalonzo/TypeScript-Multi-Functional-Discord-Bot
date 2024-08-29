@@ -21,3 +21,9 @@ export class UnknownInteractionError extends Error {
         super('The interaction was not found');
     }
 }
+
+export class UnknownStringSelectMenuInteractionError extends Error {
+    constructor() {
+        super('The string select menu interaction was not found');
+    }
+}
