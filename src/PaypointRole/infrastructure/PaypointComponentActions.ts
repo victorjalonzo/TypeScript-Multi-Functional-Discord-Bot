@@ -17,6 +17,8 @@ import { cache } from "../../shared/intraestructure/Cache.js";
 import { IMemberInput } from "../../Member/domain/IMemberInput.js";
 import { IDMConversactionInput } from "../../DMConversaction/domain/IDMConversactionInput.js";
 import { DMConversaction } from "../../DMConversaction/domain/DMConversaction.js";
+import { createPaymentAlreadyUnderReviewEmbed } from "./Embeds/PaymentAlreadyUnderReviewEmbed.js";
+import { logger } from "../../shared/utils/logger.js";
 
 export class PaypointComponentActions {
     customId: string
@@ -47,7 +49,9 @@ export class PaypointComponentActions {
                 return await this.createPaymentNotificationCard(interaction)
             }
 
-            if (customId.startsWith("PAYPOINT_BUTTON_CONFIRM_MARK_PAYMENT")) {}
+            if (customId.startsWith("PAYPOINT_BUTTON_CONFIRM_MARK_PAYMENT") && interaction.isButton()) {
+                return await this.confirmMarkedPayment(interaction)
+            }
             if (customId.startsWith("PAYPOINT_BUTTON_DENY_MARK_PAYMENT")) {}
         }
         catch (e) {
@@ -85,29 +89,57 @@ export class PaypointComponentActions {
     }
 
     createPaymentMethodCard = async (interaction: ButtonInteraction) => {
-        await interaction.deferReply({ephemeral: true})
+        try {
+            await interaction.deferReply({ephemeral: true})
 
-        const guildId = interaction.guildId
-        const member = interaction.member
-        const rawMethodName = interaction.customId.split("_").pop()?.toLowerCase()
+            const guildId = interaction.guildId
+            const member = interaction.member
+    
+            if (!member) throw new Error ("Member not found")
 
-        if (!guildId) throw new GuildNotFoundError()
-        if (!member) throw new Error ("Member not found")
-        if (!rawMethodName) throw new Error ("Raw method name not found")
+            const DMConversactionAwaitingUserApprovalResult = await this.DMConversactionService.isAwaitingMemberApproval(member.user.id)
+            if (!DMConversactionAwaitingUserApprovalResult.isSuccess()) throw DMConversactionAwaitingUserApprovalResult.error
 
-        const result = await this.casualPaymentService.getByRawName(rawMethodName, guildId)
-        if (!result.isSuccess()) throw result.error
+            const isAwaitingUserApproval = DMConversactionAwaitingUserApprovalResult.value
 
-        const casualPaymentMethod = result.value
-
-        const {embed, files, buttonRow } = await createCard({
-            memberUsername: member.user.username,
-            memberAvatarURL: (member.user as User).avatarURL() ?? undefined,
-            methodName: casualPaymentMethod.rawName,
-            methodValue: casualPaymentMethod.value
-        })
-
-        return await interaction.editReply({embeds: [embed], files: files, components: [<any>buttonRow]})
+            if (isAwaitingUserApproval) {
+                const {embed, files} = await createPaymentAlreadyUnderReviewEmbed()
+                return await interaction.editReply({content: "", embeds: [embed], files, components: []})   
+            }
+    
+            const DMConversactionPendingResult = await this.DMConversactionService.isAwaitingAdminApproval(member.user.id)
+            if (!DMConversactionPendingResult.isSuccess()) throw DMConversactionPendingResult.error
+    
+            const isAwaitingAdminApproval = DMConversactionPendingResult.value
+    
+            if (isAwaitingAdminApproval) {
+                const {embed, files} = await createPaymentAlreadyUnderReviewEmbed()
+                return await interaction.editReply({content: "", embeds: [embed], files, components: []})   
+            }
+    
+            const rawMethodName = interaction.customId.split("_").pop()?.toLowerCase()
+    
+            if (!guildId) throw new GuildNotFoundError()
+            if (!member) throw new Error ("Member not found")
+            if (!rawMethodName) throw new Error ("Raw method name not found")
+    
+            const result = await this.casualPaymentService.getByRawName(rawMethodName, guildId)
+            if (!result.isSuccess()) throw result.error
+    
+            const casualPaymentMethod = result.value
+    
+            const {embed, files, buttonRow } = await createCard({
+                memberUsername: member.user.username,
+                memberAvatarURL: (member.user as User).avatarURL() ?? undefined,
+                methodName: casualPaymentMethod.rawName,
+                methodValue: casualPaymentMethod.value
+            })
+    
+            return await interaction.editReply({embeds: [embed], files: files, components: [<any>buttonRow]})
+        }
+        catch (e) {
+            logger.warn(e)
+        }
     }
 
     createPaymentNotificationCard = async (interaction: ButtonInteraction) => {
@@ -119,8 +151,6 @@ export class PaypointComponentActions {
             if (!guild) throw new GuildNotFoundError()
             if (!guildMember) throw new Error ("Member not found")
             if (!rawMethodName) throw new Error ("Raw method name not found")
-    
-            console.log(rawMethodName)
     
             const user = <User>guildMember.user
     
@@ -149,15 +179,36 @@ export class PaypointComponentActions {
     
             const DMConversactionResult = await this.DMConversactionService.create(dmConversaction)
             if (!DMConversactionResult.isSuccess()) throw DMConversactionResult.error
-    
+
+            const DMConversactionCreated = DMConversactionResult.value
+
             let response = await createDMNotificationCardEmbed({
                 methodName: casualPaymentMethod.name.toUpperCase(),
                 methodValue: casualPaymentMethod.value,
                 guildName: guild.name,
-                guildId: guild.id
+                guildId: guild.id,
+                DMConversactionId: DMConversactionCreated.id
             })
     
             return await user.send({embeds: [response.embed], files: response.files, components: [<any>response.buttonRow]})
+        }
+        catch (e) {
+            return await EmbedResult.fail({description: InlineBlockText(String(e)), interaction})
+        }
+    }
+
+    confirmMarkedPayment = async (interaction: ButtonInteraction) => {
+        try {
+            const client = interaction.client
+            const user = <User>interaction.user
+
+            const DMConversactionId = interaction.customId.split("_").pop()
+            if (!DMConversactionId) throw new Error ("DMConversaction not found")
+
+            await interaction.update({content: "Payment Confirmed", embeds: [], components: [], files: []})
+            
+            client.emit("UserConfirmedMarkedCasualPayment", user, DMConversactionId)
+
         }
         catch (e) {
             return await EmbedResult.fail({description: InlineBlockText(String(e)), interaction})
