@@ -7,6 +7,7 @@ interface IProps {
     methodValue: string
     guildName: string
     guildId: string
+    DMConversactionId: string
 }
 
 export const createDMNotificationCardEmbed = async (props: IProps) => {
@@ -25,12 +26,12 @@ export const createDMNotificationCardEmbed = async (props: IProps) => {
 
     const confirmButton = new ButtonBuilder()
     .setStyle(ButtonStyle.Success)
-    .setCustomId(`PAYPOINT_BUTTON_CONFIRM_MARK_PAYMENT_${props.methodName}`)
+    .setCustomId(`PAYPOINT_BUTTON_CONFIRM_MARK_PAYMENT_${props.DMConversactionId}`)
     .setLabel("Yes")
 
     const denyButton = new ButtonBuilder()
     .setStyle(ButtonStyle.Danger)
-    .setCustomId(`PAYPOINT_BUTTON_DENY_MARK_PAYMENT_${props.methodName}`)
+    .setCustomId(`PAYPOINT_BUTTON_DENY_MARK_PAYMENT_${props.DMConversactionId}`)
     .setLabel("No")
 
     const buttonRow = new ActionRowBuilder().addComponents(confirmButton, denyButton)
