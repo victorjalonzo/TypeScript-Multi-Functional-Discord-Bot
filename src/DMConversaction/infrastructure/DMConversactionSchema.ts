@@ -8,7 +8,7 @@ const DMConversactionSchema = new Schema<IDMConversaction & Document>({
     guildId: { type: String, required: true },
     paymentMethodName: { type: String, required: true },
     paymentMethodValue: { type: String, required: true },
-    amount: { type: Number, required: true },
+    product: { type: Schema.Types.ObjectId, ref: "RoleProducts", required: true },
     botTurn: { type: Boolean, required: true },
     state: { type: String, required: true },
     history: { type: [String], required: true },
