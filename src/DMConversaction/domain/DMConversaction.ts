@@ -1,4 +1,5 @@
 import { IMember } from "../../Member/domain/IMember.js"
+import { IRoleProduct } from "../../RoleProduct/domain/IRoleProduct.js"
 import { createRandomId } from "../../shared/utils/generate.js"
 import { IDMConversaction, TState } from "./IDMConversaction.js"
 
@@ -11,7 +12,7 @@ export class DMConversaction implements IDMConversaction {
     public guildId: string
     public paymentMethodName: string
     public paymentMethodValue: string
-    public amount: number
+    public product: IRoleProduct
     public botTurn: boolean = true
     public state: TState = "WAITING_USER_TO_CONFIRM_MARKED_PAYMENT"
     public history: string[] = []
@@ -27,8 +28,7 @@ export class DMConversaction implements IDMConversaction {
         this.guildId = options.guildId
         this.paymentMethodName = options.paymentMethodName
         this.paymentMethodValue = options.paymentMethodValue
-        this.amount = options.amount
-
+        this.product = options.product
     }
 }
 
