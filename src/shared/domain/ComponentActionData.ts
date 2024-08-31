@@ -13,7 +13,7 @@ export class ComponentActionData implements IComponentActionData{
 
     toString(): string {
         const string = JSON.stringify(this)
-        if (string.length > 100) throw new Error("The string is too long for a custom ID")
+        if (string.length > 100) throw new Error(`The string is too long for a custom ID. \n ${string.length} characters. \n ${string}`)
         return string
     }
 }
