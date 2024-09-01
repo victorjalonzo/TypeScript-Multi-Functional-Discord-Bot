@@ -1,13 +1,14 @@
 import { AttachmentBuilder, EmbedBuilder } from "discord.js"
 import { StringSelectMenuBuilder } from "discord.js"
 import { StringSelectMenuOptionBuilder } from "discord.js"
-import { ButtonBuilder } from "discord.js"
 import { ActionRowBuilder } from "discord.js"
-import { ButtonStyle } from "discord.js"
 import { Attachment } from "discord.js"
 import { ICasualPayment } from "../../../CasualPayment/domain/ICasualPayment.js"
 import { Asset } from "../../../shared/intraestructure/Asset.js"
 import { IRoleProduct } from "../../../RoleProduct/domain/IRoleProduct.js"
+import { ComponentActionData } from "../../../shared/domain/ComponentActionData.js"
+import { PaypointRoleComponentActionsEnum as Actions } from "../../domain/PaypointRoleComponentActionsEnum.js"
+import { CustomComponentID } from "../../../shared/domain/CustomComponentID.js"
 
 interface IProps {
     title?: string
@@ -48,10 +49,16 @@ export const Menu = async (props: IProps) => {
         )
     }
 
+    const data = new ComponentActionData({
+        id: CustomComponentID.PAYPOINT_ROLE,
+        action: Actions.SELECT_PRODUCTS,
+        values: {}
+    })
+
     const selectRow = new ActionRowBuilder().addComponents(
         new StringSelectMenuBuilder()
-        .setCustomId('PAYPOINT_SELECT_PRODUCTS')
-        .setPlaceholder('Select the product')
+        .setCustomId(data.toString())
+        .setPlaceholder('Select product')
         .addOptions(...options)
     )
 
