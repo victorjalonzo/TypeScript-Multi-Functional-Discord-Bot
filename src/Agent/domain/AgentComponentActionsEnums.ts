@@ -1,0 +1,5 @@
+export enum AgentComponentActionsEnums {
+    MARK_INCOMING_PAYMENT_AS_FAILED = 0,
+    MARK_INCOMING_PAYMENT_AS_SUCCESS = 1,
+    MARK_INCOMING_PAYMENT_AS_FAKE = 2
+}
