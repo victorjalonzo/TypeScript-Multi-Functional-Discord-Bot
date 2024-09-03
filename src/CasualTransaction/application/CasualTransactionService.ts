@@ -1,7 +1,7 @@
 import { IRepository } from "../../shared/domain/IRepository.js";
 import { Result } from "../../shared/domain/Result.js";
 import { ICasualTransaction } from "../domain/ICasualTransaction.js";
-import { CasualTransactionCreationError, CasualTransactionDeletionError, CasualTransactionNotFoundError } from "../domain/CasualTransactionExceptions.js";
+import { CasualTransactionCreationError, CasualTransactionDeletionError, CasualTransactionNotFoundError, CasualTransactionUpdateError } from "../domain/CasualTransactionExceptions.js";
 import { ICasualTransactionInput } from "../domain/ICasualTransactionInput.js";
 
 export class CasualTransactionService implements ICasualTransactionInput{
@@ -14,6 +14,17 @@ export class CasualTransactionService implements ICasualTransactionInput{
             if (!createdCasualTransaction) throw new CasualTransactionCreationError()
 
             return Result.success(createdCasualTransaction);
+        }
+        catch (e) {
+            return Result.failure(e);
+        }
+    }
+
+    get = async (id: string): Promise<Result<ICasualTransaction>> => {
+        try {
+            const transaction = await this.repository.get({id}, 'product');
+            if (!transaction) throw new CasualTransactionNotFoundError()
+            return Result.success(transaction);
         }
         catch (e) {
             return Result.failure(e);
@@ -55,6 +66,17 @@ export class CasualTransactionService implements ICasualTransactionInput{
             const transaction = await this.repository.get({memberId});
             if (!transaction) throw new CasualTransactionNotFoundError()
             return Result.success(transaction);
+        }
+        catch (e) {
+            return Result.failure(e);
+        }
+    }
+
+    update = async (casualTransaction: ICasualTransaction): Promise<Result<ICasualTransaction>> => {
+        try {
+            const updatedCasualTransaction = await this.repository.update({id: casualTransaction.id}, casualTransaction);
+            if (!updatedCasualTransaction) throw new CasualTransactionUpdateError()
+            return Result.success(updatedCasualTransaction);
         }
         catch (e) {
             return Result.failure(e);
