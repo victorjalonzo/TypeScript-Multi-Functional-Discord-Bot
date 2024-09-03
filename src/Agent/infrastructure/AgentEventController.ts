@@ -72,13 +72,18 @@ export class AgentEventController {
                 clientId: clientId
             })
     
-            const AIMessage = await AI.createCompletion(generalPromt)
+            const response = await AI.createCompletion(generalPromt)
+            const data = JSON.parse(response)
+
+            const AIMessage = data.message
+
             if (!AIMessage) return
     
             return await message.reply(AIMessage)
         }
         catch (e) {
-            logger.warn(e)
+            logger.error(e)
+            return await message.reply("Sorry, I can't help you at the moment...")
         }
     }
 
