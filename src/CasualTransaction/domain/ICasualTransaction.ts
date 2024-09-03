@@ -1,18 +1,17 @@
 import { IMember } from "../../Member/domain/IMember.js"
-
-export type TState = "PENDING" | "APPROVED" | "REJECTED"
-
+import { IRoleProduct } from "../../RoleProduct/domain/IRoleProduct.js"
+import { CasualTransactionState } from "./CasualTransactionStateEnums.js"
 
 export interface ICasualTransaction {
     id: string
     member: IMember
 	memberId: string
 	guildId: string
-	state: TState 
+	state: CasualTransactionState 
 	paymentMethodName: string
 	paymentMethodValue: string
+	product: IRoleProduct
 	paymentFrom: string
-	amount: number
 	invoices: Buffer[]
 	createAt: Date
 	expiredAt: Date
