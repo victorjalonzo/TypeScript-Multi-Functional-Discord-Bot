@@ -62,9 +62,16 @@ ${paypointData}
 ROLE PRODUCTS AVAILABLE:
 ${productsData}
 
+RESPONSE FORMAT:
+
+Respond only with a JSON object in the following format. Do not include backticks, extra quotes, or language tags like json. The response should be a clean JSON object:
+
+{
+  "message": string  // A brief message directed at the user to guide them or just reply to their question.
+}
+
 ***CURRENT CONVERSACTION***
 
 ${conversationData}
-AI: {message}: 
 `
 }
