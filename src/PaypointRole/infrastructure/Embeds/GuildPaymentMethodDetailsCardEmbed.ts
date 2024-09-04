@@ -13,7 +13,7 @@ interface IProps {
     productId: string
 }
 
-export const createPaymentMethodDetailsCardEmbed = async (props: IProps) => {
+export const createGuildPaymentMethodDetailsCardEmbed = async (props: IProps) => {
     const files: AttachmentBuilder[] = []
 
     const note = "**After make the payment, press the button below\nto mark the payment as sent.**"

@@ -14,7 +14,7 @@ interface IProps {
     DMConversactionId: string
 }
 
-export const createDMPaymentClaimInterrogationEmbed = async (props: IProps) => {
+export const createUserPaymentClaimInterrogationEmbed = async (props: IProps) => {
     const files: AttachmentBuilder[] = []
 
     const description = `You claimed you made a payment in the server ${SimpleBlockText(props.guildName)} through ${SimpleBlockText(props.methodName)} to the account ${SimpleBlockText(props.methodValue)}. ¿That is true?`

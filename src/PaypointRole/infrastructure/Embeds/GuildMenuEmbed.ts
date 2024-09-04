@@ -18,7 +18,7 @@ interface IProps {
     casualPaymentMethods: ICasualPayment[]
 }
 
-export const Menu = async (props: IProps) => {
+export const createGuildMenuEmbed = async (props: IProps) => {
     const files: Attachment[] & AttachmentBuilder[] = []
     const embed = new EmbedBuilder()
 

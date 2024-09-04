@@ -9,7 +9,7 @@ import { logger } from "../../shared/utils/logger.js";
 
 import { IPaypoint, TPaymentMethodType } from "../domain/IPaypointRole.js";
 
-import { Menu } from "./Embeds/MenuEmbed.js";
+import { createGuildMenuEmbed } from "./Embeds/GuildMenuEmbed.js";
 import { ICreditInput } from "../../Credit/domain/ICreditInput.js";
 import { ICasualPaymentInput } from "../../CasualPayment/domain/ICasualPaymentInput.js";
 import { CachedGuildNotFoundError } from "../../shared/domain/CachedGuildException.js";
@@ -85,7 +85,7 @@ export class PaypointCommandActions {
                 media = new AttachmentBuilder(buffer, {name: `media.${paypoint.mediaCodec}`})
             }
 
-            const {embed, selectRow, files, } = await Menu({
+            const {embed, selectRow, files, } = await createGuildMenuEmbed({
                 title: paypoint.title, 
                 description: paypoint.description,
                 media: media,

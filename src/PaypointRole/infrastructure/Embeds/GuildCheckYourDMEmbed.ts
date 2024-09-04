@@ -2,7 +2,7 @@ import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedB
 import { Asset } from "../../../shared/intraestructure/Asset.js"
 import { InlineBlockText } from "../../../shared/utils/textFormating.js"
 
-export const createPaymentDoneNotificationCardEmbed = async (): Promise<{embed: EmbedBuilder, files: AttachmentBuilder[]}> => {
+export const createGuildCheckYourDMEmbed = async (): Promise<{embed: EmbedBuilder, files: AttachmentBuilder[]}> => {
     const files: AttachmentBuilder[] = []
 
     const icon = await Asset.get('mail')
