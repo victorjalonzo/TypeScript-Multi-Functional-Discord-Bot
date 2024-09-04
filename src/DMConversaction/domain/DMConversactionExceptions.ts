@@ -21,3 +21,9 @@ export class DMConversactionDeletionError extends Error {
         super('The DM conversaction could not be deleted');
     }
 }
+
+export class DMConversactionUpdatableMessageNotFoundError extends Error {
+    constructor() {
+        super('The updatable message could not be found');
+    }
+}
