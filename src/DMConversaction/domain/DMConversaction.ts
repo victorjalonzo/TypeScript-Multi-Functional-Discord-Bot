@@ -1,9 +1,10 @@
 import { IMember } from "../../Member/domain/IMember.js"
 import { IRoleProduct } from "../../RoleProduct/domain/IRoleProduct.js"
 import { createRandomId } from "../../shared/utils/generate.js"
-import { IDMConversaction, TState } from "./IDMConversaction.js"
+import { IDMConversaction } from "./IDMConversaction.js"
+import { DMConversactionState } from "./DMConversactionStateEnums.js"
 
-interface IOptions extends Omit<IDMConversaction, "id"| "states" | "botTurn" | "invoiceAttachments" | "history" | "updatableMessageId" | "createdAt"> {}
+interface IOptions extends Omit<IDMConversaction, "id"| "state" | "botTurn" | "invoices" | "history" | "updatableMessageId" | "createdAt"> {}
 
 export class DMConversaction implements IDMConversaction {
     public id: string = createRandomId()
@@ -14,10 +15,10 @@ export class DMConversaction implements IDMConversaction {
     public paymentMethodValue: string
     public product: IRoleProduct
     public botTurn: boolean = true
-    public state: TState = "WAITING_USER_TO_CONFIRM_MARKED_PAYMENT"
+    public state: DMConversactionState = DMConversactionState.WAITING_USER_TO_CONFIRM_MARKED_PAYMENT
     public history: string[] = []
     public paymentFrom?: string | undefined
-    public invoiceAttachments: Buffer[] = []
+    public invoices: Buffer[] = []
     public casualTransactionId?: string | null = null
     public updatableMessageId?: string
     public createdAt: Date = new Date()
@@ -33,30 +34,10 @@ export class DMConversaction implements IDMConversaction {
 }
 
 export const nextState = (DMConversaction: IDMConversaction, botTurn?: boolean): void => {
-    const states = [
-        "WAITING_USER_TO_CONFIRM_MARKED_PAYMENT",
-        "WAITING_USER_TO_PROVIDE_ACCOUNT_NAME",
-        "WAITING_USER_TO_PROVIDE_RECEIPT",
-        "WAITING_ADMIN_TO_APPROVE_PAYMENT"
-    ]
-
-    const indexState = states.indexOf(<string>DMConversaction.state)
-    DMConversaction.state = <TState>states[indexState + 1]
-    DMConversaction.botTurn = true
-    
-    if (botTurn) {
-        DMConversaction.botTurn = botTurn
-    }
-    else {
-        DMConversaction.botTurn = true
-    }
+    DMConversaction.state += 1
+    DMConversaction.botTurn = botTurn ? botTurn : true;
 }
 
 export const switchTurn = (DMConversaction: IDMConversaction): void => {
-    if (DMConversaction.botTurn) {
-        DMConversaction.botTurn = false
-    }
-    else {
-        DMConversaction.botTurn = true
-    }
+    DMConversaction.botTurn = DMConversaction.botTurn ? false : true
 }
