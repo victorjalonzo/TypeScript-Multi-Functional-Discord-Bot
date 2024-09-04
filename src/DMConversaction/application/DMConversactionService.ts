@@ -9,6 +9,7 @@ import {
     DMConversactionUpdateError
 } from "../domain/DMConversactionExceptions.js";
 import { IDMConversactionInput } from "../domain/IDMConversactionInput.js";
+import { DMConversactionState } from "../domain/DMConversactionStateEnums.js";
 
 export class DMConversactionService implements IDMConversactionInput {
     constructor(private repository: IRepository<IDMConversaction>) {}
@@ -27,6 +28,21 @@ export class DMConversactionService implements IDMConversactionInput {
     async get(id: string): Promise<Result<IDMConversaction>> {
         try {
             const DMConversaction = await this.repository.get({id});
+            if (!DMConversaction) throw new DMConversactionNotFoundError();
+            return Result.success(DMConversaction);
+        }
+        catch (e) {
+            return Result.failure(e);
+        }
+    }
+
+    async getActiveOneByMember (memberId: string): Promise<Result<IDMConversaction>> {
+        try {
+            const DMConversaction = await this.repository.get({
+                memberId, 
+                state: {$ne: DMConversactionState.CLOSED},
+            });
+            
             if (!DMConversaction) throw new DMConversactionNotFoundError();
             return Result.success(DMConversaction);
         }
@@ -74,7 +90,7 @@ export class DMConversactionService implements IDMConversactionInput {
             const DMConversaction = await this.repository.get({memberId});
             if (!DMConversaction) return Result.success(false)
 
-            if (DMConversaction.state != "WAITING_USER_TO_CONFIRM_MARKED_PAYMENT") return Result.success(false)
+            if (DMConversaction.state != DMConversactionState.WAITING_USER_TO_CONFIRM_MARKED_PAYMENT) return Result.success(false)
 
             return Result.success(true)
         }
@@ -88,7 +104,7 @@ export class DMConversactionService implements IDMConversactionInput {
             const DMConversaction = await this.repository.get({memberId});
             if (!DMConversaction) return Result.success(false)
 
-            if (DMConversaction.state != "WAITING_ADMIN_TO_APPROVE_PAYMENT") return Result.success(false)
+            if (DMConversaction.state != DMConversactionState.WAITING_ADMIN_TO_APPROVE_PAYMENT) return Result.success(false)
 
             return Result.success(true)
         }
