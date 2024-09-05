@@ -6,15 +6,24 @@ import { CachedGuildNotFoundError } from "../../shared/domain/CachedGuildExcepti
 
 export class RoleTransformer {
     static parse = (role: DiscordRole): IRole => {
-        const {id, name, position, color, mentionable, hoist, editable, managed} = role
         const cachedGuild = cache.get(role.guild.id)
 
         if (!cachedGuild) throw new CachedGuildNotFoundError();
 
-        const permissions = role.permissions.toJSON()
+        const permissions = role.permissions.toArray()
 
-        return new Role(id, name, position, color, permissions, hoist, 
-            mentionable, managed, editable,  cachedGuild.id, cachedGuild
-        )
+        return new Role({
+            id: role.id,
+            name: role.name,
+            position: role.position,
+            color: role.color,
+            permissions,
+            hoist: role.hoist,
+            mentionable: role.mentionable,
+            managed: role.managed,
+            editable: role.editable,
+            guildId: role.guild.id,
+            guild: cachedGuild
+        })
     }
 }
