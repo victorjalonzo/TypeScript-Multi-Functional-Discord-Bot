@@ -6,7 +6,7 @@ const roleSchema = new Schema({
     name: { type: String, required: true },
     position: { type: Number, required: true },
     color: { type: Number, required: true },
-    permissions: { type: String, required: true },
+    permissions: { type: [String], required: true },
     hoist: { type: Boolean, required: true },
     mentionable: { type: Boolean, required: true },
     managed : { type: Boolean, required: true },
