@@ -5,7 +5,7 @@ export interface IRole {
     name: string
     position: number
     color: number
-    permissions: string
+    permissions: string[]
     hoist: boolean
     mentionable: boolean
     managed : boolean
