@@ -3,16 +3,25 @@ import { TextChannel } from "../domain/TextChannel.js";
 import { cache } from "../../shared/intraestructure/Cache.js";
 import { ChannelUtility } from "../../shared/utils/ChannelUtility.js";
 import { CachedGuildNotFoundError } from "../../shared/domain/CachedGuildException.js";
+import { ICategoryChannel } from "../../CategoryChannel/domain/ICategoryChannel.js";
+import { IGuild } from "../../Guild/domain/IGuild.js";
 
 export class TextChannelTransformer {
-    static parse = (incomeTextChannel: DiscordTextChannel): TextChannel => {
-        const { name, id, position, parentId, guildId } = incomeTextChannel;
+    static parse = ({discordTextChannel, parent, guild}: {discordTextChannel: DiscordTextChannel, parent: ICategoryChannel | null, guild: IGuild}): TextChannel => {
+        const permissionOverwrites = ChannelUtility.getPermissionOverwrites(discordTextChannel);
 
-        const cachedGuild = cache.get(incomeTextChannel.guild.id);
-        if (!cachedGuild) throw new CachedGuildNotFoundError();
+        const parentId = parent ? parent.id : null;
 
-        const permissionOverwrites = ChannelUtility.getPermissionOverwrites(incomeTextChannel);
-        
-        return new TextChannel(id, name, position, permissionOverwrites, parentId, guildId, cachedGuild);
+        return new TextChannel({
+            id: discordTextChannel.id,
+            name: discordTextChannel.name,
+            position: discordTextChannel.position,
+            permissionOverwrites: permissionOverwrites,
+            parent: parent,
+            parentId: parentId,
+            guildId: guild.id,
+            guild: guild,
+            createdAt: new Date()
+        })
     }
 }
