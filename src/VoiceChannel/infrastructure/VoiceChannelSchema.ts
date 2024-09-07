@@ -12,6 +12,7 @@ const VoiceChannelSchema = new Schema <IVoiceChannel & Document>({
     permissionsLocked: { type: Boolean, default: null },
     rateLimitPerUser: { type: Number, default: null },
     rtcRegion: { type: String, default: null },
+    parent: { type: Schema.Types.ObjectId, ref: "CategoryChannels", default: null },
     parentId: { type: String, default: null },
     guildId: { type: String, required: true },
     guild: { type: Schema.Types.ObjectId, ref: "Guilds", required: true },
