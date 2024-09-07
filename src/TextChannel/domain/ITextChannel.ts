@@ -1,3 +1,4 @@
+import { ICategoryChannel } from "../../CategoryChannel/domain/ICategoryChannel.js"
 import { IGuild } from "../../Guild/domain/IGuild.js"
 import { PermissionOverwrite } from "../../shared/domain/IPermissionOverwrite.js"
 
@@ -6,8 +7,9 @@ export interface ITextChannel {
     name: string
     position: number
     permissionOverwrites: PermissionOverwrite[] | []
-    createdAt: Date
+    parent: ICategoryChannel | null
     parentId: string | null
     guildId: string
     guild: IGuild
+    createdAt: Date
 }
