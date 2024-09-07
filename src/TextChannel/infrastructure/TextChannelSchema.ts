@@ -6,7 +6,8 @@ const TextChannelSchema = new Schema<ITextChannel & Document>({
     id: { type: String, required: true, unique: true },
     position: { type: Number, required: true},
     permissionOverwrites: Array,
-    parentId: { type: Number, default: null },
+    parent: { type: Schema.Types.ObjectId, ref: "CategoryChannels", required: true },
+    parentId: { type: String, default: null },
     guildId: { type: String, required: true },
     createdAt: { type: Date, required: true },
 });
