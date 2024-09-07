@@ -9,12 +9,42 @@ import {
     TextChannelUpdateError,
     TextChannelDeletionError,
 } from "../domain/TextChannelExceptions.js";
+import { IGuild } from "../../Guild/domain/IGuild.js";
+import { IGuildInput } from "../../Guild/domain/IGuildInput.js";
+import { ICategoryChannelInput } from "../../CategoryChannel/domain/ICategoryChannelInput.js";
+import { ICategoryChannel } from "../../CategoryChannel/domain/ICategoryChannel.js";
 
 export class TextChannelService implements ITextChannelInput {
-    constructor (private repository: IRepository<ITextChannel>) {}
+    constructor (
+        private repository: IRepository<ITextChannel>,
+        private guildService: IGuildInput,
+        private categoryChannelService: ICategoryChannelInput
+    ) {}
+
+    async _getGuild (textChannel: ITextChannel): Promise<IGuild> {
+        const guildResult = await this.guildService.get(textChannel.guildId);
+        if (!guildResult.isSuccess()) throw guildResult.error
+
+        return guildResult.value
+    }
+
+    _getParent = async (textChannel: ITextChannel): Promise<ICategoryChannel | undefined> => {
+        if (!textChannel.parentId) return
+        
+        const categoryChannelResult = await this.categoryChannelService.get(textChannel.parentId, textChannel.guildId);
+        if (!categoryChannelResult.isSuccess()) return
+
+        return categoryChannelResult.value
+    }
 
     async create(textChannel: ITextChannel): Promise<Result<ITextChannel>> {
         try {
+            const guild = await this._getGuild(textChannel);
+            const parent = await this._getParent(textChannel);
+
+            textChannel.guild = guild
+            textChannel.parent = parent ?? null
+
             const textChannelCreated =  await this.repository.create(textChannel);
             if (!textChannelCreated) throw new TextChannelCreationError()
 
@@ -49,7 +79,14 @@ export class TextChannelService implements ITextChannelInput {
 
     async update(textChannel: ITextChannel): Promise<Result<ITextChannel>> {
         try {
+            const guild = await this._getGuild(textChannel);
+            const parent = await this._getParent(textChannel);
+
+            textChannel.guild = guild
+            textChannel.parent = parent ?? null
+
             const filters = { id: textChannel.id, guildId: textChannel.guildId };
+            
             const textChannelUpdated = await this.repository.update(filters, textChannel);
             if (!textChannelUpdated) throw new TextChannelUpdateError()
 
