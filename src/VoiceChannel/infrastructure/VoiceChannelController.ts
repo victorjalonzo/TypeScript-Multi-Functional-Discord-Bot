@@ -2,13 +2,18 @@ import { IVoiceChannelInput } from "../domain/IVoiceChannelInput.js";
 import { logger } from "../../shared/utils/logger.js";
 import { VoiceChannel as DiscordVoiceChannel } from "discord.js";
 import { VoiceChannelTransformer } from "./VoiceChannelTransformer.js";
+import { GuildTransformer } from "../../Guild/infrastructure/GuildTransformer.js";
+import { CategoryChannelTransformer } from "../../CategoryChannel/infrastructure/CategoryChannelTransformer.js";
 
 export class VoiceChannelEventController {
     constructor(private service: IVoiceChannelInput) {}
 
     createRecord = async (voiceChannel: DiscordVoiceChannel): Promise<void> => {
         try {
-            const voiceChannelParsed = VoiceChannelTransformer.parse(voiceChannel);
+            const guild = GuildTransformer.parse(voiceChannel.guild)
+            const parent = voiceChannel.parent ? CategoryChannelTransformer.parse(voiceChannel.parent) : null
+
+            const voiceChannelParsed = VoiceChannelTransformer.parse({discordVoiceChannel:voiceChannel, parent, guild});
             const result = await this.service.create(voiceChannelParsed);
 
             if (!result.isSuccess()) throw result.error
@@ -23,9 +28,11 @@ export class VoiceChannelEventController {
 
     updateRecord = async (oldVoiceChannel: DiscordVoiceChannel, newVoiceChannel: DiscordVoiceChannel): Promise<void> => {
         try {
-            const oldVoiceChannelParsed = VoiceChannelTransformer.parse(oldVoiceChannel);
-            const newVoiceChannelParsed = VoiceChannelTransformer.parse(newVoiceChannel);
-            const result = await this.service.update(newVoiceChannelParsed);
+            const guild = GuildTransformer.parse(newVoiceChannel.guild)
+            const parent = newVoiceChannel.parent ? CategoryChannelTransformer.parse(newVoiceChannel.parent) : null
+
+            const voiceChannelParsed = VoiceChannelTransformer.parse({discordVoiceChannel:newVoiceChannel, parent, guild});
+            const result = await this.service.update(voiceChannelParsed);
 
             if (!result.isSuccess()) throw result.error
 
@@ -39,9 +46,7 @@ export class VoiceChannelEventController {
 
     deleteRecord = async (voiceChannel: DiscordVoiceChannel): Promise<void> => {
         try {
-            const voiceChannelParsed = VoiceChannelTransformer.parse(voiceChannel);
-            const result = await this.service.delete(voiceChannelParsed.id, voiceChannelParsed.guildId);
-
+            const result = await this.service.delete(voiceChannel.id, voiceChannel.guildId);
             if (!result.isSuccess()) throw result.error
 
             const voiceChannelDeleted = result.value
