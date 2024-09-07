@@ -1,3 +1,4 @@
+import { ICategoryChannel } from "../../CategoryChannel/domain/ICategoryChannel.js";
 import { IGuild } from "../../Guild/domain/IGuild.js";
 import { PermissionOverwrite } from "../../shared/domain/IPermissionOverwrite.js";
 
@@ -10,8 +11,9 @@ export interface IVoiceChannel {
     manageable: boolean,
     permissionOverwrites: PermissionOverwrite[] | []
     permissionsLocked: boolean | null,
-    rateLimitPerUser: number | null
-    rtcRegion: string | null
+    rateLimitPerUser?: number
+    rtcRegion?: string
+    parent: ICategoryChannel | null
     parentId: string | null
     guildId: string
     guild: IGuild
