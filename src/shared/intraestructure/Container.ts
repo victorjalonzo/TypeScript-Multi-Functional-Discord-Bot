@@ -62,6 +62,16 @@ import { CasualTransactionService } from "../../CasualTransaction/application/Ca
 
 import { AgentEventController } from "../../Agent/infrastructure/AgentEventController.js";
 
+import { DMConversactionService } from "../../DMConversaction/application/DMConversactionService.js";
+import { DMConversactionModel } from "../../DMConversaction/infrastructure/DMConversactionSchema.js";
+import { IComponentAction } from "../domain/IComponentAction.js";
+import { AgentComponentsActions } from "../../Agent/infrastructure/AgentComponentsActions.js";
+
+import { BackupModel } from "../../Backup/infrastructure/BackupSchema.js";
+import { BackupService } from "../../Backup/application/BackupService.js";
+import { BackupCommand } from "../../Backup/infrastructure/BackupCommand.js";
+import { BackupCommandAction } from "../../Backup/infrastructure/BackupCommandAction.js";
+
 await Database.connect()
 
 const Repository = MongoRepository
@@ -79,11 +89,11 @@ const categoryChannelService = new CategoryChannelService(categoryChannelReposit
 const categoryChannelEventController = new CategoryChannelEventController(categoryChannelService);
 
 const textChannelRepository = new Repository(TextChannelModel);
-const textChannelService = new TextChannelService(textChannelRepository);
+const textChannelService = new TextChannelService(textChannelRepository, guildService, categoryChannelService);
 const textChannelEventController = new TextChannelEventController(textChannelService);
 
 const voiceChannelRepository = new Repository(VoiceChannelModel);
-const voiceChannelService = new VoiceChannelService(voiceChannelRepository);
+const voiceChannelService = new VoiceChannelService(voiceChannelRepository, guildService, categoryChannelService);
 const voiceChannelEventController = new VoiceChannelEventController(voiceChannelService);
 
 const roleRepository = new Repository(RoleRecordModel);
@@ -108,9 +118,12 @@ const roleProductService = new RoleProductService(roleProductRepository, paypoin
 const casualTransactionRepository = new Repository(CasualTransactionModel);
 const casualTransactionService = new CasualTransactionService(casualTransactionRepository);
 
+const DMConversactionRepository = new Repository(DMConversactionModel);
+const dmConversactionService = new DMConversactionService(DMConversactionRepository);
+
 const paypointService = new PaypointService(paypointRepository, guildRepository, casualPaymentRepository);
 const paypointCommandAction = new PaypointCommandActions(paypointService, roleService, roleProductService, casualPaymentService);
-const paypointComponentAction = new PaypointComponentActions(paypointService, casualPaymentService, roleProductService, casualTransactionService, memberService);
+const paypointComponentAction = new PaypointComponentActions(paypointService, casualPaymentService, roleProductService, dmConversactionService, memberService);
 PaypointCommand.setCallback(paypointCommandAction.execute);
 
 const rewardRoleRespository = new Repository(RewardRoleModel);
@@ -123,8 +136,13 @@ const inviteCommandActions = new InviteCommandActions(memberService, rewardRoleS
 const inviteEventController = new InviteEventController(memberService);
 InviteCommand.setCallback(inviteCommandActions.execute);
 
-const agentEventController = new AgentEventController(casualTransactionService, paypointService, roleProductService, rewardRoleService);
+const agentEventController = new AgentEventController(casualTransactionService, paypointService, roleProductService, rewardRoleService, dmConversactionService, memberService);
+const agentComponentActions = new AgentComponentsActions(dmConversactionService, casualTransactionService);
 
+const backupRepository = new Repository(BackupModel);
+const backupService = new BackupService(backupRepository);
+const backupCommandAction = new BackupCommandAction(backupService, guildService, roleService, textChannelService, voiceChannelService, categoryChannelService);
+BackupCommand.setCallback(backupCommandAction.execute);
 
 export const Services = {
     guildService,
@@ -161,15 +179,18 @@ export const Commands: SlashCommandCallable[] = [
     InviteCommand, 
     RewardRoleCommand,
     IntegratedPaymentCommand,
+    BackupCommand
 ]
 
 export const CommandActions = {
     paypointCommandAction,
     creditCommandAction,
     rewardRoleCommandAction,
-    casualPaymentCommandAction
+    casualPaymentCommandAction,
+    backupCommandAction
 }
 
-export const ComponentActions = [
+export const ComponentActions: IComponentAction[] = [
+    agentComponentActions,
     paypointComponentAction
 ]
