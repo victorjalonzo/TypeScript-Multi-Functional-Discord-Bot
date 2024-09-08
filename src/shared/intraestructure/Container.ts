@@ -71,6 +71,7 @@ import { BackupModel } from "../../Backup/infrastructure/BackupSchema.js";
 import { BackupService } from "../../Backup/application/BackupService.js";
 import { BackupCommand } from "../../Backup/infrastructure/BackupCommand.js";
 import { BackupCommandAction } from "../../Backup/infrastructure/BackupCommandAction.js";
+import { RoleProductEventController } from "../../RoleProduct/infrastructure/RoleProductEventController.js";
 
 await Database.connect()
 
@@ -113,7 +114,8 @@ CreditCommand.setCallback(creditCommandAction.execute);
 const paypointRepository = new Repository(PaypointModel);
 
 const roleProductRepository = new Repository(RoleProductModel);
-const roleProductService = new RoleProductService(roleProductRepository, paypointRepository);
+const roleProductService = new RoleProductService(roleProductRepository);
+const roleProductEventController = new RoleProductEventController(roleProductService);
 
 const casualTransactionRepository = new Repository(CasualTransactionModel);
 const casualTransactionService = new CasualTransactionService(casualTransactionRepository);
@@ -167,7 +169,8 @@ export const Controllers = {
     roleEventController,
     rewardRoleEventController,
     inviteEventController,
-    agentEventController
+    agentEventController,
+    roleProductEventController
 }
 
 export const Commands: SlashCommandCallable[] = [ 
