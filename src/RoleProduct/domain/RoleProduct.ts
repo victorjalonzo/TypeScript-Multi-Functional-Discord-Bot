@@ -1,6 +1,6 @@
 import { IRoleProduct } from "./IRoleProduct.js";
 import { IRole } from "../../Role/domain/IRole.js";
-import { IPaypoint } from "../../PaypointRole/domain/IPaypointRole.js";
+import { IGuild } from "../../Guild/domain/IGuild.js";
 
 export class RoleProduct implements IRoleProduct {
     id: string
@@ -9,8 +9,8 @@ export class RoleProduct implements IRoleProduct {
     media?: Buffer | null
     mediaFilename?: string | null | undefined;
     description?: string | null
-    paypoint: IPaypoint
-    paypointId: string
+    guild: IGuild
+    guildId: string
 
     constructor (options: IRoleProduct) {
         this.id = options.id
@@ -19,7 +19,7 @@ export class RoleProduct implements IRoleProduct {
         this.media = options.media
         this.mediaFilename = options.mediaFilename
         this.description = options.description
-        this.paypoint = options.paypoint
-        this.paypointId = options.paypointId
+        this.guild = options.guild
+        this.guildId = options.guildId
     }
 }
