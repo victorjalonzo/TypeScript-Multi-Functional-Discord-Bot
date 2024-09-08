@@ -1,4 +1,4 @@
-import { GuildMember } from "discord.js";
+import { Guild, GuildMember } from "discord.js";
 import { IRewardRoleInput } from "../domain/IRewardRoleInput.js";
 import { IMemberInput } from "../../Member/domain/IMemberInput.js";
 import { logger } from "../../shared/utils/logger.js";
@@ -6,7 +6,39 @@ import { logger } from "../../shared/utils/logger.js";
 import { InviteCountMismatchRewardsError, RewardRolesNotFound } from "../domain/RewardRoleExceptions.js";
 
 export class RewardRoleEventController {
-    constructor (private service: IRewardRoleInput, private memberService: IMemberInput) {}
+    constructor (
+        private service: IRewardRoleInput, 
+        private memberService: IMemberInput
+    ) {}
+
+    refresh = async (guild: Guild) => {
+        try {
+            const roles = guild.roles.cache.size > 0 
+            ? guild.roles.cache.map(role => role) 
+            : (await guild.roles.fetch()).map(role => role);
+
+            const result = await this.service.getAll(guild.id)
+            if (!result.isSuccess()) throw result.error
+
+            if (result.value.length === 0) return logger.info(`There are no obsolete role rewards in the guild ${guild.id}`)
+    
+            const roleRewardObsolete = result.value.filter(roleReward => 
+                roles.some(role => 
+                    role.id !== roleReward.id
+                )
+            )
+
+            if (roleRewardObsolete.length > 0) {
+                for (const roleReward of roleRewardObsolete) {
+                    await this.service.delete(roleReward.id, guild.id)
+                    logger.info(`The obsolete role reward ${roleReward.id} was deleted`)
+                }
+            }
+        }
+        catch (e) {
+            logger.warn(e)
+        }
+    }
 
     giveReward = async (member: GuildMember) => {
         try {
