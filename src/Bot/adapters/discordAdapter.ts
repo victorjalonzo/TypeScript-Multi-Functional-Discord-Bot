@@ -1,4 +1,4 @@
-import { Client, BaseInteraction, CategoryChannel } from 'discord.js'
+import { Client, BaseInteraction, CategoryChannel, DMChannel, User } from 'discord.js'
 import { CommandHandler } from './CommandHandler.js';
 import { ComponentHandler } from './ComponentHandler.js';
 import { TextChannel, VoiceChannel } from 'discord.js';
@@ -45,6 +45,11 @@ export class DiscordAdapter {
 
             const guildManager = this.client.guilds
             await this.controllers.guildController.createCache(guildManager)
+
+            for (const guild of guildManager.cache.values()) {
+                await this.controllers.roleProductEventController.refresh(guild)
+                await this.controllers.rewardRoleEventController.refresh(guild)
+            }
         })
 
         this.client.on('interactionCreate', async (interaction: BaseInteraction) => {
@@ -60,17 +65,28 @@ export class DiscordAdapter {
         this.client.on('messageCreate', async (message) => {
             if (message.author.bot) return;
 
-            const mentions = message.mentions
-            if (!mentions) return
+            if (message.channel instanceof TextChannel) {
+              const mentions = message.mentions
+              if (!mentions) return
+  
+              const clientUser = this.client.user
+              if (!clientUser) return
+  
+              const mention = mentions.has(clientUser)
+              if (!mention) return
 
-            const clientUser = this.client.user
-            if (!clientUser) return
+              return await this.controllers.agentEventController.replyTextChannel(message)
+            }
 
-            const mention = mentions.has(clientUser)
-            if (!mention) return
+            if (message.channel instanceof DMChannel) {
+              return await this.controllers.agentEventController.replyDM(message)
+            }
 
-            await this.controllers.agentEventController.reply(message)
+            logger.warn(`Unknow channel... ${message}`)
         })
+        this.client.on("UserConfirmedMarkedCasualPayment", async (user: User, DMConversactionId: string) => {
+          return await this.controllers.agentEventController.replyMarkedCasualPaymentConfirmation(user, DMConversactionId)
+        }) 
 
         this.client.on('guildMemberAdd', async (member) => {
             await this.controllers.memberController.create(member)
@@ -127,7 +143,8 @@ export class DiscordAdapter {
           return await this.controllers.roleEventController.update(oldRole, newRole)
         })
         this.client.on('roleDelete', async (role) => {
-          return await this.controllers.roleEventController.delete(role)
+          await this.controllers.roleEventController.delete(role)
+          await this.controllers.roleProductEventController.delete(role)
         })
     }
   }
