@@ -10,7 +10,6 @@ export interface IPaypoint {
     title?: string
     description?: string
     paymentMethod?: TPaymentMethodType
-    products: IRoleProduct[]
     messageId?: string
     channelId?: string
     guildId: string
