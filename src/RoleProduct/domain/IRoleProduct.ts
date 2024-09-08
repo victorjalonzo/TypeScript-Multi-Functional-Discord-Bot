@@ -1,5 +1,5 @@
 import { IRole } from '../../Role/domain/IRole.js';
-import { IPaypoint } from '../../PaypointRole/domain/IPaypointRole.js';
+import { IGuild } from '../../Guild/domain/IGuild.js';
 
 export interface IRoleProduct {
     id: string
@@ -8,6 +8,6 @@ export interface IRoleProduct {
     media?: Buffer | null
     mediaFilename?: string | null
     description?: string | null
-    paypoint: IPaypoint
-    paypointId: string
+    guild: IGuild
+    guildId: string
 }
