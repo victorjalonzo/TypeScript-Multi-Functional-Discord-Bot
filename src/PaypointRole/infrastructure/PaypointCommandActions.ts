@@ -66,17 +66,17 @@ export class PaypointCommandActions {
 
             if (!paypoint.paymentMethod) throw new PaypointPaymentMethodNotChosenError()
 
-            const roleProductsResult = await this.roleproductService.getAll(paypoint.id)
+            const roleProductsResult = await this.roleproductService.getAll(guild.id)
             if (!roleProductsResult.isSuccess()) throw roleProductsResult.error
+            if (roleProductsResult.value.length === 0) throw new RoleProductsNotFoundError()
 
             const roleProducts = roleProductsResult.value
-            if (roleProducts.length === 0) throw new RoleProductsNotFoundError()
 
             const casualPaymentMethodsResult = await this.casualPaymentService.getAll(guild.id)
             if (!casualPaymentMethodsResult.isSuccess()) throw casualPaymentMethodsResult.error
+            if (casualPaymentMethodsResult.value.length === 0) throw new MissingCasualPaymentMethodsError()
 
             const casualPaymentMethods = casualPaymentMethodsResult.value
-            if (casualPaymentMethods.length === 0) throw new MissingCasualPaymentMethodsError()
 
             let media: AttachmentBuilder | undefined = undefined
 
@@ -252,8 +252,8 @@ export class PaypointCommandActions {
                 media: mediaBuffer,
                 mediaFilename: mediaFilename,
                 description: description,
-                paypoint: paypoint,
-                paypointId: paypoint.id
+                guild: guild,
+                guildId: guildId,
             })
 
             const resultRoleProduct = await this.roleproductService.create(roleProduct)
@@ -290,7 +290,7 @@ export class PaypointCommandActions {
 
             const title = "Product removed"
             const info = InlineBlockText(`product: ${role.name} (${role.id})`)
-            const description = `The product was removed from the paypoint successfully: ${info}`
+            const description = `The product was removed from the guild successfully: ${info}`
 
             return await EmbedResult.success({title, description, interaction: interaction})
         }
