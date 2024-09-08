@@ -9,7 +9,6 @@ export class Paypoint implements IPaypoint {
     public description?: string
     public media?: Buffer
     public mediaCodec?: string
-    public products: IRoleProduct[] = [];
     public paymentMethod?: TPaymentMethodType
     public messageId?: string
     public channelId?: string
@@ -17,7 +16,7 @@ export class Paypoint implements IPaypoint {
     public guildId: string;
     public createdAt: Date = new Date();
 
-    constructor(options: Omit<IPaypoint, "products" | "id">) {
+    constructor(options: Omit<IPaypoint, "id">) {
         this.title = options.title
         this.description = options.description
         this.media = options.media
