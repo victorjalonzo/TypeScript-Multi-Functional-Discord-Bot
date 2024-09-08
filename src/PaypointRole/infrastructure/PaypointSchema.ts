@@ -8,7 +8,6 @@ const PaypointSchema = new Schema<IPaypoint & Document>({
     title: { type: String, default: null },
     description: { type: String, default: null },
     paymentMethod: { type: String, default: null },
-    products: [{ type: Schema.Types.ObjectId, ref: "RoleProducts"}],
     messageId: { type: String, default: null },
     channelId: { type: String, default: null },
     createdAt: { type: Date, required: true },
