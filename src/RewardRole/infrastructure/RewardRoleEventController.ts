@@ -3,7 +3,7 @@ import { IRewardRoleInput } from "../domain/IRewardRoleInput.js";
 import { IMemberInput } from "../../Member/domain/IMemberInput.js";
 import { logger } from "../../shared/utils/logger.js";
 
-import { InviteCountMismatchRewardsError, RewardRolesNotFound } from "../domain/RewardRoleExceptions.js";
+import { InviteCountMismatchRewardsError } from "../domain/RewardRoleExceptions.js";
 
 export class RewardRoleEventController {
     constructor (
@@ -20,27 +20,28 @@ export class RewardRoleEventController {
             const result = await this.service.getAll(guild.id)
             if (!result.isSuccess()) throw result.error
 
-            if (result.value.length === 0) return logger.info(`There are no obsolete role rewards in the guild ${guild.id}`)
-    
-            const roleRewardObsolete = result.value.filter(roleReward => 
-                roles.some(role => 
-                    role.id !== roleReward.id
+            if (result.value.length != 0) {
+                const roleRewardObsolete = result.value.filter(roleReward => 
+                    roles.some(role => 
+                        role.id !== roleReward.id
+                    )
                 )
-            )
-
-            if (roleRewardObsolete.length > 0) {
-                for (const roleReward of roleRewardObsolete) {
-                    await this.service.delete(roleReward.id, guild.id)
-                    logger.info(`The obsolete role reward ${roleReward.id} was deleted`)
+    
+                if (roleRewardObsolete.length > 0) {
+                    for (const roleReward of roleRewardObsolete) {
+                        await this.service.delete(roleReward.id, guild.id)
+                        logger.info(`Role reward ${roleReward.id} was removed due to role deletion`)
+                    }
                 }
             }
+            logger.info("role rewards: up to date.")
         }
         catch (e) {
-            logger.warn(e)
+            logger.warn(logger.warn(`role rewards: not up to date. Something went wrong: ${String(e)}`))
         }
     }
 
-    giveReward = async (member: GuildMember) => {
+    assignRoleOnInviteGoal = async (member: GuildMember) => {
         try {
             const guild = member.guild;
 
@@ -48,7 +49,7 @@ export class RewardRoleEventController {
             if (!rewardsResult.isSuccess()) throw rewardsResult.error
             
             const rewards = rewardsResult.value;
-            if (rewards.length === 0) throw new RewardRolesNotFound();
+            if (rewards.length === 0) return
     
             const inviterResult = await this.memberService.get(member.id, guild.id);
             if (!inviterResult.isSuccess()) throw inviterResult.error;
@@ -70,7 +71,7 @@ export class RewardRoleEventController {
 
             for (const reward of sortedRewards) {
                 if (reward.invites >  invitesCount) break;
-                roleId = reward.roleId;
+                roleId = reward.id;
             }
     
             if (!roleId) throw new InviteCountMismatchRewardsError()
