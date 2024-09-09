@@ -5,11 +5,14 @@ import { ICachedGuild } from "../../shared/intraestructure/ICachedGuild.js";
 export class MemberTransformer {
     static parse = (guildMember: GuildMember, guild: ICachedGuild): Member => {
         try {
-            const { id } = guildMember;
-            const { username, discriminator } = guildMember.user
-            const avatarURL = guildMember.user.avatarURL();
-
-            return new Member(id, username, discriminator, guild.id, guild, avatarURL);
+            return new Member({
+                id: guildMember.id,
+                username: guildMember.user.username,
+                discriminator: guildMember.user.discriminator,
+                guildId: guild.id,
+                guild: guild,
+                avatarURL: guildMember.user.avatarURL()
+            })
         }
         catch (e) {
             throw new Error(String(e))
