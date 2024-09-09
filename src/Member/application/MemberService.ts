@@ -29,6 +29,16 @@ export class MemberService implements IMemberInput {
         }
     }
 
+    async getAll(guildId: string): Promise<Result<IMember[]>> {
+        try {
+            const members = await this.repository.getAll({guildId: guildId});
+            return Result.success(members);
+        }
+        catch (e) {
+            return Result.failure(e);
+        }
+    }
+
     async get(id: string, guildId: string): Promise<Result<IMember>> {
         try {
             const member = await this.repository.get({id, guildId});
