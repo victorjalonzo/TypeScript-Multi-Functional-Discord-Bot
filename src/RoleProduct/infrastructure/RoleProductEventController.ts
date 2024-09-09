@@ -15,23 +15,25 @@ export class RoleProductEventController {
             const result = await this.service.getAll(guild.id)
             if (!result.isSuccess()) throw result.error
 
-            if (result.value.length === 0) return logger.info(`There are no obsolete role products in the guild ${guild.id}`)
-    
-            const roleProductsObsolete = result.value.filter(roleProduct => 
-                roles.some(role => 
-                    role.id !== roleProduct.id
+            if (result.value.length != 0) {
+                const roleProductsObsolete = result.value.filter(roleProduct => 
+                    roles.some(role => 
+                        role.id !== roleProduct.id
+                    )
                 )
-            )
-
-            if (roleProductsObsolete.length > 0) {
-                for (const roleProduct of roleProductsObsolete) {
-                    await this.service.delete(roleProduct.id)
-                    logger.info(`The obsolete role product ${roleProduct.id} was deleted`)
+    
+                if (roleProductsObsolete.length > 0) {
+                    for (const roleProduct of roleProductsObsolete) {
+                        const roleProductDeletedResult = await this.service.delete(roleProduct.id)
+                        if (!roleProductDeletedResult.isSuccess()) throw roleProductDeletedResult.error
+                    }
                 }
             }
+
+            logger.info("role products: up to date.")
         }
         catch (e) {
-            logger.warn(e)
+            logger.warn(`role products: not up to date. Something went wrong: ${String(e)}`)
         }
     }
 
