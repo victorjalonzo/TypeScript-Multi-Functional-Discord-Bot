@@ -67,7 +67,12 @@ export class CasualPaymentCommandActions {
             const cachedGuild = cache.get(guildId);
             if (!cachedGuild) throw new GuildNotFoundError
 
-            const casualPayment = new CasualPayment(method, value, cachedGuild.id, cachedGuild);
+            const casualPayment = new CasualPayment({
+                name: method,
+                value: value,
+                guildId: cachedGuild.id,
+                guild: cachedGuild
+            })
 
             const result = await this.service.create(casualPayment)
 
