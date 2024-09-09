@@ -3,12 +3,18 @@ import { TPaymentMethods } from "./ICasualPayment.js";
 import { IGuild } from "../../Guild/domain/IGuild.js";
 
 export class CasualPayment implements ICasualPayment {
+    name: TPaymentMethods
+    value: string
+    guildId: string
+    guild: IGuild
+    rawName: string
 
-    constructor(
-        public name: TPaymentMethods,
-        public value: string,
-        public guildId: string,
-        public guild: IGuild,
-        public rawName: string = name.split(" ").join("").toLowerCase()
-    ){}
+    constructor(options: Omit<ICasualPayment, "rawName">){
+        this.name = options.name
+        this.value = options.value
+        this.guildId = options.guildId
+        this.guild = options.guild
+
+        this.rawName = this.name.split(" ").join("").toLowerCase()
+    }
 }

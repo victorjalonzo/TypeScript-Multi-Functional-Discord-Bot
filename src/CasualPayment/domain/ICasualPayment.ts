@@ -10,4 +10,3 @@ export interface ICasualPayment {
     guild: IGuild | ICachedGuild
     rawName: string
 }
-
