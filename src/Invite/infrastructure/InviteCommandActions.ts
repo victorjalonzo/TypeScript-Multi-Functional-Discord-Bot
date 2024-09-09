@@ -90,13 +90,13 @@ export class InviteCommandActions {
             for (const reward of sortedRewardRoles) {
                 if (reward.invites > currentInvites) {
                     invitesRequired = <number>reward.invites
-                    roleId = reward.roleId
+                    roleId = reward.id
                     break
                 }
                 if (reward == sortedRewardRoles[sortedRewardRoles.length-1]) {
                     invitesRequired = <number>reward.invites
                     currentInvites = invitesRequired
-                    roleId = reward.roleId
+                    roleId = reward.id
                     isChallengeCompleted = true
                 }
             }
