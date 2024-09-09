@@ -4,9 +4,13 @@ import { EmbedResult } from "../../shared/intraestructure/EmbedResult.js";
 import { RewardRole } from "../domain/RewardRole.js";
 import { cache } from "../../shared/intraestructure/Cache.js";
 import { InlineBlockText } from "../../shared/utils/textFormating.js";
+import { IRoleInput } from "../../Role/domain/IRoleInput.js";
 
 export class RewardRoleCommandActions {
-    constructor (private service: IRewardRoleInput) {}
+    constructor (
+        private service: IRewardRoleInput,
+        private roleService: IRoleInput
+    ) {}
 
     execute = async (interaction: ChatInputCommandInteraction) => {
         const subcommand = interaction.options.getSubcommand();
@@ -32,7 +36,18 @@ export class RewardRoleCommandActions {
             if (!role) throw new Error("The role was not found")
             if (!invites) throw new Error("The amount was not found")
 
-            const reward = new RewardRole(role.id, invites, guild.id, cachedGuild)
+            const roleCachedResult = await this.roleService.get(role.id, guild.id)
+            if (!roleCachedResult.isSuccess()) throw roleCachedResult.error
+
+            const roleCached = roleCachedResult.value
+
+            const reward = new RewardRole({
+                id: role.id,
+                role: roleCached,
+                invites: invites,
+                guildId: guild.id,
+                guild: cachedGuild,
+            })
 
             const result = await this.service.create(reward)
 
@@ -88,7 +103,7 @@ export class RewardRoleCommandActions {
             }
             else {
                 for (const reward of rewards) {
-                    const role = await guild.roles.fetch(reward.roleId)
+                    const role = await guild.roles.fetch(reward.id)
                     if (!role) continue
 
                     description += `${role.name} : ${reward.invites}\n`
