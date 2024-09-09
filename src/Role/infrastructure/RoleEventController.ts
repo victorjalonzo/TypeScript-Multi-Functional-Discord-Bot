@@ -2,6 +2,7 @@ import { Role } from "discord.js"
 import { IRoleInput } from "../domain/IRoleInput.js";
 import { RoleTransformer } from "./RoleTransformer.js";
 import { logger } from "../../shared/utils/logger.js";
+import { RoleUpdateError } from "../domain/RoleException.js";
 
 export class RoleEventController {
     constructor (private service: IRoleInput) {}
@@ -9,8 +10,8 @@ export class RoleEventController {
     create = async (role: Role) => {
         try {
             const roleParsed = RoleTransformer.parse(role)
+            
             const result = await this.service.create(roleParsed)
-
             if (!result.isSuccess()) throw result.error
 
             const roleCreated = result.value
@@ -34,6 +35,7 @@ export class RoleEventController {
             logger.info(`The role ${roleUpdated.name} (${roleUpdated.id}) was updated`)
         }
         catch (e) {
+            if (e instanceof RoleUpdateError) return await this.create(newRole)
             logger.warn(e)
         }
     }
