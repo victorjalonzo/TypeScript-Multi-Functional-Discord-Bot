@@ -6,4 +6,5 @@ export interface IRoleProductInput {
     getAll (guildId: string): Promise<Result<IRoleProduct[]>>
     get (id: string): Promise<Result<IRoleProduct>>
     delete (id: string): Promise<Result<IRoleProduct>>
+    deleteAll (guildId: string): Promise<Result<IRoleProduct[]>>
 }
