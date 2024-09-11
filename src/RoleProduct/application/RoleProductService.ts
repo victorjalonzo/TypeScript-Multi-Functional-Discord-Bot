@@ -53,4 +53,14 @@ export class RoleProductService implements IRoleProductInput {
         catch (e) {
             return Result.failure(e);}
     }
+
+    deleteAll = async (guildId: string): Promise<Result<IRoleProduct[]>> => {
+        try {
+            const deletedRoleProducts = await this.repository.deleteAll({guildId});
+            return Result.success(deletedRoleProducts);
+        }
+        catch (e) {
+            return Result.failure(e);
+        }
+    }
 }
