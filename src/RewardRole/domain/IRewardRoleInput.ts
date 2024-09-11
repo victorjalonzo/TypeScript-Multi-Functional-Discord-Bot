@@ -6,4 +6,5 @@ export interface IRewardRoleInput {
     get: (roleId: string, guildId: string) => Promise<Result<IRewardRole>>
     getAll: (guildId: string) => Promise<Result<IRewardRole[]>>
     delete: (roleId: string, guildId: string) => Promise<Result<IRewardRole>>
+    deleteAll: (guildId: string) => Promise<Result<IRewardRole[]>>
 }
