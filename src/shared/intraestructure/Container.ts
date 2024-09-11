@@ -130,7 +130,7 @@ PaypointCommand.setCallback(paypointCommandAction.execute);
 
 const rewardRoleRespository = new Repository(RewardRoleModel);
 const rewardRoleService = new RewardRoleService(rewardRoleRespository);
-const rewardRoleCommandAction = new RewardRoleCommandActions(rewardRoleService);
+const rewardRoleCommandAction = new RewardRoleCommandActions(rewardRoleService, roleService);
 const rewardRoleEventController = new RewardRoleEventController(rewardRoleService, memberService);
 RewardRoleCommand.setCallback(rewardRoleCommandAction.execute);
 
@@ -143,7 +143,7 @@ const agentComponentActions = new AgentComponentsActions(dmConversactionService,
 
 const backupRepository = new Repository(BackupModel);
 const backupService = new BackupService(backupRepository);
-const backupCommandAction = new BackupCommandAction(backupService, guildService, roleService, textChannelService, voiceChannelService, categoryChannelService);
+const backupCommandAction = new BackupCommandAction(backupService, guildService, roleService, textChannelService, voiceChannelService, categoryChannelService, memberService, roleProductService, rewardRoleService, casualPaymentService, paypointService);
 BackupCommand.setCallback(backupCommandAction.execute);
 
 export const Services = {
