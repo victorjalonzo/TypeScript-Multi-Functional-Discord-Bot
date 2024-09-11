@@ -54,4 +54,14 @@ export class RewardRoleService implements IRewardRoleInput {
             return Result.failure(String(e));
         }
     }
+
+    async deleteAll (guildId: string): Promise<Result<IRewardRole[]>> {
+        try {
+            const rewardList = await this.repository.deleteAll({ guildId: guildId });
+            return Result.success(rewardList);
+        }
+        catch (e) {
+            return Result.failure(String(e));
+        }
+    }
 }
