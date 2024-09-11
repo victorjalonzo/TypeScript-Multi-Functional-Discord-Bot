@@ -7,8 +7,16 @@ type DiscordChannelType = DiscordTextChannel | DiscordVoiceChannel | DiscordCate
 
 export class ChannelUtility {
     static getPermissionOverwrites(channel: DiscordChannelType): PermissionOverwrite[] | [] {
-        return <PermissionOverwrite[] | []>channel.permissionOverwrites.cache.map(
-            overwrite => overwrite.toJSON()
-        )
+        let overwrites: PermissionOverwrite[] | []
+
+        overwrites = channel.permissionOverwrites.cache.map(overwrite => {
+            return {
+                id: overwrite.id,
+                allow: overwrite.allow.toArray(),
+                deny: overwrite.deny.toArray()
+            }
+        })
+
+        return overwrites
     }
 }
