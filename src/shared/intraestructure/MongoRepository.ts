@@ -45,4 +45,14 @@ export class MongoRepository<T extends Document> implements IRepository<T> {
     async delete(filter: Record<string, any>): Promise<T | null> {
         return await this.model.findOneAndDelete(filter).exec();
     }
+
+    async deleteAll (filter: Record<string, any>): Promise <T[]> {
+        const documents = await this.model.find(filter).exec();
+
+        if (documents.length > 0) {
+            await this.model.deleteMany(filter).exec();
+        }
+
+        return documents
+    }
 }
