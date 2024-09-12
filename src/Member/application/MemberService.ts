@@ -87,4 +87,14 @@ export class MemberService implements IMemberInput {
         }
     }
 
+    async deleteAll (guildId: string): Promise<Result<IMember[]>> {
+        try {
+            const members = await this.repository.deleteAll({guildId: guildId});
+            return Result.success(members);
+        }
+        catch (e) {
+            return Result.failure(e);
+        }
+    }
+
 }
