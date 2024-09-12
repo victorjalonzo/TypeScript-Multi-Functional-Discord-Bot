@@ -170,26 +170,21 @@ export class PaypointCommandActions {
             const guild = cache.get(guildId)
             if (!guild) throw new CachedGuildNotFoundError()
 
-            const result = await this.service.get(guildId)
-            if (!result.isSuccess()) throw result.error
-
-            const paypoint = result.value
-
-            const roleProductsResult = await this.roleproductService.getAll(paypoint.id)
+            const roleProductsResult = await this.roleproductService.getAll(guildId)
             if (!roleProductsResult.isSuccess()) throw roleProductsResult.error
 
             const roleProducts = roleProductsResult.value
-            if (roleProducts.length === 0) throw new RoleProductsNotFoundError()
-            
-            const title = "Products list"
 
+            const title = "Product list"
+            const thumbnail = "cart"
             let description: string = ""
 
-            roleProducts.forEach(roleProduct => {
-                description += InlineBlockText(`${roleProduct.role.name} (${roleProduct.role.id}) - ${roleProduct.price} USD`)
-            })
+            description = roleProducts.length === 0 
+            ? InlineBlockText("There are no products") : 
+            roleProducts.map(roleProduct => 
+                InlineBlockText(`Product Name: ${roleProduct.role.name}\nProduct ID: ${roleProduct.role.id}\nProduct Price: ${roleProduct.price} USD`)).join('\n')
             
-            return await EmbedResult.info({interaction, title, description})
+            return await EmbedResult.info({interaction, title, thumbnail, description})
         }
         catch(e) {
             return await EmbedResult.fail({interaction, description: String(e)})
@@ -216,26 +211,10 @@ export class PaypointCommandActions {
 
             if (price <= 0) throw new InvalidRoleProductPriceError()
 
-            let paypoint: IPaypoint
-
-            const result = await this.service.get(guildId)
-
-            if (!result.isSuccess()) {
-                const newPaypoint = new Paypoint({guild, guildId})
-
-                const newPaypointResult = await this.service.create(newPaypoint)
-                if (!newPaypointResult.isSuccess()) throw newPaypointResult.error
-
-                paypoint = newPaypointResult.value
-            }
-            else {
-                paypoint = result.value
-            }
-
             const roleResult = await this.roleService.get(role.id, guildId)
             if (!roleResult.isSuccess()) throw roleResult.error
 
-            const roleParsed = roleResult.value
+            const roleCached = roleResult.value
 
             let mediaBuffer: Buffer | undefined
             let mediaFilename: string | undefined
@@ -247,7 +226,7 @@ export class PaypointCommandActions {
 
             const roleProduct = new RoleProduct({
                 id: role.id,
-                role: roleParsed, 
+                role: roleCached, 
                 price: price, 
                 media: mediaBuffer,
                 mediaFilename: mediaFilename,
@@ -256,12 +235,12 @@ export class PaypointCommandActions {
                 guildId: guildId,
             })
 
-            const resultRoleProduct = await this.roleproductService.create(roleProduct)
-            if (!resultRoleProduct.isSuccess()) throw resultRoleProduct.error
+            const roleProductResult = await this.roleproductService.create(roleProduct)
+            if (!roleProductResult.isSuccess()) throw roleProductResult.error
 
             const title = "Product added"
-            const info = InlineBlockText(`product: ${role.name} (${role.id})\nprice: ${price}`)
-            const content = `The product was added to the paypoint: ${info}`
+            const info = InlineBlockText(`Product Name: ${roleProduct.role.name}\nProduct ID: ${roleProduct.role.id}\nProduct Price: ${roleProduct.price} USD`)
+            const content = `The product was added successfully.${info}`
 
             return await EmbedResult.success({title, description: content, interaction: interaction})
         }
@@ -288,8 +267,10 @@ export class PaypointCommandActions {
             const result = await this.roleproductService.delete(role.id)
             if (!result.isSuccess()) throw result.error
 
+            const roleProductDeleted = result.value
+
             const title = "Product removed"
-            const info = InlineBlockText(`product: ${role.name} (${role.id})`)
+            const info = InlineBlockText(`Product Name: ${roleProductDeleted.role.name}\nProduct ID: ${roleProductDeleted.role.id}\nProduct Price: ${roleProductDeleted.price} USD`)
             const description = `The product was removed from the guild successfully: ${info}`
 
             return await EmbedResult.success({title, description, interaction: interaction})
