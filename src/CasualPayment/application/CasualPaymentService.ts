@@ -72,4 +72,14 @@ export class CasualPaymentService implements ICasualPaymentInput {
             return Result.failure(e);
         }
     }
+
+    deleteAll = async (guildId: string): Promise<Result<ICasualPayment[]>> => {
+        try {
+            const casualPaymentList = await this.repository.deleteAll({ guildId: guildId });
+            return Result.success(casualPaymentList);
+        }
+        catch(e) {
+            return Result.failure(e);
+        }
+    }
 }
