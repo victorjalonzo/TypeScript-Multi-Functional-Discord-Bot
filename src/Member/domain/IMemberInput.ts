@@ -8,4 +8,5 @@ export interface IMemberInput {
     getInviteMembersCount(inviterId: string, guildId: string): Promise<Result<number>>
     get(id: string, guildId: string): Promise<Result<IMember>>
     delete(filters: Record<string, any>): Promise<Result<IMember>>
+    deleteAll(guildId: string): Promise<Result<IMember[]>>
 }
