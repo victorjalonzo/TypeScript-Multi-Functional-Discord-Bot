@@ -5,6 +5,7 @@ import { RewardRole } from "../domain/RewardRole.js";
 import { cache } from "../../shared/intraestructure/Cache.js";
 import { InlineBlockText } from "../../shared/utils/textFormating.js";
 import { IRoleInput } from "../../Role/domain/IRoleInput.js";
+import { GuildNotFoundError } from "../../shared/domain/Exceptions.js";
 
 export class RewardRoleCommandActions {
     constructor (
@@ -28,10 +29,10 @@ export class RewardRoleCommandActions {
             const invites = interaction.options.getInteger('invites')
             const guild = interaction.guild
 
-            if (!guild) throw new Error("The guild was not found")
-            const cachedGuild = cache.get(guild.id)
+            if (!guild) throw new GuildNotFoundError()
 
-            if (!cachedGuild) throw new Error("The guild was not found")
+            const cachedGuild = cache.get(guild.id)
+            if (!cachedGuild) throw new GuildNotFoundError()
 
             if (!role) throw new Error("The role was not found")
             if (!invites) throw new Error("The amount was not found")
@@ -50,12 +51,15 @@ export class RewardRoleCommandActions {
             })
 
             const result = await this.service.create(reward)
-
             if (!result.isSuccess()) throw result.error
+
+            const rewardCreated = result.value
             
-            const description = InlineBlockText(`The reward role ${role.name} (${reward.id}) was created`)
+            const title = 'Reward created'
+            let description = `The role as reward was created successfully.`
+            description += InlineBlockText(`Reward Name: ${rewardCreated.role.name}\nReward ID: (${rewardCreated.role.id})\nReward Required Invites: ${rewardCreated.invites}`)
             
-            return await EmbedResult.success({description, interaction})
+            return await EmbedResult.success({title, description, interaction})
         }
         catch (e) {
             return await EmbedResult.fail({description: String(e), interaction})
@@ -68,14 +72,18 @@ export class RewardRoleCommandActions {
             if (!role) throw new Error("The role was not found")
             
             const guild = interaction.guild
-            if (!guild) throw new Error("The guild was not found")
+            if (!guild) throw new GuildNotFoundError()
 
             const result = await this.service.delete(role.id, guild.id)
             if (!result.isSuccess()) throw result.error
-            
-            const description = InlineBlockText(`The reward role ${role.name} (${role.id}) was deleted`)
 
-            return await EmbedResult.success({description, interaction})
+            const reward = result.value
+            
+            const title = 'Reward deleted'
+            let description = `The role as reward was deleted successfully.`
+            description += InlineBlockText(`Reward Name: ${reward.role.name}\nReward ID: (${reward.role.id})\nReward Required Invites: ${reward.invites}`)
+
+            return await EmbedResult.success({title, description, interaction})
         }
         catch (e) {
             return await EmbedResult.fail({description: String(e), interaction})
@@ -85,33 +93,21 @@ export class RewardRoleCommandActions {
     list = async (interaction: ChatInputCommandInteraction) => {
         try {
             const guild = interaction.guild
-            if (!guild) throw new Error("The guild was not found")
-
-            const cachedGuild = cache.get(guild.id)
-            if (!cachedGuild) throw new Error("The guild was not found")
+            if (!guild) throw new GuildNotFoundError()
 
             const result = await this.service.getAll(guild.id)
             if (!result.isSuccess()) throw result.error
 
             const rewards = result.value
-            if (!rewards) throw new Error("The rewards were not found")
 
-            let description = ""
-            
-            if (rewards.length === 0) {
-                description = InlineBlockText("The list currently is empty.")
-            }
-            else {
-                for (const reward of rewards) {
-                    const role = await guild.roles.fetch(reward.id)
-                    if (!role) continue
+            const title = "Rewards list"
+            let description: string
 
-                    description += `${role.name} : ${reward.invites}\n`
-                }
-                description = InlineBlockText(description)
-            }
+            description = rewards.length === 0
+            ? InlineBlockText("There are no roles as rewards created")
+            : rewards.map(reward => InlineBlockText(`Reward Name: ${reward.role.name}\nReward ID: (${reward.role.id})\nReward Required Invites: ${reward.invites}`)).join('\n')
 
-            return await EmbedResult.info({description, interaction})
+            return await EmbedResult.info({title, description, interaction})
         }
         catch (e) {
             return await EmbedResult.fail({description: String(e), interaction})
