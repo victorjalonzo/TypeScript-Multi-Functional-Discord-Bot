@@ -25,7 +25,7 @@ export class RewardRoleService implements IRewardRoleInput {
 
     async get (roleId: string, guildId: string): Promise<Result<IRewardRole>> {
         try {
-            const reward = await this.repository.get({ roleId: roleId, guildId: guildId });
+            const reward = await this.repository.get({ roleId: roleId, guildId: guildId }, 'role');
             if (!reward) throw new RewardRoleNotFound()
             return Result.success(reward);
         }
@@ -36,7 +36,7 @@ export class RewardRoleService implements IRewardRoleInput {
 
     async getAll(guildId: string): Promise<Result<IRewardRole[]>> {
         try {
-            const rewardList = await this.repository.getAll({ guildId: guildId });
+            const rewardList = await this.repository.getAll({ guildId: guildId }, 'role');
             return Result.success(rewardList);
         }
         catch (e) {
