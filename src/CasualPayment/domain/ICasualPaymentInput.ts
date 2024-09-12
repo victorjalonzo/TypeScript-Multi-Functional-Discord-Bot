@@ -7,4 +7,5 @@ export interface ICasualPaymentInput {
     getByRawName(rawName: string, guildId: string): Promise<Result<ICasualPayment>>
     getAll(guildId: string): Promise<Result<ICasualPayment[]>>
     delete({name, guildId }: { name: string, guildId: string }): Promise<Result<Record<string, any>>>
+    deleteAll(guildId: string): Promise<Result<ICasualPayment[]>>
 }
