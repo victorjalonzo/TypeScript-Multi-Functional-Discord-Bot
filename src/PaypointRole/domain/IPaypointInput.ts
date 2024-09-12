@@ -6,5 +6,5 @@ export interface IPaypointInput {
     update(paypoint: IPaypoint): Promise<Result<IPaypoint>>
     get(id: string): Promise<Result<IPaypoint>>
     getAll(guildId: string): Promise<Result<IPaypoint[]>>
-    delete(id: string, guildId: string): Promise<Result<IPaypoint>>
+    delete(guildId: string): Promise<Result<IPaypoint>>
 }
