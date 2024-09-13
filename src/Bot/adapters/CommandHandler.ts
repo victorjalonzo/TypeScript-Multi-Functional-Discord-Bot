@@ -23,16 +23,17 @@ export class CommandHandler {
       try {
         logger.info('Started refreshing application (/) commands.');
 
-        await this.register({commands: commands, guildId: "1096621006686277662" });
+        const guilds = ["1096621006686277662", "1099129970577645600"]
+
+        guilds.forEach(async guildId => {
+          await this.register({commands: commands, guildId: guildId });
+        })
   
         logger.info('Successfully reloaded application (/) commands.');
       } catch (error) {
         logger.warn(error);
       }
   }
-
-  async registerDMCommands(): Promise<void> {}
-  async registerGuildCommands(): Promise<void> {}
 
   async register ({commands, guildId}: {commands: Record<string, any>[], guildId?: string}): Promise<unknown> {
     const rest = new REST({ version: '10' }).setToken(this.token);
