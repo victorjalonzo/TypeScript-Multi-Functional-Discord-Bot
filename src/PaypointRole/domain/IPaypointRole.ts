@@ -10,8 +10,8 @@ export interface IPaypoint {
     title?: string
     description?: string
     paymentMethod?: TPaymentMethodType
-    messageId?: string
-    channelId?: string
+    messageId?: string | null
+    channelId?: string | null
     guildId: string
     guild: IGuild
     createdAt?: Date
