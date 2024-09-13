@@ -51,6 +51,17 @@ export class PaypointService implements IPaypointInput {
         }
     }
 
+    async getByMessageID(messageID: string): Promise<Result<IPaypoint>> {
+        try {
+            const paypoint = await this.repository.get({messageId: messageID});
+            if (!paypoint) throw new PaypointNotFoundError()
+            return Result.success(paypoint);
+        }
+        catch (e) {
+            return Result.failure(e);
+        }
+    }
+
     async get (guildId: string): Promise<Result<IPaypoint>> {
         try {
             const paypoint = await this.repository.get({ guildId });
