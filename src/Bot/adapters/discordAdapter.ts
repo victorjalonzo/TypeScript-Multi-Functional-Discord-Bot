@@ -46,9 +46,14 @@ export class DiscordAdapter {
             const guildManager = this.client.guilds
             await this.controllers.guildController.createCache(guildManager)
 
+            console.log("\n")
             for (const guild of guildManager.cache.values()) {
+                logger.info(`Refreshing ${guild.name} (${guild.id}):`)
+
                 await this.controllers.roleProductEventController.refresh(guild)
                 await this.controllers.rewardRoleEventController.refresh(guild)
+
+                console.log("\n")
             }
         })
 
@@ -84,6 +89,31 @@ export class DiscordAdapter {
 
             logger.warn(`Unknow channel... ${message}`)
         })
+
+        this.client.on('raw', async (event) => {
+          if (event.t != 'MESSAGE_DELETE') return
+          const channel = await this.client.channels.fetch(event.d.channel_id);
+          if (!channel) return
+          if (!channel.isTextBased()) return
+
+          const message = {
+            id: event.d.id,
+            channelId: event.d.channel_id,
+            guildId: event.d.guild_id
+          }
+
+          await this.controllers.paypointEventController.deleteUpdatableMessageID(message)
+
+        })
+
+        /*
+        this.client.on('messageDelete', async (message) => {
+            if (message.author?.bot) return;
+
+            await this.controllers.paypointEventController.deleteUpdatableMessageID(message)
+        })
+            */
+
         this.client.on("UserConfirmedMarkedCasualPayment", async (user: User, DMConversactionId: string) => {
           return await this.controllers.agentEventController.replyMarkedCasualPaymentConfirmation(user, DMConversactionId)
         }) 
@@ -91,11 +121,13 @@ export class DiscordAdapter {
         this.client.on('guildMemberAdd', async (member) => {
             await this.controllers.memberController.create(member)
             await this.controllers.inviteEventController.increaseInviteCount(member)
-            await this.controllers.rewardRoleEventController.giveReward(member)
+            await this.controllers.rewardRoleEventController.assignRoleOnInviteGoal(member)
         })
+
         this.client.on('GuildMemberUpdate', async (oldMember, newMember) => {
             return await this.controllers.memberController.update(oldMember, newMember)
         })
+        
         this.client.on('GuildMemberRemove', async (member) => {
             return await this.controllers.memberController.delete(member)
         })
