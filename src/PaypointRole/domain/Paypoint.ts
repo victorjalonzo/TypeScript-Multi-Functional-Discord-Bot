@@ -10,8 +10,8 @@ export class Paypoint implements IPaypoint {
     public media?: Buffer
     public mediaCodec?: string
     public paymentMethod?: TPaymentMethodType
-    public messageId?: string
-    public channelId?: string
+    public messageId?: string | null
+    public channelId?: string | null
     public guild: IGuild;
     public guildId: string;
     public createdAt: Date = new Date();
