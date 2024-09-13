@@ -19,7 +19,7 @@ export const createGuildAsistentPrompt = (options: IOptions) => {
     inviteRewardsData += options.inviteRewards.length === 0 
     ? `There are no invitation rewards created.` 
     : `There are ${options.inviteRewards.length} invitation rewards.\n` + 
-      options.inviteRewards.map(reward => `*<@&${reward.roleId}>: ${reward.invites} invites needed.`).join("\n");
+      options.inviteRewards.map(reward => `*<@&${reward.id}>: ${reward.invites} invites needed.`).join("\n");
 
     paypointData += options.paypoint 
     ? `There is a payment point in the channel <#${options.paypoint.channelId}>.` 
