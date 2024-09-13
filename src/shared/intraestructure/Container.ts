@@ -72,6 +72,7 @@ import { BackupService } from "../../Backup/application/BackupService.js";
 import { BackupCommand } from "../../Backup/infrastructure/BackupCommand.js";
 import { BackupCommandAction } from "../../Backup/infrastructure/BackupCommandAction.js";
 import { RoleProductEventController } from "../../RoleProduct/infrastructure/RoleProductEventController.js";
+import { PaypointEventController } from "../../PaypointRole/infrastructure/PaypointEventController.js";
 
 await Database.connect()
 
@@ -126,6 +127,7 @@ const dmConversactionService = new DMConversactionService(DMConversactionReposit
 const paypointService = new PaypointService(paypointRepository, guildRepository, casualPaymentRepository);
 const paypointCommandAction = new PaypointCommandActions(paypointService, roleService, roleProductService, casualPaymentService);
 const paypointComponentAction = new PaypointComponentActions(paypointService, casualPaymentService, roleProductService, dmConversactionService, memberService);
+const paypointEventController = new PaypointEventController(paypointService);
 PaypointCommand.setCallback(paypointCommandAction.execute);
 
 const rewardRoleRespository = new Repository(RewardRoleModel);
@@ -170,7 +172,8 @@ export const Controllers = {
     rewardRoleEventController,
     inviteEventController,
     agentEventController,
-    roleProductEventController
+    roleProductEventController,
+    paypointEventController
 }
 
 export const Commands: SlashCommandCallable[] = [ 
