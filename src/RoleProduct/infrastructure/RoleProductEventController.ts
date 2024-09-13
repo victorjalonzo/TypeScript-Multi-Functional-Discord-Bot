@@ -15,19 +15,15 @@ export class RoleProductEventController {
             const result = await this.service.getAll(guild.id)
             if (!result.isSuccess()) throw result.error
 
-            if (result.value.length != 0) {
-                const roleProductsObsolete = result.value.filter(roleProduct => 
-                    roles.some(role => 
-                        role.id !== roleProduct.id
-                    )
-                )
-    
-                if (roleProductsObsolete.length > 0) {
-                    for (const roleProduct of roleProductsObsolete) {
-                        const roleProductDeletedResult = await this.service.delete(roleProduct.id)
-                        if (!roleProductDeletedResult.isSuccess()) throw roleProductDeletedResult.error
-                    }
-                }
+            const roleProducts = result.value
+
+            const roleProductsObsolete = roleProducts.filter(roleProduct => {
+                return !roles.some(role => role.id === roleProduct.id)
+            })
+
+            for (const roleProduct of roleProductsObsolete) {
+                const roleProductDeletedResult = await this.service.delete(roleProduct.id)
+                if (!roleProductDeletedResult.isSuccess()) throw roleProductDeletedResult.error
             }
 
             logger.info("role products: up to date.")
