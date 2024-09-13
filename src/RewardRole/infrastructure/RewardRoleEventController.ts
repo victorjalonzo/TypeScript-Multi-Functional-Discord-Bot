@@ -20,20 +20,17 @@ export class RewardRoleEventController {
             const result = await this.service.getAll(guild.id)
             if (!result.isSuccess()) throw result.error
 
-            if (result.value.length != 0) {
-                const roleRewardObsolete = result.value.filter(roleReward => 
-                    roles.some(role => 
-                        role.id !== roleReward.id
-                    )
-                )
-    
-                if (roleRewardObsolete.length > 0) {
-                    for (const roleReward of roleRewardObsolete) {
-                        await this.service.delete(roleReward.id, guild.id)
-                        logger.info(`Role reward ${roleReward.id} was removed due to role deletion`)
-                    }
-                }
+            const roleRewards = result.value
+
+            const roleRewardsObsolete = roleRewards.filter(roleReward => {
+                return !roles.some(role => role.id === roleReward.id)
+            })
+
+            for (const roleReward of roleRewardsObsolete) {
+                await this.service.delete(roleReward.id, guild.id)
+                logger.info(`Role reward ${roleReward.id} was removed due to role deletion`)
             }
+            
             logger.info("role rewards: up to date.")
         }
         catch (e) {
