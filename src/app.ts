@@ -11,11 +11,12 @@ const main = async () => {
             GatewayIntentBits.GuildMembers,
             GatewayIntentBits.GuildMessages,
             GatewayIntentBits.GuildInvites,
+            GatewayIntentBits.MessageContent
         ],
         partials: [
             Partials.Channel,
-            Partials.Message
-        ],
+            Partials.Message,
+        ]
     })
 
     const discordAdapter = new DiscordAdapter({
