@@ -72,7 +72,7 @@ export class GuildController {
             const oldParsedGuild = GuildTransformer.parse(oldGuild)
             const newParsedGuild = GuildTransformer.parse(newGuild)
     
-            const result = await this.service.update(oldParsedGuild, newParsedGuild)
+            const result = await this.service.update(newParsedGuild)
 
             if (!result.isSuccess()) throw result.error
 
