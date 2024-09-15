@@ -27,7 +27,7 @@ export class GuildService implements IGuildInput {
 
     get = async (id: string): Promise<Result<IGuild>> => {
         try {
-            const guildRecord = await this.repository.get({id}, );
+            const guildRecord = await this.repository.get({id}, []);
             if (!guildRecord) throw new GuildRecordNotFoundError()
     
             return Result.success(guildRecord);
@@ -37,10 +37,10 @@ export class GuildService implements IGuildInput {
         }
     }
 
-    update = async (oldGuild: IGuild, newGuild: IGuild): Promise<Result<IGuild>> =>{
+    update = async (guild:IGuild): Promise<Result<IGuild>> =>{
         try {
-            const filters = { id: oldGuild.id }
-            const guildRecordUpdated = await this.repository.update(filters, newGuild);
+            const filters = { id: guild.id }
+            const guildRecordUpdated = await this.repository.update(filters, guild);
             
             if (!guildRecordUpdated) throw new GuildRecordUpdateError()
 
