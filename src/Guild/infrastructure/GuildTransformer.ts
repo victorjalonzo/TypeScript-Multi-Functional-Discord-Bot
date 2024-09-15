@@ -5,8 +5,19 @@ import { GuildRecordTransformationError } from "../domain/GuildExceptions.js";
 export class GuildTransformer {
     static parse = (guild: discordGuild): Guild => {
         try {
-            const { id, name, icon, createdAt } = guild;
-            return new Guild(id, name, icon, createdAt);
+            return new Guild({
+                id: guild.id,
+                name: guild.name,
+                icon: guild.icon,
+                defaultCredits: 0,
+                defaultRole: null,
+                defaultNotificationChannel: null,
+                defaultInvoiceChannel: null,
+                createdAt: new Date(),
+                paypoints: [],
+                casualPayments: [],
+                credits: [],
+            });
         }
         catch (e) {
             throw new GuildRecordTransformationError()
