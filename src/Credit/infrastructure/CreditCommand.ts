@@ -22,6 +22,16 @@ CreditCommand
                 .setDescription('The amount of credits')
                 .setRequired(true)
             )
+
+            .addAttachmentOption(option => option
+                .setName('media')
+                .setDescription('The image of the credit')
+            )
+
+            .addStringOption(option => option
+                .setName('description')
+                .setDescription('The description of the credit')
+            )
         )
         
     .addSubcommand(subcommand => 
@@ -30,8 +40,8 @@ CreditCommand
             .setDescription('Remove a credit')
 
             .addIntegerOption(option => option
-                .setName('price')
-                .setDescription('The price of the credit to be deleted')
+                .setName('id')
+                .setDescription('The id of the credit')
                 .setRequired(true)
             )
         )
