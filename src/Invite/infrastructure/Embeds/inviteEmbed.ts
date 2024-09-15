@@ -31,6 +31,9 @@ export const createInviteCard = async (props: IProps) => {
 
     if (avatarURL) card.setAvatar(avatarURL)
 
+
+    card.height = card.height - 50
+
     card.setStyles({
         progressbar: {
             thumb: {style: {backgroundColor: "#5ce65c"}}
@@ -40,18 +43,18 @@ export const createInviteCard = async (props: IProps) => {
           container: {style: {fontWeight: "bold"}},
           xp: {
             container: { style: {margin: "0px", fontSize: "20px"}},
-            text: {style: {fontWeight: "bold", color: "#ffff"}}
+            text: {style: {fontWeight: "bold", color: "#ffff", fontFamily: "Arial"}}
           }
         }
     });
 
     card.setTextStyles({
         level: "YOUR CREDITS :", // Custom text for the level
-        xp: "INVITES:", // Custom text for the experience points
-        rank: "CHALLENGE :", // Custom text for the rank
+        xp: "Current Invites:", // Custom text for the experience points
+        rank: "CHALLENGE:", // Custom text for the rank
       });
 
-    const image = await card.build({format: "png"});
+    const image = await card.build({format: "png", width: 550, height: 120});
     return new AttachmentBuilder(image, {name: "rank.png"})
 }
 
