@@ -7,6 +7,7 @@ import { InlineBlockText } from "../../shared/utils/textFormating.js";
 import { logger } from "../../shared/utils/logger.js";
 import { CreditAmountNotProvidedError, PriceNotProvidedError } from "../domain/CreditExceptions.js";
 import { GuildNotFoundError } from "../../shared/domain/Exceptions.js";
+import { getBufferFromAttachment } from "../../shared/utils/AttachmentBuffer.js";
 
 export class CreditCommandActions {
     constructor (private service: ICreditInput, private thumbnail:string="credit") {}
@@ -27,11 +28,11 @@ export class CreditCommandActions {
             const cachedGuild = cache.get(guildId)
             if (!cachedGuild) throw GuildNotFoundError 
 
-            const result = await this.service.getAll({guildId: guildId})
+            const result = await this.service.getAll(guildId)
 
             if (!result.isSuccess()) return new Error("It was not possible to get the list of credits")
 
-            const title = "CREDITS PACKAGES"
+            const title = "Credit products list"
             let description: string = ""
 
             if (result.value.length === 0) {
@@ -57,6 +58,8 @@ export class CreditCommandActions {
             const price = interaction.options.getInteger('price')
             const amount = interaction.options.getInteger('amount')
             const guildId = interaction.guildId
+            const productMedia = interaction.options.getAttachment('media')
+            const productDescription = interaction.options.getString('description')
 
             if (!price) throw new PriceNotProvidedError()
             if (!amount) throw new CreditAmountNotProvidedError()
@@ -64,14 +67,24 @@ export class CreditCommandActions {
     
             const cachedGuild = cache.get(guildId)
             if (!cachedGuild) return new GuildNotFoundError()
+
+            const media = productMedia ? await getBufferFromAttachment(productMedia) : null
+            const codec = productMedia ? productMedia.name.split('.').pop() : null
     
-            const credit = new Credit(price, amount, guildId, cachedGuild, new Date())
+            const credit = new Credit({
+                price:price, 
+                amount:amount,
+                media:media,
+                codec:codec,
+                description:productDescription,
+                guild:cachedGuild,
+                guildId:guildId,
+            })
     
             const result = await this.service.create(credit)
-    
-            if (!result.isSuccess()) return new Error("It was not possible to create the credit")
+            if (!result.isSuccess()) throw result.error
             
-            const title = "CREDIT CREATED"
+            const title = "Credit product added"
             const description = InlineBlockText(`$${price} for ${amount} credits`)
 
             return await EmbedResult.success({title, description, interaction, thumbnail: this.thumbnail})
@@ -84,22 +97,21 @@ export class CreditCommandActions {
 
     remove = async (interaction: ChatInputCommandInteraction) => {
         try {
-            const price = interaction.options.getInteger('price')
+            const creditId = interaction.options.getString('id')
             const guildId = interaction.guildId
 
-            if (!price) throw new PriceNotProvidedError()
+            if (!creditId) throw new PriceNotProvidedError()
             if (!guildId) throw new GuildNotFoundError()
 
             const cachedGuild = cache.get(guildId)
             if (!cachedGuild) return new GuildNotFoundError()
     
-            const result = await this.service.delete({name: name, guildId: guildId})
-    
-            if (!result.isSuccess()) throw Error("It was not possible to delete the credit")
+            const result = await this.service.delete(creditId)
+            if (!result.isSuccess()) throw result.error
             
             const credit = result.value
 
-            const title = "CREDIT REMOVED"
+            const title = "Credit product removed"
             const description = InlineBlockText(`$${credit.price} for ${credit.amount} credits`)
     
             return await EmbedResult.success({title, description, interaction, thumbnail: this.thumbnail})
