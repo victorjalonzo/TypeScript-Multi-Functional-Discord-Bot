@@ -4,6 +4,14 @@ import { Result } from "../../shared/domain/Result.js";
 import { IRepository } from "../../shared/domain/IRepository.js";
 import { IGuild } from "../../Guild/domain/IGuild.js";
 
+import {
+    CreditCreationError,
+    CreditNotFoundError,
+    CreditUpdateError,
+    CreditDeletionError
+}
+from "../domain/CreditExceptions.js";
+
 export class CreditService implements ICreditInput {
     constructor(
         private readonly repository: IRepository<ICredit>,
@@ -13,7 +21,7 @@ export class CreditService implements ICreditInput {
     async create(credit: ICredit): Promise<Result<ICredit>> {
         try {
             const createdCredit = await this.repository.create(credit);
-            if (!createdCredit) throw new Error(`The credit record could not be created`)
+            if (!createdCredit) throw new CreditCreationError()
 
             const guild = await this.guildRepository.get({ id: credit.guildId });
             if (!guild) throw new Error(`The associated guild record could not be found`)
@@ -26,41 +34,53 @@ export class CreditService implements ICreditInput {
             return Result.success(createdCredit);
         }
         catch (e) {
-            return Result.failure(String(e));
+            return Result.failure(e);
         }
     }
 
-    async getAll(filters: Record<string, any>): Promise<Result<ICredit[]>> {
+    async getAll(guildId: string): Promise<Result<ICredit[]>> {
         try {
-            const creditList = await this.repository.getAll(filters);
+            const creditList = await this.repository.getAll({ guildId });
             return Result.success(creditList);
         }
         catch (e) {
-            return Result.failure(String(e));
+            return Result.failure(e);
         }
     }
 
-    async get(filters: Record<string, any>): Promise<Result<ICredit>> {
+    async get(id: string): Promise<Result<ICredit>> {
         try {
-            const credit = await this.repository.get(filters);
-            if (!credit) throw new Error(`No credit found`)
+            const credit = await this.repository.get({id});
+            if (!credit) throw new CreditNotFoundError()
             
             return Result.success(credit);
         }
         catch (e) {
-            return Result.failure(String(e));
+            return Result.failure(e);
         }
     }
 
-    async delete(filters: Record<string, any>): Promise<Result<ICredit>> {
+    async delete(id: string): Promise<Result<ICredit>> {
         try {
-            const deletedCredit = await this.repository.delete(filters);
-            if (!deletedCredit) throw new Error(`No credit deleted`)
+            const deletedCredit = await this.repository.delete({id});
+            if (!deletedCredit) throw new CreditDeletionError()
             
             return Result.success(deletedCredit);
         }
         catch (e) {
-            return Result.failure(String(e));
+            return Result.failure(e);
+        }
+    }
+
+    async deleteAll(guildId: string): Promise<Result<ICredit[]>> {
+        try {
+            const deletedCredits = await this.repository.deleteAll({guildId});
+            if (!deletedCredits) throw new CreditDeletionError()
+            
+            return Result.success(deletedCredits);
+        }
+        catch (e) {
+            return Result.failure(e);
         }
     }
 }
