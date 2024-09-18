@@ -1,8 +1,8 @@
 import { IMember } from "../../Member/domain/IMember.js"
-import { IRoleProduct } from "../../RoleProduct/domain/IRoleProduct.js"
 import { createRandomId } from "../../shared/utils/generate.js"
 import { IDMConversaction } from "./IDMConversaction.js"
 import { DMConversactionState } from "./DMConversactionStateEnums.js"
+import { TProductType } from "../../shared/domain/TProductType.js"
 
 interface IOptions extends Omit<IDMConversaction, "id"| "state" | "botTurn" | "invoices" | "history" | "updatableMessageId" | "createdAt"> {}
 
@@ -11,9 +11,13 @@ export class DMConversaction implements IDMConversaction {
     public member: IMember
     public memberId: string
     public guildId: string
-    public paymentMethodName: string
-    public paymentMethodValue: string
-    public product: IRoleProduct
+    public casualPaymentMethodId: string
+    public casualPaymentMethodName: string
+    public casualPaymentMethodValue: string
+    public productId: string
+    public productName: string
+    public productPrice: number
+    public productType: TProductType
     public botTurn: boolean = true
     public state: DMConversactionState = DMConversactionState.WAITING_USER_TO_CONFIRM_MARKED_PAYMENT
     public history: string[] = []
@@ -27,9 +31,13 @@ export class DMConversaction implements IDMConversaction {
         this.member = options.member
         this.memberId = options.memberId
         this.guildId = options.guildId
-        this.paymentMethodName = options.paymentMethodName
-        this.paymentMethodValue = options.paymentMethodValue
-        this.product = options.product
+        this.casualPaymentMethodId = options.casualPaymentMethodId
+        this.casualPaymentMethodName = options.casualPaymentMethodName
+        this.casualPaymentMethodValue = options.casualPaymentMethodValue
+        this.productId = options.productId
+        this.productName = options.productName
+        this.productPrice = options.productPrice
+        this.productType = options.productType
     }
 }
 
