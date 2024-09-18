@@ -43,11 +43,11 @@ import { RoleService } from "../../Role/application/RoleService.js";
 import { RoleRecordModel } from "../../Role/infrastructure/RoleSchema.js";
 import { RoleEventController } from "../../Role/infrastructure/RoleEventController.js";
 
-import { RewardRoleModel } from "../../RewardRole/infrastructure/RewardRoleSchema.js";
-import { RewardRoleCommand } from '../../RewardRole/infrastructure/RewardRoleCommand.js';
-import { RewardRoleCommandActions } from "../../RewardRole/infrastructure/RewardRoleCommandActions.js";
-import { RewardRoleService } from "../../RewardRole/application/RewardRoleService.js";
-import { RewardRoleEventController } from "../../RewardRole/infrastructure/RewardRoleEventController.js";
+import { RoleRewardModel } from "../../RoleReward/infrastructure/RoleRewardSchema.js";
+import { RoleRewardCommand } from '../../RoleReward/infrastructure/RoleRewardCommand.js';
+import { RoleRewardCommandActions } from "../../RoleReward/infrastructure/RoleRewardCommandActions.js";
+import { RoleRewardService } from "../../RoleReward/application/RoleRewardService.js";
+import { RoleRewardEventController } from "../../RoleReward/infrastructure/RoleRewardEventController.js";
 
 import { InviteCommand } from '../../Invite/infrastructure/InviteCommand.js';
 import { InviteCommandActions } from "../../Invite/infrastructure/InviteCommandActions.js";
@@ -174,22 +174,22 @@ const creditRewardEventController = new CreditRewardEventController(creditReward
 const creditRewardCommandActions = new CreditRewardCommandActions(creditRewardService, guildService)
 CreditRewardCommand.setCallback(creditRewardCommandActions.execute);
 
-const rewardRoleRespository = new Repository(RewardRoleModel);
-const rewardRoleService = new RewardRoleService(rewardRoleRespository);
-const rewardRoleCommandAction = new RewardRoleCommandActions(rewardRoleService, roleService);
-const rewardRoleEventController = new RewardRoleEventController(rewardRoleService, memberService);
-RewardRoleCommand.setCallback(rewardRoleCommandAction.execute);
+const roleRewardRespository = new Repository(RoleRewardModel);
+const roleRewardService = new RoleRewardService(roleRewardRespository);
+const roleRewardCommandAction = new RoleRewardCommandActions(roleRewardService, roleService);
+const roleRewardEventController = new RoleRewardEventController(roleRewardService, memberService);
+RoleRewardCommand.setCallback(roleRewardCommandAction.execute);
 
-const inviteCommandActions = new InviteCommandActions(memberService, rewardRoleService);
+const inviteCommandActions = new InviteCommandActions(memberService, roleRewardService, creditRewardService);
 const inviteEventController = new InviteEventController(memberService);
 InviteCommand.setCallback(inviteCommandActions.execute);
 
-const agentEventController = new AgentEventController(casualTransactionService, paypointService, roleProductService, rewardRoleService, dmConversactionService, memberService);
+const agentEventController = new AgentEventController(casualTransactionService, paypointService, roleProductService, roleRewardService, dmConversactionService, memberService);
 const agentComponentActions = new AgentComponentsActions(dmConversactionService, casualTransactionService, roleProductService, creditProductService, creditWalletService);
 
 const backupRepository = new Repository(BackupModel);
 const backupService = new BackupService(backupRepository);
-const backupCommandAction = new BackupCommandAction(backupService, guildService, roleService, textChannelService, voiceChannelService, categoryChannelService, memberService, roleProductService, creditProductService, rewardRoleService, casualPaymentService, paypointService);
+const backupCommandAction = new BackupCommandAction(backupService, guildService, roleService, textChannelService, voiceChannelService, categoryChannelService, memberService, roleProductService, creditProductService, roleRewardService, casualPaymentService, paypointService);
 BackupCommand.setCallback(backupCommandAction.execute);
 
 export const Services = {
@@ -206,7 +206,7 @@ export const Services = {
     creditRewardService,
     paypointService,
     roleProductService,
-    rewardRoleService
+    rewardRoleService: roleRewardService
 }
 
 export const Controllers = {
@@ -216,7 +216,7 @@ export const Controllers = {
     textChannelEventController,
     voiceChannelEventController,
     roleEventController,
-    rewardRoleEventController,
+    rewardRoleEventController: roleRewardEventController,
     inviteEventController,
     agentEventController,
     roleProductEventController,
@@ -232,7 +232,7 @@ export const Commands: SlashCommandCallable[] = [
 
     GuildCommand, 
     InviteCommand, 
-    RewardRoleCommand,
+    RoleRewardCommand,
     IntegratedPaymentCommand,
     BackupCommand,
     CreditChannelLockerCommand,
@@ -244,9 +244,9 @@ export const Commands: SlashCommandCallable[] = [
 export const CommandActions = {
     guildCommandActions, 
     paypointCommandAction,
-    creditCommandAction: creditProductCommandAction,
+    creditProductCommandAction,
     creditChannelLockerCommandAction,
-    rewardRoleCommandAction,
+    roleRewardCommandAction,
     casualPaymentCommandAction,
     backupCommandAction,
     creditWalletCommandActions,

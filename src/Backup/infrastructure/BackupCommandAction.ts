@@ -27,8 +27,8 @@ import { TextChannelModel } from "../../TextChannel/infrastructure/TextChannelSc
 import { VoiceChannelModel } from "../../VoiceChannel/infrastructure/VoiceChannelSchema.js";
 import { IRoleProductInput } from "../../RoleProduct/domain/IRoleProductInput.js";
 import { RoleProduct } from "../../RoleProduct/domain/RoleProduct.js";
-import { IRewardRoleInput } from "../../RewardRole/domain/IRewardRoleInput.js";
-import { RewardRole } from "../../RewardRole/domain/RewardRole.js";
+import { IRoleRewardInput } from "../../RoleReward/domain/IRoleRewardInput.js";
+import { RoleReward } from "../../RoleReward/domain/RoleReward.js";
 import { ICasualPaymentInput } from "../../CasualPayment/domain/ICasualPaymentInput.js";
 import { CasualPayment } from "../../CasualPayment/domain/CasualPayment.js";
 import { IPaypointInput } from "../../Paypoint/domain/IPaypointInput.js";
@@ -47,7 +47,7 @@ import { IVoiceChannel } from "../../VoiceChannel/domain/IVoiceChannel.js";
 import { IMember } from "../../Member/domain/IMember.js";
 import { IGuild } from "../../Guild/domain/IGuild.js";
 import { IRoleProduct } from "../../RoleProduct/domain/IRoleProduct.js";
-import { IRewardRole } from "../../RewardRole/domain/IRewardRole.js";
+import { IRoleReward } from "../../RoleReward/domain/IRoleReward.js";
 import { ICasualPayment } from "../../CasualPayment/domain/ICasualPayment.js";
 import { ICreditProductInput } from "../../CreditProduct/domain/ICreditProductInput.js";
 import { IProduct } from "../../shared/domain/IProduct.js";
@@ -63,7 +63,7 @@ export class BackupCommandAction {
         private memberService: IMemberInput,
         private roleProductService: IRoleProductInput,
         private creditProductService: ICreditProductInput,
-        private rewardRoleService: IRewardRoleInput,
+        private rewardRoleService: IRoleRewardInput,
         private casualPaymentService: ICasualPaymentInput,
         private paypointRoleService: IPaypointInput
     ) {}
@@ -133,7 +133,7 @@ export class BackupCommandAction {
             
             const membersRetrieved: IMember[] = await this._retrieveMembers(backup.guildId, guildCached)
             const roleProductsRetrieved: IRoleProduct[] = await this._retrieveRoleProducts(backup.guildId, guildCached, rolesLastReference)
-            const roleRewardsRetrieved: RewardRole[] = await this._retrieveRoleRewards(backup.guildId, guildCached, rolesLastReference)
+            const roleRewardsRetrieved: RoleReward[] = await this._retrieveRoleRewards(backup.guildId, guildCached, rolesLastReference)
             const casualPaymentMethodsRetrieved: ICasualPayment[] = await this._retrieveCasualPaymentMethods(backup.guildId, guildCached)
             const paypointRetrieved: IPaypoint | undefined = await this._retrievePaypoint(backup.guildId, guildCached, textChannelsLastReference)
 
@@ -361,13 +361,13 @@ export class BackupCommandAction {
         return roleProductsRetrieved
     }
 
-    _retrieveRoleRewards = async (backupGuildId: string, guildCached: IGuild, rolesLastReference: Record<string, DiscordRole>): Promise<IRewardRole[]> => {
+    _retrieveRoleRewards = async (backupGuildId: string, guildCached: IGuild, rolesLastReference: Record<string, DiscordRole>): Promise<IRoleReward[]> => {
         const roleRewardsResult = await this.rewardRoleService.getAll(backupGuildId)
         if (!roleRewardsResult.isSuccess()) throw roleRewardsResult.error
 
         const roleRewards = roleRewardsResult.value
         
-        const roleRewardsRetrieved: IRewardRole[] = []
+        const roleRewardsRetrieved: IRoleReward[] = []
 
         for (const roleReward of roleRewards) {
             const role = rolesLastReference[roleReward.id]
@@ -375,7 +375,7 @@ export class BackupCommandAction {
             const roleCachedResult = await this.roleService.get(role.id, guildCached.id)
             if (!roleCachedResult.isSuccess()) continue
 
-            const newRoleReward = new RewardRole({
+            const newRoleReward = new RoleReward({
                 id: role.id,
                 role: roleCachedResult.value,
                 invites: roleReward.invites,

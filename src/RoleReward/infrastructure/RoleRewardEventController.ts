@@ -1,13 +1,13 @@
 import { Guild, GuildMember } from "discord.js";
-import { IRewardRoleInput } from "../domain/IRewardRoleInput.js";
+import { IRoleRewardInput } from "../domain/IRoleRewardInput.js";
 import { IMemberInput } from "../../Member/domain/IMemberInput.js";
 import { logger } from "../../shared/utils/logger.js";
 
-import { InviteCountMismatchRewardsError } from "../domain/RewardRoleExceptions.js";
+import { InviteCountMismatchRewardsError } from "../domain/RoleRewardExceptions.js";
 
-export class RewardRoleEventController {
+export class RoleRewardEventController {
     constructor (
-        private service: IRewardRoleInput, 
+        private service: IRoleRewardInput, 
         private memberService: IMemberInput
     ) {}
 

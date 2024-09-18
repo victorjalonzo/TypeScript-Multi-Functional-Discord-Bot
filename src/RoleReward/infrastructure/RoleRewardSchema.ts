@@ -1,7 +1,7 @@
 import { Schema, model, Document} from 'mongoose'
-import {IRewardRole } from '../domain/IRewardRole.js';
+import {IRoleReward } from '../domain/IRoleReward.js';
 
-const rewardRoleSchema = new Schema <IRewardRole & Document>({
+const roleRewardSchema = new Schema <IRoleReward & Document>({
     id: { type: String, required: true },
     role: { type: Schema.Types.ObjectId, ref: "Roles", required: true },
     invites: { type: Number, required: true },
@@ -9,4 +9,4 @@ const rewardRoleSchema = new Schema <IRewardRole & Document>({
     guild: { type: Schema.Types.ObjectId, ref: "Guilds", required: true }
 })
 
-export const RewardRoleModel = model('RewardRoles', rewardRoleSchema)
+export const RoleRewardModel = model('RoleRewards', roleRewardSchema)

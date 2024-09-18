@@ -1,8 +1,8 @@
 import { SlashCommandCallable } from "../../shared/intraestructure/SlashCommandCallable.js"
 
-const RewardRoleCommand = new SlashCommandCallable()
+const RoleRewardCommand = new SlashCommandCallable()
 
-RewardRoleCommand
+RoleRewardCommand
     .setName('role-reward')
     .setDescription('Reward roles to a members by its invites amount')
 
@@ -42,7 +42,7 @@ RewardRoleCommand
             .setDescription('Show the list of the all rewards')
     )
 
-RewardRoleCommand.setDMPermission(false)
-RewardRoleCommand.setDefaultMemberPermissions(8)
+RoleRewardCommand.setDMPermission(false)
+RoleRewardCommand.setDefaultMemberPermissions(8)
 
-export { RewardRoleCommand }
+export { RoleRewardCommand }

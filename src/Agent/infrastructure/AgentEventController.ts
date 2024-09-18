@@ -3,7 +3,7 @@ import { AttachmentBuilder, ButtonInteraction, DMChannel, Message, TextChannel, 
 import { IPaypointInput } from "../../Paypoint/domain/IPaypointInput.js";
 import { IRoleProductInput } from "../../RoleProduct/domain/IRoleProductInput.js";
 import { GuildNotFoundError } from "../../shared/domain/Exceptions.js";
-import { IRewardRoleInput } from "../../RewardRole/domain/IRewardRoleInput.js";
+import { IRoleRewardInput } from "../../RoleReward/domain/IRoleRewardInput.js";
 import { createGuildAsistentPrompt } from "./prompts/GuildAsistentPrompt.js";
 import { AI } from "./AI.js";
 import { logger } from "../../shared/utils/logger.js";
@@ -32,7 +32,7 @@ export class AgentEventController {
         private casualTransactionService: ICasualTransactionInput,
         private paypointService: IPaypointInput,
         private roleProductService: IRoleProductInput,
-        private roleRewardService: IRewardRoleInput,
+        private roleRewardService: IRoleRewardInput,
         private DMConversactionService: IDMConversactionInput,
         private memberService: IMemberInput
     ) {}

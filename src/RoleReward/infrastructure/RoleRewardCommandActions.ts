@@ -1,15 +1,15 @@
-import { IRewardRoleInput } from "../domain/IRewardRoleInput.js"
+import { IRoleRewardInput } from "../domain/IRoleRewardInput.js"
 import { ChatInputCommandInteraction } from "discord.js"
 import { EmbedResult } from "../../shared/intraestructure/EmbedResult.js";
-import { RewardRole } from "../domain/RewardRole.js";
+import { RoleReward } from "../domain/RoleReward.js";
 import { cache } from "../../shared/intraestructure/Cache.js";
 import { InlineBlockText } from "../../shared/utils/textFormating.js";
 import { IRoleInput } from "../../Role/domain/IRoleInput.js";
 import { GuildNotFoundError } from "../../shared/domain/Exceptions.js";
 
-export class RewardRoleCommandActions {
+export class RoleRewardCommandActions {
     constructor (
-        private service: IRewardRoleInput,
+        private service: IRoleRewardInput,
         private roleService: IRoleInput
     ) {}
 
@@ -42,7 +42,7 @@ export class RewardRoleCommandActions {
 
             const roleCached = roleCachedResult.value
 
-            const reward = new RewardRole({
+            const reward = new RoleReward({
                 id: role.id,
                 role: roleCached,
                 invites: invites,

@@ -1,8 +1,8 @@
-import { IRewardRole } from "./IRewardRole.js";
+import { IRoleReward } from "./IRoleReward.js";
 import { IGuild } from "../../Guild/domain/IGuild.js";
 import { IRole } from "../../Role/domain/IRole.js";
 
-export class RewardRole implements IRewardRole {
+export class RoleReward implements IRoleReward {
     public id: string
     public role: IRole
     public invites: number
@@ -10,7 +10,7 @@ export class RewardRole implements IRewardRole {
     public guild: IGuild
     public createdAt: Date = new Date()
 
-    constructor(props: Omit<IRewardRole, "createdAt">){
+    constructor(props: Omit<IRoleReward, "createdAt">){
         this.id = props.id
         this.role = props.role
         this.invites = props.invites

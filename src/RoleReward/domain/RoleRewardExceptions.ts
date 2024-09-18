@@ -1,22 +1,22 @@
-export class RewardRoleCreationFailed extends Error {
+export class RoleRewardCreationFailed extends Error {
     constructor() {
         super("The role as reward could not be created");
     }
 }
 
-export class RewardRoleNotFound extends Error {
+export class RoleRewardNotFound extends Error {
     constructor() {
         super("The role as reward could not be found");
     }
 }
 
-export class RewardRolesNotFound extends Error {
+export class RolesRewardNotFound extends Error {
     constructor() {
         super("There are no roles as rewards created");
     }
 }
 
-export class RewardRoleDeletionFailed extends Error {
+export class RoleRewardDeletionFailed extends Error {
     constructor() {
         super("The role as reward could not be deleted");
     }

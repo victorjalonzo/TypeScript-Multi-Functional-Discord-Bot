@@ -1,9 +1,9 @@
-import { IRewardRole } from "../../../RewardRole/domain/IRewardRole.js";
+import { IRoleReward } from "../../../RoleReward/domain/IRoleReward.js";
 import { IPaypoint } from "../../../Paypoint/domain/IPaypoint.js";
 import { IRoleProduct } from "../../../RoleProduct/domain/IRoleProduct.js";
 
 interface IOptions {
-    inviteRewards: IRewardRole[],
+    inviteRewards: IRoleReward[],
     paypoint: IPaypoint,
     products: IRoleProduct[],
     conversaction: string[]
