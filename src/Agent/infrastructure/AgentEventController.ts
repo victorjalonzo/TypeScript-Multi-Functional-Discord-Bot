@@ -1,6 +1,6 @@
 import { ICasualTransactionInput } from "../../CasualTransaction/domain/ICasualTransactionInput.js";
 import { AttachmentBuilder, ButtonInteraction, DMChannel, Message, TextChannel, User } from "discord.js";
-import { IPaypointInput } from "../../PaypointRole/domain/IPaypointInput.js";
+import { IPaypointInput } from "../../Paypoint/domain/IPaypointInput.js";
 import { IRoleProductInput } from "../../RoleProduct/domain/IRoleProductInput.js";
 import { GuildNotFoundError } from "../../shared/domain/Exceptions.js";
 import { IRewardRoleInput } from "../../RewardRole/domain/IRewardRoleInput.js";
@@ -25,6 +25,7 @@ import { createIdentifierVenmoPrompt } from "./prompts/IdentifierVenmoPrompt.js"
 import { createIdentifierBitcoinPrompt } from "./prompts/IdentifierBitcoinPrompt.js";
 import { createIdentifierEthereumPrompt } from "./prompts/IdentifierEthereumPrompt.js";
 import { createIdentifierZellePrompt } from "./prompts/IdentifierZellePrompt.js";
+import { IDMConversaction } from "../../DMConversaction/domain/IDMConversaction.js";
 
 export class AgentEventController {
     constructor (
@@ -90,6 +91,171 @@ export class AgentEventController {
     replyDM = async (message: Message) => {
         try {
             const user = message.author
+    
+            const DMConversactionResult = await this.DMConversactionService.getActiveOneByMember(user.id)
+            if (!DMConversactionResult.isSuccess()) throw DMConversactionResult.error
+    
+            const DMConversaction = DMConversactionResult.value
+    
+            if ( DMConversaction.state == DMConversactionState.WAITING_USER_TO_CONFIRM_MARKED_PAYMENT){
+                await this._handleWaitingUserToConfirmMarkedPayment(message)
+            }
+            if ( DMConversaction.state == DMConversactionState.WAITING_ADMIN_TO_APPROVE_PAYMENT){
+                await this._handleWaitingAdminToApprovePayment(message)
+            }
+            if ( DMConversaction.state == DMConversactionState.WAITING_USER_TO_PROVIDE_ACCOUNT_NAME){
+                await this._handleWaitingUserToProvideAccountName(message, DMConversaction)
+            }
+            if ( DMConversaction.state == DMConversactionState.WAITING_USER_TO_PROVIDE_RECEIPT_IMAGE){
+                await this._handleWaitingUserToProvideReceiptImage(message, DMConversaction, user)
+            }
+    
+            return await this.DMConversactionService.update(DMConversaction)
+        }
+        catch (e) {
+            logger.error(e)
+        }
+
+    }
+
+    _handleWaitingAdminToApprovePayment = async (message: Message) => {
+        return await message.reply("Your payment is still under review, please wait until the admin approves it")
+    }
+
+    _handleWaitingUserToConfirmMarkedPayment = async (message: Message) => {
+        return await message.reply("Please confirm or deny that you made a payment")
+    }
+
+    _handleWaitingUserToProvideAccountName = async (message: Message, DMConversaction: IDMConversaction) => {
+        DMConversaction.history.push(`USER: ${message.content}`)
+
+        const identifiers: {[key: string]: Function} = {
+            cashapp: createIdentifierCashAppPrompt,
+            zelle: createIdentifierZellePrompt,
+            paypal: createIdentifierPaypalPrompt,
+            applepay: createIdentifierApplePayPrompt,
+            googlepay: createIdentifierGooglePayPrompt,
+            venmo: createIdentifierVenmoPrompt,
+            bitcoin: createIdentifierBitcoinPrompt,
+            ethereum: createIdentifierEthereumPrompt
+        }
+
+        const rawMethodName = DMConversaction.casualPaymentMethodName.toLowerCase().replace(" ", "")
+        const identifierFn = identifiers[rawMethodName]
+
+        if (identifierFn){
+            const conversationHistory = DMConversaction.history.join("\n")
+            const prompt = identifierFn(conversationHistory)
+
+            const response = await AI.createCompletion(prompt)
+            const data = JSON.parse(response)
+
+            if (data.isValid) {
+                DMConversaction.paymentFrom = data.identifier
+                nextState(DMConversaction)        
+            }
+            else {
+                const AIMessage = await message.channel.send(data.message)
+                DMConversaction.history.push(`AI: ${AIMessage}`)
+            }
+        }
+        else {
+            DMConversaction.paymentFrom = message.content
+            nextState(DMConversaction)
+        }
+    }
+
+    _handleWaitingUserToProvideReceiptImage = async (message: Message, DMConversaction: IDMConversaction, user: User) => {
+        if (!DMConversaction.botTurn) {
+            for (const attachment of message.attachments.values()) {
+                const buffer = await getBufferFromAttachment(attachment)
+                DMConversaction.invoices.push(buffer)
+            }
+
+            if (DMConversaction.invoices.length == 0) {
+                return await message.reply("Please provide your screenshot receipt to continue")
+            }
+
+            const memberResult = await this.memberService.get(user.id, DMConversaction.guildId)
+            if (!memberResult.isSuccess()) throw memberResult.error
+
+            const member = memberResult.value
+
+            const casualTransaction = new CasualTransaction({
+                member: member,
+                memberId: member.id,
+                guildId: DMConversaction.guildId,
+                state: CasualTransactionState.PENDING,
+                paymentMethodId: DMConversaction.casualPaymentMethodId,
+                paymentMethodName: DMConversaction.casualPaymentMethodName,
+                paymentMethodValue: DMConversaction.casualPaymentMethodValue,
+                paymentFrom: <string>DMConversaction.paymentFrom,
+                invoices: DMConversaction.invoices,
+                productId: DMConversaction.productId,
+                productName: DMConversaction.productName,
+                productPrice: DMConversaction.productPrice,
+                productType: DMConversaction.productType
+            })
+
+            const casualTransactionResult = await this.casualTransactionService.create(casualTransaction)
+            if (!casualTransactionResult.isSuccess()) throw casualTransactionResult.error
+
+            const casualTransactionCreated = casualTransactionResult.value
+
+            const guild = user.client.guilds.cache.get(DMConversaction.guildId)
+            if (!guild) throw new GuildNotFoundError()
+            
+            const owner = await guild.fetchOwner()
+
+            const invoiceImageBuffer = DMConversaction.invoices[0]
+            const invoiceImageAttachment = new AttachmentBuilder(invoiceImageBuffer, {name: "invoice.png"})
+
+            const incomingPaymentEmbed = await createAdminIncomingPaymentEmbed({
+                methodName: DMConversaction.casualPaymentMethodName,
+                methodValue: DMConversaction.casualPaymentMethodValue,
+                paymentFrom: <string>DMConversaction.paymentFrom,
+                image: invoiceImageAttachment,
+                DMConversactionId: DMConversaction.id,
+                guildName: guild.name,
+                guildId: guild.id,
+                memberId: user.id
+            })
+
+            await owner.user.send({
+                embeds: [incomingPaymentEmbed.embed], 
+                files: incomingPaymentEmbed.files,
+                components: [<any>incomingPaymentEmbed.buttonRow]
+            })
+
+            nextState(DMConversaction)
+
+            const paymentUnderReviewEmbed = await createUserPaymentUnderReviewEmbed()
+
+            const updatableMessage = await message.channel.send({
+                embeds: [paymentUnderReviewEmbed.embed], 
+                files: paymentUnderReviewEmbed.files
+            })
+
+            DMConversaction.updatableMessageId = updatableMessage.id
+            DMConversaction.casualTransactionId = casualTransactionCreated.id
+        }
+
+        else {
+            const title = "SEND A SCREENSHOT OF YOUR PAYMENT RECEIPT"
+            const description = "Please send a screenshot of your payment receipt to finish."
+            const response = await createUserVerificationQuestionEmbed({title, description, count: "2/2"})
+
+            await message.channel.send({embeds: [response.embed], files: response.files})
+
+            switchTurn(DMConversaction)
+        }
+    }
+
+
+    /*
+    replyDM = async (message: Message) => {
+        try {
+            const user = message.author
 
             const DMConversactionResult = await this.DMConversactionService.getActiveOneByMember(user.id)
             if (!DMConversactionResult.isSuccess()) throw DMConversactionResult.error
@@ -118,7 +284,7 @@ export class AgentEventController {
                     ethereum: createIdentifierEthereumPrompt
                 }
 
-                const rawMethodName = DMConversaction.paymentMethodName.toLowerCase().replace(" ", "")
+                const rawMethodName = DMConversaction.casualPaymentMethodName.toLowerCase().replace(" ", "")
                 const identifierFn = identifiers[rawMethodName]
 
                 if (identifierFn){
@@ -164,11 +330,15 @@ export class AgentEventController {
                         memberId: member.id,
                         guildId: DMConversaction.guildId,
                         state: CasualTransactionState.PENDING,
-                        paymentMethodName: DMConversaction.paymentMethodName,
-                        paymentMethodValue: DMConversaction.paymentMethodValue,
+                        paymentMethodId: DMConversaction.casualPaymentMethodId,
+                        paymentMethodName: DMConversaction.casualPaymentMethodName,
+                        paymentMethodValue: DMConversaction.casualPaymentMethodValue,
                         paymentFrom: <string>DMConversaction.paymentFrom,
                         invoices: DMConversaction.invoices,
-                        product: DMConversaction.product
+                        productId: DMConversaction.productId,
+                        productName: DMConversaction.productName,
+                        productPrice: DMConversaction.productPrice,
+                        productType: DMConversaction.productType
                     })
 
                     const casualTransactionResult = await this.casualTransactionService.create(casualTransaction)
@@ -231,6 +401,7 @@ export class AgentEventController {
             logger.warn(e)
         }
     }
+    */
 
     replyMarkedCasualPaymentConfirmation = async (user: User, DMConversactionId: string) => {
         try {
@@ -276,10 +447,10 @@ export class AgentEventController {
                 }
             };
             
-            const rawMethodName = DMConversaction.paymentMethodName.toLowerCase().replace(" ", "")
+            const rawMethodName = DMConversaction.casualPaymentMethodName.toLowerCase().replace(" ", "")
             const identifierQuestion = identifierQuestions[rawMethodName]
 
-            if (!identifierQuestion) throw new Error(`It was not possible to find a identifier question for the payment method ${DMConversaction.paymentMethodName}`)
+            if (!identifierQuestion) throw new Error(`It was not possible to find a identifier question for the payment method ${DMConversaction.casualPaymentMethodName}`)
 
             const { title, description } = identifierQuestion
             const count = "1/2"
@@ -298,6 +469,4 @@ export class AgentEventController {
             logger.warn(e)
         }
     }
-
-    replyMarkedCasualPaymentDenial = async (interaction: ButtonInteraction) => {}
 }

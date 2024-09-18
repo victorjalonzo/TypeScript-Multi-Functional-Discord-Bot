@@ -1,5 +1,5 @@
 import { IRewardRole } from "../../../RewardRole/domain/IRewardRole.js";
-import { IPaypoint } from "../../../PaypointRole/domain/IPaypointRole.js";
+import { IPaypoint } from "../../../Paypoint/domain/IPaypoint.js";
 import { IRoleProduct } from "../../../RoleProduct/domain/IRoleProduct.js";
 
 interface IOptions {

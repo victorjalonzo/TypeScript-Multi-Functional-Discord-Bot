@@ -22,6 +22,11 @@ import { createUserPaymentFailedEmbed } from "./embeds/UserPaymentFailedEmbed.js
 import { createUserPaymentFakeEmbed } from "./embeds/UserPaymentFakeEmbed.js"
 import { CustomComponentID } from "../../shared/domain/CustomComponentID.js"
 import { DMConversactionUpdatableMessageNotFoundError } from "../../DMConversaction/domain/DMConversactionExceptions.js"
+import { IRoleProductInput } from "../../RoleProduct/domain/IRoleProductInput.js"
+import { ICreditProductInput } from "../../CreditProduct/domain/ICreditProductInput.js"
+import { IMemberInput } from "../../Member/domain/IMemberInput.js"
+import { ICreditWalletInput } from "../../CreditWallet/domain/ICreditWalletInput.js"
+import { ICasualTransaction } from "../../CasualTransaction/domain/ICasualTransaction.js"
 
 export class AgentComponentsActions implements IComponentAction {
     public id: string
@@ -29,6 +34,9 @@ export class AgentComponentsActions implements IComponentAction {
     constructor (
         private DMConversactionService: IDMConversactionInput,
         private casualTransactionService: ICasualTransactionInput,
+        private roleProductService: IRoleProductInput,
+        private creditProductService: ICreditProductInput,
+        private creditWalletService: ICreditWalletInput
     ) {
         this.id = CustomComponentID.AGENT
     }
@@ -94,6 +102,7 @@ export class AgentComponentsActions implements IComponentAction {
             const memberId = casualTransaction.memberId
             const guildId = casualTransaction.guildId
             const updatableMessageId = DMConversaction.updatableMessageId
+            const productId = casualTransaction.productId
 
             const guild = interaction.client.guilds.cache.get(guildId)
             if (!guild) throw new GuildNotFoundError()
@@ -110,6 +119,7 @@ export class AgentComponentsActions implements IComponentAction {
                 
             const image = await getAttachmentFromBuffer(casualTransaction.invoices[0])
 
+
             let createAdminEmbedResponse ;
             let userEmbedResponse;
 
@@ -118,13 +128,30 @@ export class AgentComponentsActions implements IComponentAction {
                 createAdminEmbedResponse = createAdminSuccessPaymentEmbed       
                 userEmbedResponse = createUserPaymentSucessEmbed
 
-                const product = casualTransaction.product
+                if (casualTransaction.productType == 'Credit') {
+                    const creditProductResult = await this.creditProductService.get(productId)
+                    if (!creditProductResult.isSuccess()) return creditProductResult.error
 
-                const role = await guild.roles.fetch(product.id)
-                if (!role) throw new RoleNotFoundError()
+                    const creditProduct = creditProductResult.value
 
-                await member.roles.add(role)
-                logger.info(`The member ${member.user.username} (${memberId}) got the role ${role.name} (${role.id})`)
+                    const totalCreditResult = await this.creditWalletService.increment(memberId, guildId, creditProduct.credits)
+                    if (!totalCreditResult.isSuccess()) return totalCreditResult.error
+
+                    const totalCredit = totalCreditResult.value
+
+                    logger.info(`The member ${member.user.username} (${memberId}) bought ${creditProduct.credits} credits for $${creditProduct.price} USD, their total credits is now ${totalCredit} credits.`)
+                }
+                else {
+                    const roleProductResult = await this.roleProductService.get(productId)
+                    if (!roleProductResult.isSuccess()) return roleProductResult.error
+
+                    const role = await guild.roles.fetch(productId)
+                    if (!role) throw new RoleNotFoundError()
+
+                    await member.roles.add(role)
+
+                    logger.info(`The member ${member.user.username} (${memberId}) got the role ${role.name} (${role.id})`)
+                }
             }
             else if (markAs == "FAILED") {
                 casualTransaction.state = CasualTransactionState.FAILED
