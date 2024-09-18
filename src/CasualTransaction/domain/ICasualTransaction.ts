@@ -1,5 +1,6 @@
 import { IMember } from "../../Member/domain/IMember.js"
 import { IRoleProduct } from "../../RoleProduct/domain/IRoleProduct.js"
+import { TProductType } from "../../shared/domain/TProductType.js"
 import { CasualTransactionState } from "./CasualTransactionStateEnums.js"
 
 export interface ICasualTransaction {
@@ -7,10 +8,14 @@ export interface ICasualTransaction {
     member: IMember
 	memberId: string
 	guildId: string
-	state: CasualTransactionState 
+	state: CasualTransactionState
+	paymentMethodId: string
 	paymentMethodName: string
 	paymentMethodValue: string
-	product: IRoleProduct
+	productId: string
+	productType: TProductType
+	productName: string
+	productPrice: number
 	paymentFrom: string
 	invoices: Buffer[]
 	createAt: Date
