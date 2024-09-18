@@ -1,5 +1,5 @@
 import { IMember } from "../../Member/domain/IMember.js"
-import { IRoleProduct } from "../../RoleProduct/domain/IRoleProduct.js"
+import { TProductType } from "../../shared/domain/TProductType.js"
 import { DMConversactionState } from "./DMConversactionStateEnums.js"
 
 export interface IDMConversaction {
@@ -11,9 +11,13 @@ export interface IDMConversaction {
 	botTurn: boolean
 	state: DMConversactionState
     history: string[]
-    paymentMethodName: string
-    paymentMethodValue: string
-    product: IRoleProduct
+    casualPaymentMethodName: string,
+    casualPaymentMethodId: string
+    casualPaymentMethodValue: string
+    productName: string, 
+    productId: string,
+    productPrice: number,
+    productType: TProductType
 	paymentFrom?: string
     updatableMessageId?: string
 	invoices: Buffer[]
