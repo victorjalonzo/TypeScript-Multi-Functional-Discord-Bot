@@ -73,9 +73,14 @@ export class EmbedResult {
         if (description) embed.setDescription(description)
 
         if (thumbnail) {
-            const {attachment, attachmentURL } = await Asset.get(thumbnail)
-            embed.setThumbnail(attachmentURL)
-            files.push(attachment)
+            if (thumbnail.includes('http')) {
+                embed.setThumbnail(thumbnail)   
+            }
+            else {
+                const {attachment, attachmentURL } = await Asset.get(thumbnail)
+                embed.setThumbnail(attachmentURL)
+                files.push(attachment)
+            }
         }
 
         if (interaction.deferred) return await interaction.editReply({ embeds: [embed], files })
