@@ -4,22 +4,25 @@ import { createRandomId } from "../../shared/utils/generate.js";
 
 export class CreditProduct implements ICreditProduct {
     public id: string = createRandomId()
+    public name: string
     public price: number
-    public amount: number
+    public credits: number
     public media?: Buffer | null
-    public codec?: string | null
+    public mediaFilename?: string | null
     public description?: string | null
     public guildId: string
     public guild: IGuild
     public createdAt: Date = new Date()
 
-    constructor(props: Omit<ICreditProduct, "id" | "createdAt">) {
+    constructor(props: Omit<ICreditProduct, "id" | "name" | "createdAt">) {
         this.price = props.price
-        this.amount = props.amount
+        this.credits = props.credits
         this.media = props.media
-        this.codec = props.codec
+        this.mediaFilename = props.mediaFilename
         this.description = props.description
         this.guildId = props.guildId
         this.guild = props.guild
+
+        this.name = `${props.credits} Credits`
     }
 }
