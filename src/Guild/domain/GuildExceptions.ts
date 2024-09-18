@@ -27,3 +27,28 @@ export class GuildRecordTransformationError extends Error {
         super('The guild record could not be transformed.');
     }
 }
+
+export class DefaultCreditsNotProvidedError extends Error {
+    constructor () {
+        super('The default credits were not provided.');
+    }
+}
+
+export class DefaultRoleNotProvidedError extends Error {
+    constructor () {
+        super('The default role was not provided.');
+    }
+}
+
+export class DefaultNotificationChannelNotProvidedError extends Error {
+    constructor () {
+        super('The default notification channel was not provided.');
+    }
+}
+
+export class DefaultInvoiceChannelNotProvidedError extends Error {
+    constructor () {
+        super('The default invoice channel was not provided.');
+    }
+}
+
