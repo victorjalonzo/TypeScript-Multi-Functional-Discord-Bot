@@ -1,0 +1,1 @@
+export type TProductType = "Role" | "Credit"
