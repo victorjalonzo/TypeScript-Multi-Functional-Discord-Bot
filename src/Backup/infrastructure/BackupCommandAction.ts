@@ -31,15 +31,15 @@ import { IRewardRoleInput } from "../../RewardRole/domain/IRewardRoleInput.js";
 import { RewardRole } from "../../RewardRole/domain/RewardRole.js";
 import { ICasualPaymentInput } from "../../CasualPayment/domain/ICasualPaymentInput.js";
 import { CasualPayment } from "../../CasualPayment/domain/CasualPayment.js";
-import { IPaypointInput } from "../../PaypointRole/domain/IPaypointInput.js";
+import { IPaypointInput } from "../../Paypoint/domain/IPaypointInput.js";
 import { IMemberInput } from "../../Member/domain/IMemberInput.js";
 import { Member } from "../../Member/domain/Member.js";
-import { Paypoint } from "../../PaypointRole/domain/Paypoint.js";
-import { createGuildMenuEmbed } from "../../PaypointRole/infrastructure/Embeds/GuildMenuEmbed.js";
+import { Paypoint } from "../../Paypoint/domain/Paypoint.js";
+import { createGuildMenuEmbed } from "../../Paypoint/infrastructure/Embeds/GuildMenuEmbed.js";
 import { getAttachmentFromBuffer } from "../../shared/utils/AttachmentBuffer.js";
 import { MemberAlreadyExistsError } from "../../Member/domain/MemberExceptions.js";
-import { IPaypoint } from "../../PaypointRole/domain/IPaypointRole.js";
-import { PaypointDeletionError, PaypointNotFoundError } from "../../PaypointRole/domain/PaypointExceptions.js";
+import { IPaypoint } from "../../Paypoint/domain/IPaypoint.js";
+import { PaypointDeletionError, PaypointNotFoundError } from "../../Paypoint/domain/PaypointExceptions.js";
 import { IRole } from "../../Role/domain/IRole.js";
 import { ICategoryChannel } from "../../CategoryChannel/domain/ICategoryChannel.js";
 import { ITextChannel } from "../../TextChannel/domain/ITextChannel.js";
@@ -49,6 +49,8 @@ import { IGuild } from "../../Guild/domain/IGuild.js";
 import { IRoleProduct } from "../../RoleProduct/domain/IRoleProduct.js";
 import { IRewardRole } from "../../RewardRole/domain/IRewardRole.js";
 import { ICasualPayment } from "../../CasualPayment/domain/ICasualPayment.js";
+import { ICreditProductInput } from "../../CreditProduct/domain/ICreditProductInput.js";
+import { IProduct } from "../../shared/domain/IProduct.js";
 
 export class BackupCommandAction {
     constructor (
@@ -60,6 +62,7 @@ export class BackupCommandAction {
         private categoryChannelService: ICategoryChannelInput,
         private memberService: IMemberInput,
         private roleProductService: IRoleProductInput,
+        private creditProductService: ICreditProductInput,
         private rewardRoleService: IRewardRoleInput,
         private casualPaymentService: ICasualPaymentInput,
         private paypointRoleService: IPaypointInput
@@ -424,7 +427,6 @@ export class BackupCommandAction {
         
         if (!paypointResult.isSuccess()) {
             if (paypointResult.error instanceof PaypointNotFoundError) return
-            
             throw paypointResult.error
         }
 
@@ -438,12 +440,39 @@ export class BackupCommandAction {
 
             paypoint.channelId = textChannelReference.id
 
-            const roleProductsResult = await this.roleProductService.getAll(backupGuildId)
-            if (!roleProductsResult.isSuccess()) return
+            let products: IProduct[]
 
-            const roleProducts = roleProductsResult.value
-            if (roleProducts.length === 0) return
+            if (paypoint.productType == 'Credit') {
+                const creditProductsResult = await this.creditProductService.getAll(backupGuildId)
+                if (!creditProductsResult.isSuccess()) return
 
+                const creditProducts = creditProductsResult.value
+                if (creditProducts.length === 0) return
+
+                products = creditProducts.map(product => {
+                    return {
+                        id: product.id,
+                        price: product.price,
+                        name: product.name
+                    }
+                })
+            }
+            else {
+                const roleProductsResult = await this.roleProductService.getAll(backupGuildId)
+                if (!roleProductsResult.isSuccess()) return
+    
+                const roleProducts = roleProductsResult.value
+                if (roleProducts.length === 0) return
+
+                products = roleProducts.map(product => {
+                    return {
+                        id: product.id,
+                        price: product.price,
+                        name: product.role.name
+                    }
+                })
+            }
+            
             const casualPaymentMethodsResult = await this.casualPaymentService.getAll(backupGuildId)
             if (!casualPaymentMethodsResult.isSuccess()) return
 
@@ -456,7 +485,7 @@ export class BackupCommandAction {
                 title: paypoint.title, 
                 description: paypoint.description,
                 media: media,
-                products: roleProducts,
+                products: products,
                 casualPaymentMethods: casualPaymentMethods
             })
             const message = await textChannelReference.send({
@@ -475,6 +504,7 @@ export class BackupCommandAction {
             media: paypoint.media,
             mediaCodec: paypoint.mediaCodec,
             paymentMethod: paypoint.paymentMethod,
+            productType: paypoint.productType,
             messageId: paypoint.messageId,
             channelId: paypoint.channelId,
             guild: guildCached,
