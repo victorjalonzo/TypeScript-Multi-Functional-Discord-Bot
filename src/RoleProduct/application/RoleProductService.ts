@@ -1,5 +1,5 @@
 import { IRepository } from "../../shared/domain/IRepository.js";
-import { IPaypoint } from "../../PaypointRole/domain/IPaypointRole.js";
+import { IPaypoint } from "../../Paypoint/domain/IPaypoint.js";
 import { IRoleProduct } from "../domain/IRoleProduct.js";
 import { Result } from "../../shared/domain/Result.js";
 import { RoleProductCreationError, RoleProductDeletionError, RoleProductNotFound } from "../domain/RoleProductExceptions.js";
