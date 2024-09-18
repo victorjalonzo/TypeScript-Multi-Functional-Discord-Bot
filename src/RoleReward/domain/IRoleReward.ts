@@ -4,7 +4,7 @@ import { IRole } from "../../Role/domain/IRole.js";
 export interface IRoleReward {
     id: string
     role: IRole
-    invites: number
+    invitesRequired: number
     guildId: string
     guild: IGuild
     createdAt: Date

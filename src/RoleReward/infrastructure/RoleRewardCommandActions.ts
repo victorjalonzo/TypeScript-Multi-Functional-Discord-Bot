@@ -45,7 +45,7 @@ export class RoleRewardCommandActions {
             const reward = new RoleReward({
                 id: role.id,
                 role: roleCached,
-                invites: invites,
+                invitesRequired: invites,
                 guildId: guild.id,
                 guild: cachedGuild,
             })
@@ -57,7 +57,7 @@ export class RoleRewardCommandActions {
             
             const title = 'Reward created'
             let description = `The role as reward was created successfully.`
-            description += InlineBlockText(`Reward Name: ${rewardCreated.role.name}\nReward ID: (${rewardCreated.role.id})\nReward Required Invites: ${rewardCreated.invites}`)
+            description += InlineBlockText(`Reward Name: ${rewardCreated.role.name}\nReward ID: (${rewardCreated.role.id})\nReward Required Invites: ${rewardCreated.invitesRequired}`)
             
             return await EmbedResult.success({title, description, interaction})
         }
@@ -81,7 +81,7 @@ export class RoleRewardCommandActions {
             
             const title = 'Reward deleted'
             let description = `The role as reward was deleted successfully.`
-            description += InlineBlockText(`Reward Name: ${reward.role.name}\nReward ID: (${reward.role.id})\nReward Required Invites: ${reward.invites}`)
+            description += InlineBlockText(`Reward Name: ${reward.role.name}\nReward ID: (${reward.role.id})\nReward Required Invites: ${reward.invitesRequired}`)
 
             return await EmbedResult.success({title, description, interaction})
         }
@@ -105,7 +105,7 @@ export class RoleRewardCommandActions {
 
             description = rewards.length === 0
             ? InlineBlockText("There are no roles as rewards created")
-            : rewards.map(reward => InlineBlockText(`Reward Name: ${reward.role.name}\nReward ID: (${reward.role.id})\nReward Required Invites: ${reward.invites}`)).join('\n')
+            : rewards.map(reward => InlineBlockText(`Reward Name: ${reward.role.name}\nReward ID: (${reward.role.id})\nReward Required Invites: ${reward.invitesRequired}`)).join('\n')
 
             return await EmbedResult.info({title, description, interaction})
         }
