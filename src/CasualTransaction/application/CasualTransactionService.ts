@@ -22,7 +22,7 @@ export class CasualTransactionService implements ICasualTransactionInput{
 
     get = async (id: string): Promise<Result<ICasualTransaction>> => {
         try {
-            const transaction = await this.repository.get({id}, 'product');
+            const transaction = await this.repository.get({id});
             if (!transaction) throw new CasualTransactionNotFoundError()
             return Result.success(transaction);
         }
