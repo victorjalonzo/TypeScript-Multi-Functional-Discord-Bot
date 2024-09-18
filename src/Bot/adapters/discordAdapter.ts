@@ -106,20 +106,13 @@ export class DiscordAdapter {
 
         })
 
-        /*
-        this.client.on('messageDelete', async (message) => {
-            if (message.author?.bot) return;
-
-            await this.controllers.paypointEventController.deleteUpdatableMessageID(message)
-        })
-            */
-
         this.client.on("UserConfirmedMarkedCasualPayment", async (user: User, DMConversactionId: string) => {
           return await this.controllers.agentEventController.replyMarkedCasualPaymentConfirmation(user, DMConversactionId)
-        }) 
+        })
 
         this.client.on('guildMemberAdd', async (member) => {
             await this.controllers.memberController.create(member)
+            await this.controllers.creditWalletEventController.create(member)
             await this.controllers.inviteEventController.increaseInviteCount(member)
             await this.controllers.rewardRoleEventController.assignRoleOnInviteGoal(member)
         })
