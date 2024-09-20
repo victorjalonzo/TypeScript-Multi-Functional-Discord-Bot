@@ -378,7 +378,7 @@ export class BackupCommandAction {
             const newRoleReward = new RoleReward({
                 id: role.id,
                 role: roleCachedResult.value,
-                invites: roleReward.invites,
+                invitesRequired: roleReward.invitesRequired,
                 guild: guildCached,
                 guildId: guildCached.id
             })
@@ -389,7 +389,7 @@ export class BackupCommandAction {
             const roleRewardCreated = result.value
             roleRewardsRetrieved.push(roleRewardCreated)
 
-            logger.info(`The reward role ${roleRewardCreated.id} (${roleRewardCreated.invites} invites) was restored`)
+            logger.info(`The reward role ${roleRewardCreated.id} (${roleRewardCreated.invitesRequired} invites) was restored`)
         }
         return roleRewardsRetrieved
 
