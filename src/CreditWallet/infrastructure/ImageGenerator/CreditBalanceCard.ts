@@ -2,14 +2,14 @@ import { createCanvas, loadImage } from 'canvas';
 import { AttachmentBuilder } from 'discord.js';
 import { Asset } from '../../../shared/intraestructure/Asset.js';
 
-interface Options {
+interface IOptions {
   avatarImage: Buffer | null,
   name: string,
   username: string
   credits: number | string
 }
 
-export const generateCreditBalanceCard = async (options: Options): Promise<AttachmentBuilder> => {
+export const generateCreditBalanceCard = async (options: IOptions): Promise<AttachmentBuilder> => {
   const width = 550;
   const height = 120;
 
