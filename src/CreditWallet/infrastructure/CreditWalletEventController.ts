@@ -31,7 +31,7 @@ export class CreditWalletEventController {
             const result = await this.service.get(user.id, guild.id)
             
             if (result.isSuccess()) {
-                logger.info(`Credit Wallet already exists for ${user.username}`)
+                logger.info(`Credit Wallet already exists for ${user.username} (${user.id})`)
                 return 
             }
 
@@ -48,7 +48,9 @@ export class CreditWalletEventController {
             const creditWalletCreateResult = await this.service.create(creditWallet)
             if (!creditWalletCreateResult.isSuccess()) throw result.error
 
-            logger.info(`Credit Wallet created for ${user.username}`)
+            const creditWalletCreated = creditWalletCreateResult.value
+
+            logger.info(`Credit Wallet created for ${user.username} (${user.id}) with ${creditWalletCreated.credits} credits`)
         }
         catch(e) {
             logger.warn(String(e))
