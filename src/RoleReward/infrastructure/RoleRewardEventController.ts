@@ -62,12 +62,12 @@ export class RoleRewardEventController {
     
             const invitesCount = invitesCountResult.value;
     
-            const sortedRewards = rewards.sort((a, b) => a.invites - b.invites)
+            const sortedRewards = rewards.sort((a, b) => a.invitesRequired - b.invitesRequired)
     
             let roleId: string | undefined;
 
             for (const reward of sortedRewards) {
-                if (reward.invites >  invitesCount) break;
+                if (reward.invitesRequired >  invitesCount) break;
                 roleId = reward.id;
             }
     
