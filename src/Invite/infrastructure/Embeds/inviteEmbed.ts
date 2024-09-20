@@ -50,7 +50,7 @@ export const createInviteCard = async (props: IProps) => {
 
     card.setTextStyles({
         level: "YOUR CREDITS :", // Custom text for the level
-        xp: "Current Invites:", // Custom text for the experience points
+        xp: "Invites:", // Custom text for the experience points
         rank: "CHALLENGE:", // Custom text for the rank
       });
 
@@ -72,6 +72,3 @@ export const createInvitesEmbed = (username: string, avatarURL?: string, invites
     if (avatarURL) embed.setThumbnail(avatarURL)
     return embed
 }
-
-const InvitesWithRoleRewardEmbed = async () => {}
-const InvitesWithCreditRewardEmbed = async () => {}
