@@ -1,70 +1,59 @@
 import { IMemberInput } from "../../Member/domain/IMemberInput.js";
-import { ChatInputCommandInteraction } from "discord.js";
-import { InlineBlockText } from "../../shared/utils/textFormating.js";
+import { ChatInputCommandInteraction, User } from "discord.js";
+import { BoldText, InlineBlockText } from "../../shared/utils/textFormating.js";
 import { EmbedResult } from "../../shared/intraestructure/EmbedResult.js";
 import { createInviteCard } from "./Embeds/inviteEmbed.js";
-import { IRewardRoleInput } from "../../RewardRole/domain/IRewardRoleInput.js";
-import { IRewardRole } from "../../RewardRole/domain/IRewardRole.js";
+import { IRoleRewardInput } from "../../RoleReward/domain/IRoleRewardInput.js";
+import { IRoleReward } from "../../RoleReward/domain/IRoleReward.js";
+import { ICreditReward } from "../../CreditReward/domain/ICreditReward.js";
+import { GuildNotFoundError } from "../../shared/domain/Exceptions.js";
+import { ICreditRewardInput } from "../../CreditReward/domain/ICreditRewardInput.js";
+import { generateInviteCardForCreditReward } from "./ImageGenerator/InviteCardForCreditReward.js";
+import { getBufferFromURL } from "../../shared/utils/AttachmentBuffer.js";
+import { generateInviteCardForRoleReward } from "./ImageGenerator/InviteCardForRoleReward.js";
+import { generateInviteCard } from "./ImageGenerator/InviteCard.js";
 
 export class InviteCommandActions {
-    constructor(private memberService: IMemberInput, private rewardRoleService: IRewardRoleInput) {}
+    constructor(
+        private memberService: IMemberInput, 
+        private rewardRoleService: IRoleRewardInput,
+        private creditRewardService: ICreditRewardInput
+    ) {}
 
     execute = async (interaction: ChatInputCommandInteraction) => {
         try {
-            const guild = interaction.guild
-            let user = interaction.options.getUser('user')
-    
-            if (!guild) throw new Error("The guild was not found")
-            if (!user) user = interaction.user
-
             await interaction.deferReply()
-
-            let invitesCount = 0
+            
+            const guild = interaction.guild
+            const user = interaction.options.getUser('user') ?? interaction.user
+    
+            if (!guild) throw new GuildNotFoundError()
 
             const memberCountResult = await this.memberService.getInviteMembersCount(user.id, guild.id)
             if (!memberCountResult.isSuccess()) throw memberCountResult.error
 
-            invitesCount = memberCountResult.value
+            const currentInvites = memberCountResult.value
 
-            const rewardRolesResult = await this.rewardRoleService.getAll(guild.id)
-            if (!rewardRolesResult.isSuccess()) throw rewardRolesResult.error
+            const creditRewardsResult = await this.creditRewardService.getAll(guild.id)
+            if (!creditRewardsResult.isSuccess()) throw creditRewardsResult.error
             
-            const rewardRoles = rewardRolesResult.value
+            const creditRewards = creditRewardsResult.value
 
-            const { 
-                isChallengeActive, 
-                isChallengeCompleted, 
-                invitesRequired, 
-                currentInvites,
-                roleId
-            } = await this.determineRoleChallenge(invitesCount, rewardRoles)
-
-            let description = ""
-
-            if (!isChallengeActive) {
-                description = `You have ${currentInvites} invites.`
-            }
-            else {
-                const role = guild.roles.cache.get(<string>roleId)
-
-                if (isChallengeCompleted) {
-                    description = `You have completed the challenge.`
-                }
-                else {
-                    const left = <number>invitesRequired - currentInvites
-                    description = `You need ${left} more invites to complete the ${role?.name} challenge.`
-                }
-            }
+            const roleRewardsResult = await this.rewardRoleService.getAll(guild.id)
+            if (!roleRewardsResult.isSuccess()) throw roleRewardsResult.error
             
-            const attachment = await createInviteCard({
-                displayName: user.username,
-                username: user.username,
-                avatarURL: user.avatarURL() ?? undefined,
-                invitesCount: currentInvites,
-                invitesRequired: <number>invitesRequired
-            })
+            const roleRewards = roleRewardsResult.value
+            
+            const avatarImage = user.displayAvatarURL()
+            ? await getBufferFromURL(user.displayAvatarURL())
+            : null
 
-            return await interaction.editReply({content: description, files: [attachment]})
+            creditRewards.length !== 0
+            ? await this._showInviteCardForCreditReward(user, interaction, currentInvites, avatarImage, creditRewards)
+            
+            : roleRewards.length !== 0 
+              ? await this._showInviteCardForRoleReward(user, interaction, currentInvites, avatarImage, roleRewards)
+              : await this._showInviteCard(user, interaction, currentInvites, avatarImage)
         }
         catch (e) {
             console.log(e)
@@ -73,35 +62,128 @@ export class InviteCommandActions {
 
     }
 
-    determineRoleChallenge = async (currentInvites: number, rewardRoles: IRewardRole[]) => {
-        let isChallengeActive = false
-        let isChallengeCompleted = false
-        let invitesRequired: number | undefined
-        let roleId: string | undefined
-    
-        if (rewardRoles.length === 0) {
-            invitesRequired = currentInvites
-        }
-        else {
-            isChallengeActive = true
+    _showInviteCardForCreditReward = async (
+      user: User,
+      interaction: ChatInputCommandInteraction,
+      currentInvites: number, 
+      avatarImage: Buffer | null, 
+      creditRewards: ICreditReward[]
+    ) => {
 
-            const sortedRewardRoles = rewardRoles.sort((a, b) => a.invites - b.invites)
-    
-            for (const reward of sortedRewardRoles) {
-                if (reward.invites > currentInvites) {
-                    invitesRequired = <number>reward.invites
-                    roleId = reward.id
-                    break
-                }
-                if (reward == sortedRewardRoles[sortedRewardRoles.length-1]) {
-                    invitesRequired = <number>reward.invites
-                    currentInvites = invitesRequired
-                    roleId = reward.id
-                    isChallengeCompleted = true
-                }
-            }
-        }
-    
-        return {isChallengeActive, isChallengeCompleted, invitesRequired, currentInvites, roleId }
+      const result = await this.determineChallenge(currentInvites, creditRewards)
+      const reward = <ICreditReward>result.reward
+
+      const description = result.isChallengeCompleted
+      ? `**All current credit challenges have been completed.**`
+      : `${result.invitesRequiredLeft < result.invitesRequired 
+        ? `You only need **${result.invitesRequiredLeft} more invites**` 
+        : `You need **${result.invitesRequiredLeft} invites**`
+        }` 
+        + ` to earn a reward of ${BoldText(reward.name)}`
+
+      const attachment = await generateInviteCardForCreditReward({
+        username: user.username,
+        avatarImage: avatarImage,
+        currentInvites: currentInvites,
+        invitesRequired: <number>result.invitesRequired,
+        creditRewardAmount: reward.credits
+      })
+
+      return await interaction.editReply({content: description, files: [attachment]})
     }
+
+    _showInviteCardForRoleReward = async (
+      user: User,
+      interaction: ChatInputCommandInteraction,
+      currentInvites: number,
+      avatarImage: Buffer | null,
+      rewardRoles: IRoleReward[]
+    ) => {
+
+      const result = await this.determineChallenge(currentInvites, rewardRoles)
+      const reward = <IRoleReward>result.reward
+
+      const description = result.isChallengeCompleted
+      ? `**All current role challenges have been completed.**`
+      : `${result.invitesRequiredLeft < result.invitesRequired 
+        ? `You only need **${result.invitesRequiredLeft} more invites**` 
+        : `You need **${result.invitesRequiredLeft} invites**`
+        }` 
+        + ` to earn the role <@&${reward.role.id}> as reward`
+
+      const attachment = await generateInviteCardForRoleReward({
+        username: user.username,
+        avatarImage: avatarImage,
+        currentInvites: currentInvites,
+        invitesRequired: <number>result.invitesRequired,
+        roleRewardName: reward.role.name
+      })
+
+      return await interaction.editReply({content: description, files: [attachment]})
+    }
+
+    _showInviteCard = async (
+      user: User,
+      interaction: ChatInputCommandInteraction,
+      currentInvites: number,
+      avatarImage: Buffer | null
+    ) => {
+      const description = `You have ` + `${currentInvites > 1 || currentInvites == 0
+        ? BoldText(`${currentInvites} invites`) 
+        : BoldText(`${currentInvites} invite`)}.`
+
+      const attachment = await generateInviteCard({
+        username: user.username,
+        avatarImage: avatarImage,
+        currentInvites: currentInvites
+      })
+
+      return await interaction.editReply({content: description, files: [attachment]})
+    }
+
+    determineChallenge = async (
+        currentInvites: number,
+        challengeRewards: ICreditReward[] | IRoleReward[]
+      ) => {
+      
+        let isChallengeActive = false;
+        let isChallengeCompleted = false;
+        let reward: ICreditReward | IRoleReward | undefined = undefined;
+        
+        let invitesRequired = currentInvites;
+        let invitesRequiredLeft: number = 0
+      
+        if (challengeRewards.length !== 0) {
+          const sortedChallengeRewards = challengeRewards.sort(
+            (a, b) => a.invitesRequired - b.invitesRequired
+          );
+      
+          isChallengeActive = true;
+      
+          for (const [index, challengeReward] of sortedChallengeRewards.entries()) {
+            if (challengeReward.invitesRequired > currentInvites) {
+              invitesRequired = challengeReward.invitesRequired;
+              reward = challengeReward;
+              break;
+            }
+      
+            if (index === sortedChallengeRewards.length - 1) {
+              invitesRequired = challengeReward.invitesRequired;
+              reward = challengeReward;
+              isChallengeCompleted = true;
+            }
+          }
+        }
+
+        invitesRequiredLeft = <number>invitesRequired - currentInvites
+      
+        return {
+          isChallengeActive,
+          isChallengeCompleted,
+          invitesRequired,
+          invitesRequiredLeft,
+          currentInvites,
+          reward,
+        };
+      };
 }
