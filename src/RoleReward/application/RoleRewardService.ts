@@ -23,9 +23,9 @@ export class RoleRewardService implements IRoleRewardInput {
         }
     }
 
-    async get (roleId: string, guildId: string): Promise<Result<IRoleReward>> {
+    async get (id: string, guildId: string): Promise<Result<IRoleReward>> {
         try {
-            const reward = await this.repository.get({ roleId: roleId, guildId: guildId }, 'role');
+            const reward = await this.repository.get({ id: id, guildId: guildId }, 'role');
             if (!reward) throw new RoleRewardNotFound()
             return Result.success(reward);
         }
@@ -44,9 +44,9 @@ export class RoleRewardService implements IRoleRewardInput {
         }
     }
 
-    async delete(roleId: string, guildId: string): Promise<Result<IRoleReward>> {
+    async delete(id: string, guildId: string): Promise<Result<IRoleReward>> {
         try {
-            const deletedReward = await this.repository.delete({ roleId: roleId, guildId: guildId });
+            const deletedReward = await this.repository.delete({ id: id, guildId: guildId }, 'role');
             if (!deletedReward) throw new RoleRewardDeletionFailed()
             return Result.success(deletedReward);
         }
