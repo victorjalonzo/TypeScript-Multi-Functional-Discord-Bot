@@ -2,6 +2,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 import { ICasualPayment } from "../domain/ICasualPayment.js";
 
 const casualPaymentSchema = new Schema<ICasualPayment & Document>({
+    id: { type: String, required: true },
     name: { type: String, required: true },
     value: { type: String, required: true },
     guildId: { type: String, required: true },
