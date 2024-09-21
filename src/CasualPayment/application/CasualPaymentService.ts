@@ -35,13 +35,10 @@ export class CasualPaymentService implements ICasualPaymentInput {
             return Result.failure(e);
         }
     }
-    getByRawName = async (rawName: string, guildId: string): Promise<Result<ICasualPayment>> => {
-        return await this.get({ rawName: rawName, guildId: guildId });
-    }
 
-    get = async (filters: Record<string, any>): Promise<Result<ICasualPayment>> => {
+    get = async (id: string, guildId: string): Promise<Result<ICasualPayment>> => {
         try {
-            const casualPayment = await this.repository.get(filters);
+            const casualPayment = await this.repository.get({id, guildId});
             if (!casualPayment) throw new CasualPaymentNotFoundError()
             
             return Result.success(casualPayment);
