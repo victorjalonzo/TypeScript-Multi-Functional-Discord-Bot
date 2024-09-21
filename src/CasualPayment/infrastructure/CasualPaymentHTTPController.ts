@@ -2,11 +2,9 @@ import { IGuildInput } from "../../Guild/domain/IGuildInput.js";
 import { CasualPayment } from "../domain/CasualPayment.js";
 import { ICasualPaymentInput } from "../domain/ICasualPaymentInput.js";
 import {Response, Request} from "express";
-import { ICasualPayment, TPaymentMethods } from "../domain/ICasualPayment.js";
-import { CasualPaymentModel } from "./CasualPaymentSchema.js";
-import { Document } from "mongoose";
+import { ICasualPayment } from "../domain/ICasualPayment.js";
 import { ICasualPaymentMethodCreatePayload } from "../domain/ICasualPaymentMethodCreatePayload.js";
-
+import { CasualPaymentMethodsMissingException, GuildIdMissingException } from "../domain/CasualPaymentExceptions.js";
 
 export class CasualPaymentHTTPController {
     constructor (
@@ -18,8 +16,8 @@ export class CasualPaymentHTTPController {
         try {
             const payload: ICasualPaymentMethodCreatePayload = req.body
 
-            if (!payload.guildId) throw new Error("Guild Id not provided")
-            if (!payload.casualPaymentMethods) throw new Error("Casual payments methods not provided")
+            if (!payload.guildId) throw new GuildIdMissingException()
+            if (!payload.casualPaymentMethods) throw new CasualPaymentMethodsMissingException()
 
             const guildCachedResult = await this.guildService.get(req.body.guildId);
             if (!guildCachedResult.isSuccess()) throw guildCachedResult.error
@@ -31,7 +29,7 @@ export class CasualPaymentHTTPController {
 
             const partialPaymentMethods = payload.casualPaymentMethods
 
-            const casualPaymentMethodsCreateds: Document<ICasualPayment>[] = []
+            const casualPaymentMethodsCreateds: ICasualPayment[] = []
 
             for (const method of partialPaymentMethods) {
                 const values = Array.isArray(method.paymentMethodValue)
@@ -49,7 +47,7 @@ export class CasualPaymentHTTPController {
                     const result = await this.service.create(newCasualPayment);
                     if (!result.isSuccess()) throw result.error
 
-                    const casualPaymentCreated = <Document<ICasualPayment>><unknown>result.value
+                    const casualPaymentCreated = result.value
 
                     casualPaymentMethodsCreateds.push(casualPaymentCreated)
                 }
