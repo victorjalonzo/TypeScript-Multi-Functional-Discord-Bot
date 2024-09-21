@@ -5,11 +5,8 @@ import {Response, Request} from "express";
 import { ICasualPayment, TPaymentMethods } from "../domain/ICasualPayment.js";
 import { CasualPaymentModel } from "./CasualPaymentSchema.js";
 import { Document } from "mongoose";
+import { ICasualPaymentMethodCreatePayload } from "../domain/ICasualPaymentMethodCreatePayload.js";
 
-interface IPartialCasualPaymentMethod {
-    paymentMethodName: TPaymentMethods
-    paymentMethodValue: string | string[]
-}
 
 export class CasualPaymentHTTPController {
     constructor (
@@ -19,8 +16,10 @@ export class CasualPaymentHTTPController {
 
     async create(req: Request, res: Response) {
         try {
-            if (!req.body.guildId) throw new Error("Guild Id not provided")
-            if (!req.body.casualPaymentMethods) throw new Error("Casual payment methods not provided")
+            const payload: ICasualPaymentMethodCreatePayload = req.body
+
+            if (!payload.guildId) throw new Error("Guild Id not provided")
+            if (!payload.casualPaymentMethods) throw new Error("Casual payments methods not provided")
 
             const guildCachedResult = await this.guildService.get(req.body.guildId);
             if (!guildCachedResult.isSuccess()) throw guildCachedResult.error
@@ -30,7 +29,7 @@ export class CasualPaymentHTTPController {
             const result = await this.service.deleteAll(req.body.guildId);
             if (!result.isSuccess()) throw result.error
 
-            const partialPaymentMethods: IPartialCasualPaymentMethod[] = req.body.casualPaymentMethods
+            const partialPaymentMethods = payload.casualPaymentMethods
 
             const casualPaymentMethodsCreateds: Document<ICasualPayment>[] = []
 
