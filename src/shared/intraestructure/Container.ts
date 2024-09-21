@@ -94,6 +94,8 @@ import { CreditRewardService } from "../../CreditReward/application/CreditReward
 import { CreditRewardEventController } from "../../CreditReward/infrastructure/CreditRewardEventController.js";
 import { CreditRewardCommand } from "../../CreditReward/infrastructure/CreditRewardCommand.js";
 import { CreditRewardCommandActions } from "../../CreditReward/infrastructure/CreditRewardCommandActions.js";
+import { CasualPaymentHTTPController } from "../../CasualPayment/infrastructure/CasualPaymentHTTPController.js";
+import { CasualPaymentMethodRouter } from "../../CasualPayment/infrastructure/Router/CasualPaymentRouter.js";
 
 await Database.connect()
 
@@ -128,6 +130,8 @@ GuildCommand.setCallback(guildCommandActions.execute);
 
 const casualPaymentRepository = new Repository(CasualPaymentModel);
 const casualPaymentService = new CasualPaymentService(casualPaymentRepository, guildRepository);
+const casualPaymentHTTPController = new CasualPaymentHTTPController(casualPaymentService, guildService);
+const casualPaymentRouter = new CasualPaymentMethodRouter(casualPaymentHTTPController);
 const casualPaymentCommandAction = new CasualPaymentCommandActions(casualPaymentService);
 CasualPaymentCommand.setCallback(casualPaymentCommandAction.execute);
 
@@ -225,11 +229,18 @@ export const Controllers = {
     creditRewardEventController,
 }
 
+export const HTTPControllers = {
+    casualPaymentHTTPController
+}
+
+export const Routers = {
+    casualPaymentRouter: casualPaymentRouter.router
+}
+
 export const Commands: SlashCommandCallable[] = [ 
     CasualPaymentCommand,
     CreditCommand,
     PaypointCommand,
-
     GuildCommand, 
     InviteCommand, 
     RoleRewardCommand,
