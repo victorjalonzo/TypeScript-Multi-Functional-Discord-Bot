@@ -22,6 +22,18 @@ export class CasualPaymentNotFoundError extends Error {
     }
 }
 
+export class GuildIdMissingException extends Error {
+    constructor() {
+        super('The guild id was not provided');
+    }
+}
+
+export class CasualPaymentMethodsMissingException extends Error {
+    constructor() {
+        super('The methods were not provided');
+    }
+}
+
 export class MethodNotProvidedError extends Error {
     constructor() {
         super('The method was not provided');
