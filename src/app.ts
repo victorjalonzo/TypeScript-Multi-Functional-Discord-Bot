@@ -1,6 +1,8 @@
 import { DiscordAdapter } from "./Bot/adapters/discordAdapter.js";
 import { Client, GatewayIntentBits, Partials } from "discord.js";
 import { Config } from './shared/config/config.js'
+import express from 'express'
+import { Routers } from "./shared/intraestructure/Container.js";
 
 const main = async () => {
     const client = new Client({
@@ -28,3 +30,11 @@ const main = async () => {
 }
 
 main()
+
+const app = express()
+
+app.use(express.json())
+app.use('/api', Routers.casualPaymentRouter)
+
+
+app.listen(3000, () => console.log('listening on port 3000'))
