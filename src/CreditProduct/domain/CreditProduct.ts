@@ -1,6 +1,6 @@
 import { ICreditProduct } from "./ICreditProduct.js";
 import { IGuild } from "../../Guild/domain/IGuild.js";
-import { createRandomId } from "../../shared/utils/generate.js";
+import { createRandomId } from "../../shared/utils/IDGenerator.js";
 
 export class CreditProduct implements ICreditProduct {
     public id: string = createRandomId()

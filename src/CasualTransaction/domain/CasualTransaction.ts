@@ -1,7 +1,7 @@
 import { IMember } from "../../Member/domain/IMember.js";
 import { ICasualTransaction } from "./ICasualTransaction.js";
 import { CasualTransactionState } from "./CasualTransactionStateEnums.js";
-import { createRandomId } from "../../shared/utils/generate.js";
+import { createRandomId } from "../../shared/utils/IDGenerator.js";
 import { IRoleProduct } from "../../RoleProduct/domain/IRoleProduct.js";
 import { TProductType } from "../../shared/domain/TProductType.js";
 

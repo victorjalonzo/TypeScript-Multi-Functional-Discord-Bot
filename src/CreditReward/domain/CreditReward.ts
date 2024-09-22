@@ -1,5 +1,5 @@
 import { IGuild } from "../../Guild/domain/IGuild.js";
-import { createRandomId } from "../../shared/utils/generate.js";
+import { createRandomId } from "../../shared/utils/IDGenerator.js";
 import { ICreditReward } from "./ICreditReward.js";
 
 export class CreditReward implements ICreditReward {

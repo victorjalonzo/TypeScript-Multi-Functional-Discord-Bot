@@ -1,7 +1,7 @@
 import { ICasualPayment } from "./ICasualPayment.js";
 import { TPaymentMethods } from "./ICasualPayment.js";
 import { IGuild } from "../../Guild/domain/IGuild.js";
-import { createRandomId } from "../../shared/utils/generate.js";
+import { createRandomId } from "../../shared/utils/IDGenerator.js";
 
 export class CasualPayment implements ICasualPayment {
     public id: string = createRandomId()
