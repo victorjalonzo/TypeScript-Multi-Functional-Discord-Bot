@@ -1,6 +1,6 @@
 import { IPaypoint, TPaymentMethodType } from './IPaypoint.js';
 import { IGuild } from '../../Guild/domain/IGuild.js';
-import { createRandomId } from '../../shared/utils/generate.js';
+import { createRandomId } from '../../shared/utils/IDGenerator.js';
 import { TProductType } from '../../shared/domain/TProductType.js';
 
 export class Paypoint implements IPaypoint {
