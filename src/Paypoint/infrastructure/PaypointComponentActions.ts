@@ -143,7 +143,7 @@ export class PaypointComponentActions implements IComponentAction {
             return await interaction.editReply({
                 embeds: [response.productEmbed, response.paymentMethodEmbed], 
                 files: response.files, 
-                components: [<any>response.buttonRow]})
+                components: [...<any>response.buttonRows]})
         }
         catch (e) {
             return await EmbedResult.fail({description: InlineBlockText(String(e)), interaction})
@@ -200,14 +200,14 @@ export class PaypointComponentActions implements IComponentAction {
                 return await interaction.editReply({content: "", embeds: [embed], files, components: []})   
             }
     
-            const rawMethodName = <string>data.values.rawMethodName
+            const methodId = <string>data.values.methodId
             const productId = <string>data.values.productId
     
             if (!guildId) throw new GuildNotFoundError()
             if (!member) throw new Error ("Member not found")
-            if (!rawMethodName) throw new Error ("Raw method name not found")
+            if (!methodId) throw new Error ("Method Id not found")
     
-            const result = await this.casualPaymentService.getByRawName(rawMethodName, guildId)
+            const result = await this.casualPaymentService.get(methodId, guildId)
             if (!result.isSuccess()) throw result.error
 
             const casualPaymentMethod = result.value
@@ -217,7 +217,8 @@ export class PaypointComponentActions implements IComponentAction {
                 memberAvatarURL: (member.user as User).avatarURL() ?? undefined,
                 methodName: casualPaymentMethod.rawName,
                 methodValue: casualPaymentMethod.value,
-                productId: productId
+                productId: productId,
+                methodId: methodId
             })
     
             return await interaction.editReply({embeds: [embed], files: files, components: [<any>buttonRow]})
@@ -233,7 +234,7 @@ export class PaypointComponentActions implements IComponentAction {
 
             const guild = interaction.guild
             const guildMember = interaction.member
-            const rawMethodName = <string>data.values.rawMethodName
+            const methodId = <string>data.values.methodId
             const productId = <string>data.values.productId
     
             if (!guild) throw new GuildNotFoundError()
@@ -246,7 +247,7 @@ export class PaypointComponentActions implements IComponentAction {
     
             const member = MemberResult.value
     
-            const casualPaymentMethodResult = await this.casualPaymentService.getByRawName(rawMethodName, guild.id)
+            const casualPaymentMethodResult = await this.casualPaymentService.get(methodId, guild.id)
             if (!casualPaymentMethodResult.isSuccess()) throw casualPaymentMethodResult.error
     
             const casualPaymentMethod = casualPaymentMethodResult.value
