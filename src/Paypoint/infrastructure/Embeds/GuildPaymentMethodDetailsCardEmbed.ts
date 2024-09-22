@@ -11,6 +11,7 @@ interface IProps {
     methodName: string
     methodValue: string
     productId: string
+    methodId: string
 }
 
 export const createGuildPaymentMethodDetailsCardEmbed = async (props: IProps) => {
@@ -35,7 +36,7 @@ export const createGuildPaymentMethodDetailsCardEmbed = async (props: IProps) =>
         id: CustomComponentID.PAYPOINT_ROLE,
         action: Actions.MARK_PAYMENT_AS_SENT,
         values: {
-            rawMethodName: props.methodName.replace(" ", "").toLowerCase(),
+            methodId: props.methodId,
             productId: props.productId
 
         }
