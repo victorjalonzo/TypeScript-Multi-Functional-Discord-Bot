@@ -51,7 +51,7 @@ export class DiscordAdapter {
                 logger.info(`Refreshing ${guild.name} (${guild.id}):`)
 
                 await this.controllers.roleProductEventController.refresh(guild)
-                await this.controllers.rewardRoleEventController.refresh(guild)
+                await this.controllers.roleRewardEventController.refresh(guild)
 
                 console.log("\n")
             }
@@ -113,8 +113,9 @@ export class DiscordAdapter {
         this.client.on('guildMemberAdd', async (member) => {
             await this.controllers.memberController.create(member)
             await this.controllers.creditWalletEventController.create(member)
-            await this.controllers.inviteEventController.increaseInviteCount(member)
-            await this.controllers.rewardRoleEventController.assignRoleOnInviteGoal(member)
+            //await this.controllers.inviteEventController.increaseInviteCount(member)
+            await this.controllers.inviteCodeEventController.increaseInviteCount(member)
+            await this.controllers.roleRewardEventController.assignRoleOnInviteGoal(member)
         })
 
         this.client.on('GuildMemberUpdate', async (oldMember, newMember) => {
