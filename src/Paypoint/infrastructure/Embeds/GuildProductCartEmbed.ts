@@ -15,7 +15,7 @@ type TOptions = {
     productMedia?: AttachmentBuilder
 }
 
-export const createGuildProductCartEmbed = async (options: TOptions): Promise<{productEmbed: EmbedBuilder, paymentMethodEmbed: EmbedBuilder, buttonRow: ActionRowBuilder, files: AttachmentBuilder[]}> => {
+export const createGuildProductCartEmbed = async (options: TOptions): Promise<{productEmbed: EmbedBuilder, paymentMethodEmbed: EmbedBuilder, buttonRows: ActionRowBuilder[], files: AttachmentBuilder[]}> => {
     const files: AttachmentBuilder[] = []
 
     const productName = `**Product Name**:${SimpleBlockText(options.productName)}`
@@ -56,7 +56,7 @@ export const createGuildProductCartEmbed = async (options: TOptions): Promise<{p
             id: CustomComponentID.PAYPOINT_ROLE,
             action: Actions.CHOOSE_CASUAL_PAYMENT_METHOD,
             values: {
-                rawMethodName: paymentMethod.rawName,
+                methodId: paymentMethod.id,
                 productId: options.productId
             }
         })
@@ -68,7 +68,12 @@ export const createGuildProductCartEmbed = async (options: TOptions): Promise<{p
         )
     }
 
-    const buttonRow = new ActionRowBuilder().addComponents(...buttons)
+    const buttonRows: ActionRowBuilder[] = [];
+    while (buttons.length) {
+        const rowButtons = buttons.splice(0, 5);
+        const buttonRow = new ActionRowBuilder().addComponents(...rowButtons);
+        buttonRows.push(buttonRow);
+    }
 
-    return {productEmbed, paymentMethodEmbed, buttonRow, files}
+    return {productEmbed, paymentMethodEmbed, buttonRows, files}
 }
