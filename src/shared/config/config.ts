@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 export const Config = {
+    domain: process.env.DOMAIN,
     host: process.env.HOST,
 
     discord: {
