@@ -1,5 +1,5 @@
 import { IMember } from "../../Member/domain/IMember.js"
-import { createRandomId } from "../../shared/utils/generate.js"
+import { createRandomId } from "../../shared/utils/IDGenerator.js"
 import { IDMConversaction } from "./IDMConversaction.js"
 import { DMConversactionState } from "./DMConversactionStateEnums.js"
 import { TProductType } from "../../shared/domain/TProductType.js"
