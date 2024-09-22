@@ -53,6 +53,15 @@ import { InviteCommand } from '../../Invite/infrastructure/InviteCommand.js';
 import { InviteCommandActions } from "../../Invite/infrastructure/InviteCommandActions.js";
 import { InviteEventController } from "../../Invite/infrastructure/InviteEventController.js";
 
+import { InviteCodeModel } from "../../InviteCode/infrastructure/InviteCodeSchema.js";
+import { InviteCodeService } from "../../InviteCode/application/InviteCodeService.js";
+
+import { InvitePointModel } from "../../InvitePoint/infrastructure/InvitePointSchema.js";
+import { InvitePointService } from "../../InvitePoint/application/InvitePointService.js";
+import { InvitePointCommandActions } from "../../InvitePoint/infrastructure/InvitePointCommandActions.js";
+import { InvitePointCommand } from "../../InvitePoint/infrastructure/InvitePointCommand.js";
+import { InvitePointComponentsActions } from "../../InvitePoint/infrastructure/InvitePointComponentActions.js";
+
 import { IntegratedPaymentCommand } from '../../IntegratedPayment/infrastructure/IntegratedPaymentCommand.js';
 import { RoleProductModel } from "../../RoleProduct/infrastructure/RoleProductSchema.js";
 import { RoleProductService } from "../../RoleProduct/application/RoleProductService.js";
@@ -96,6 +105,9 @@ import { CreditRewardCommand } from "../../CreditReward/infrastructure/CreditRew
 import { CreditRewardCommandActions } from "../../CreditReward/infrastructure/CreditRewardCommandActions.js";
 import { CasualPaymentHTTPController } from "../../CasualPayment/infrastructure/CasualPaymentHTTPController.js";
 import { CasualPaymentMethodRouter } from "../../CasualPayment/infrastructure/Router/CasualPaymentRouter.js";
+import { InviteCodeEventController } from "../../InviteCode/infrastructure/inviteCodeEventController.js";
+import { InviteCodeHTTPController } from "../../InviteCode/infrastructure/InviteCodeHTTPController.js";
+import { InviteCodeRouter } from "../../InviteCode/infrastructure/Routers/InviteCodeRouter.js";
 
 await Database.connect()
 
@@ -188,6 +200,18 @@ const inviteCommandActions = new InviteCommandActions(memberService, roleRewardS
 const inviteEventController = new InviteEventController(memberService);
 InviteCommand.setCallback(inviteCommandActions.execute);
 
+const inviteCodeRepository = new Repository(InviteCodeModel);
+const inviteCodeService = new InviteCodeService(inviteCodeRepository);
+const inviteCodeEventController = new InviteCodeEventController(inviteCodeService, memberService, inviteCodeService);
+const inviteCodeHTTPController = new InviteCodeHTTPController(inviteCodeService);
+const inviteCodeRouter = new InviteCodeRouter(inviteCodeHTTPController);
+
+const invitePointRepository = new Repository(InvitePointModel);
+const invitePointService = new InvitePointService(invitePointRepository);
+const invitePointCommandActions = new InvitePointCommandActions(invitePointService, guildService);
+const invitePointComponentsActions = new InvitePointComponentsActions(guildService, memberService, inviteCodeService);
+InvitePointCommand.setCallback(invitePointCommandActions.execute);
+
 const agentEventController = new AgentEventController(casualTransactionService, paypointService, roleProductService, roleRewardService, dmConversactionService, memberService);
 const agentComponentActions = new AgentComponentsActions(dmConversactionService, casualTransactionService, roleProductService, creditProductService, creditWalletService);
 
@@ -204,13 +228,15 @@ export const Services = {
     voiceChannelService,
     roleService,
     casualPaymentService,
-    creditService: creditProductService,
+    creditProductService,
     creditChannelLockerService,
     creditWalletService,
     creditRewardService,
     paypointService,
     roleProductService,
-    rewardRoleService: roleRewardService
+    roleRewardService,
+    inviteCodeService,
+    invitePointService
 }
 
 export const Controllers = {
@@ -220,8 +246,9 @@ export const Controllers = {
     textChannelEventController,
     voiceChannelEventController,
     roleEventController,
-    rewardRoleEventController: roleRewardEventController,
+    roleRewardEventController,
     inviteEventController,
+    inviteCodeEventController,
     agentEventController,
     roleProductEventController,
     paypointEventController,
@@ -230,11 +257,13 @@ export const Controllers = {
 }
 
 export const HTTPControllers = {
-    casualPaymentHTTPController
+    casualPaymentHTTPController,
+    inviteCodeHTTPController
 }
 
 export const Routers = {
-    casualPaymentRouter: casualPaymentRouter.router
+    casualPaymentRouter: casualPaymentRouter.router,
+    inviteCodeRouter: inviteCodeRouter.router
 }
 
 export const Commands: SlashCommandCallable[] = [ 
@@ -249,7 +278,8 @@ export const Commands: SlashCommandCallable[] = [
     CreditChannelLockerCommand,
     CreditWalletCommand,
     CreditRewardCommand,
-    RoleProductCommand
+    RoleProductCommand,
+    InvitePointCommand
 ]
 
 export const CommandActions = {
@@ -262,11 +292,13 @@ export const CommandActions = {
     backupCommandAction,
     creditWalletCommandActions,
     creditRewardCommandActions,
-    RoleProductCommandActions
+    RoleProductCommandActions,
+    invitePointCommandActions
 }
 
 export const ComponentActions: IComponentAction[] = [
     agentComponentActions,
     paypointComponentAction,
-    creditChannelLockerComponentAction
+    creditChannelLockerComponentAction,
+    invitePointComponentsActions
 ]
