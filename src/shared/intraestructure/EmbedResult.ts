@@ -53,6 +53,10 @@ export class EmbedResult {
         })
     }
 
+    static custom ({author, color, title, description, thumbnail, interaction}: Options) {
+        return new EmbedResult().base({author, color,title,description,thumbnail,interaction})
+    }
+
     async base ({author, color, title, description, thumbnail, interaction}: Options) {
         let embed = new EmbedBuilder()
 
