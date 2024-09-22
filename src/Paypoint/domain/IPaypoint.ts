@@ -1,5 +1,4 @@
 import { IGuild } from "../../Guild/domain/IGuild.js"
-import { IRoleProduct } from "../../RoleProduct/domain/IRoleProduct.js"
 import { TProductType } from "../../shared/domain/TProductType.js"
 
 export type TPaymentMethodType = "Casual" | "Integrated" | "Both"
