@@ -46,9 +46,22 @@ export class DiscordAdapter {
             const guildManager = this.client.guilds
             await this.controllers.guildController.createCache(guildManager)
 
+            console.log(`
+ ▗▄▄▖ ▗▄▖  ▗▄▖▗▄▄▄▖▗▖   ▗▄▄▄▖▗▖ ▗▖▗▄▄▄▖   ▗▖ ▗▄▄▖
+▐▌   ▐▌ ▐▌▐▌ ▐▌ █  ▐▌     █  ▐▌▗▞▘▐▌      ▐▌▐▌   
+▐▌▝▜▌▐▌ ▐▌▐▛▀▜▌ █  ▐▌     █  ▐▛▚▖ ▐▛▀▀▘   ▐▌ ▝▀▚▖
+▝▚▄▞▘▝▚▄▞▘▐▌ ▐▌ █  ▐▙▄▄▖▗▄█▄▖▐▌ ▐▌▐▙▄▄▖▗▄▄▞▘▗▄▄▞▘
+      By Victor J. Alonzo                            
+`)
+
             console.log("\n")
             for (const guild of guildManager.cache.values()) {
                 logger.info(`Refreshing ${guild.name} (${guild.id}):`)
+                await this.controllers.roleEventController.refresh(guild)
+                await this.controllers.categoryChannelEventController.refresh(guild)
+                await this.controllers.textChannelEventController.refresh(guild)
+                await this.controllers.voiceChannelEventController.refresh(guild)
+                await this.controllers.memberController.refresh(guild)
 
                 await this.controllers.roleProductEventController.refresh(guild)
                 await this.controllers.roleRewardEventController.refresh(guild)
