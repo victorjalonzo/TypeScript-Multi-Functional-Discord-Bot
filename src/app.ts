@@ -27,14 +27,21 @@ const main = async () => {
     })
     
     await discordAdapter.start()
+
+    const app = express()
+    
+    app.use(express.json())
+
+    app.use((req, res, next) => {
+        req.discordClient = client;
+        next();
+    });
+
+    app.use('/api/v1', Routers.casualPaymentRouter)
+    app.use('/', Routers.inviteCodeRouter)
+    
+    
+    app.listen(3000, () => console.log('listening on port 3000'))
 }
 
 main()
-
-const app = express()
-
-app.use(express.json())
-app.use('/api', Routers.casualPaymentRouter)
-
-
-app.listen(3000, () => console.log('listening on port 3000'))
