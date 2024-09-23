@@ -119,23 +119,23 @@ const guildController = new GuildController(guildService);
 
 const memberRepository = new Repository(memberModel);
 const memberService = new MemberService(memberRepository);
-const memberController = new MemberController(memberService);
+const memberController = new MemberController(memberService, guildService);
 
 const categoryChannelRepository = new Repository(CategoryChannelModel);
 const categoryChannelService = new CategoryChannelService(categoryChannelRepository);
-const categoryChannelEventController = new CategoryChannelEventController(categoryChannelService);
+const categoryChannelEventController = new CategoryChannelEventController(categoryChannelService, guildService);
 
 const textChannelRepository = new Repository(TextChannelModel);
 const textChannelService = new TextChannelService(textChannelRepository, guildService, categoryChannelService);
-const textChannelEventController = new TextChannelEventController(textChannelService);
+const textChannelEventController = new TextChannelEventController(textChannelService, guildService, categoryChannelService);
 
 const voiceChannelRepository = new Repository(VoiceChannelModel);
 const voiceChannelService = new VoiceChannelService(voiceChannelRepository, guildService, categoryChannelService);
-const voiceChannelEventController = new VoiceChannelEventController(voiceChannelService);
+const voiceChannelEventController = new VoiceChannelEventController(voiceChannelService, guildService, categoryChannelService);
 
 const roleRepository = new Repository(RoleRecordModel);
 const roleService = new RoleService(roleRepository);
-const roleEventController = new RoleEventController(roleService);
+const roleEventController = new RoleEventController(roleService, guildService);
 
 const guildCommandActions = new GuildCommandActions(guildService, roleService, textChannelService);
 GuildCommand.setCallback(guildCommandActions.execute);
