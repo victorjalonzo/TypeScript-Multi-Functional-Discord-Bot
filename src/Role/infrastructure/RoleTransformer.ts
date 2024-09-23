@@ -1,14 +1,10 @@
 import {Role as DiscordRole} from "discord.js"
 import { IRole } from "../domain/IRole.js";
 import { Role } from "../domain/Role.js";
-import { cache } from "../../shared/intraestructure/Cache.js";
-import { CachedGuildNotFoundError } from "../../shared/domain/CachedGuildException.js";
+import { IGuild } from "../../Guild/domain/IGuild.js";
 
 export class RoleTransformer {
-    static parse = (role: DiscordRole): IRole => {
-        const cachedGuild = cache.get(role.guild.id)
-
-        if (!cachedGuild) throw new CachedGuildNotFoundError();
+    static parse = (role: DiscordRole, guild: IGuild): IRole => {
 
         const permissions = role.permissions.toArray()
 
@@ -23,7 +19,7 @@ export class RoleTransformer {
             managed: role.managed,
             editable: role.editable,
             guildId: role.guild.id,
-            guild: cachedGuild
+            guild: guild
         })
     }
 }
