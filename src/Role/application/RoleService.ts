@@ -39,9 +39,9 @@ export class RoleService implements IRoleInput {
         }
     }
 
-    get = async (roleId: string, guildId: string): Promise<Result<IRole>> => {
+    get = async (id: string, guildId: string): Promise<Result<IRole>> => {
         try {
-            const role = await this.repository.get({id: roleId, guildId});
+            const role = await this.repository.get({id, guildId});
             if (!role) throw new RoleNotFoundError()
 
             return Result.success(role);
@@ -61,9 +61,9 @@ export class RoleService implements IRoleInput {
         }
     }
 
-    delete = async (roleId: string, guildId: string): Promise<Result<IRole>> => {
+    delete = async (id: string, guildId: string): Promise<Result<IRole>> => {
         try {
-            const roleDeleted = await this.repository.delete({id: roleId, guildId});
+            const roleDeleted = await this.repository.delete({id, guildId});
             if (!roleDeleted) throw new RoleDeletionError()
 
             return Result.success(roleDeleted);
