@@ -10,7 +10,8 @@ import { IVoiceChannel } from "../domain/IVoiceChannel.js";
 import { ICategoryChannel } from "../../CategoryChannel/domain/ICategoryChannel.js";
 import { ICategoryChannelInput } from "../../CategoryChannel/domain/ICategoryChannelInput.js";
 import { Result } from "../../shared/domain/Result.js";
-import { printVoiceChannelRefreshStatus } from "../domain/VoiceChannelRefreshStatus.js";
+import { GuildHasNoVoiceChannels } from "../../Guild/domain/GuildExceptions.js";
+import { refreshLog } from "../../shared/utils/RefreshLog.js";
 
 export class VoiceChannelEventController {
     constructor(
@@ -20,10 +21,11 @@ export class VoiceChannelEventController {
     ) {}
 
     refresh = async (guild: DiscordGuild): Promise<void> => {
+        const channelsCreated: IVoiceChannel[] = [];
+        const channelsUpdated: IVoiceChannel[] = [];
+        const channelsDeleted: IVoiceChannel[] = [];
+
         try {
-            const channelsCreated: IVoiceChannel[] = [];
-            const channelsUpdated: IVoiceChannel[] = [];
-            const channelsDeleted: IVoiceChannel[] = [];
 
             const [guildCachedResult, channelsCachedResult] = await Promise.all([
                 this.guildService.get(guild.id),
@@ -47,13 +49,7 @@ export class VoiceChannelEventController {
                 throw new Error(`Error fetching voice channels: ${String(e)}`);
             }
 
-            if (channels.length === 0) {
-                return printVoiceChannelRefreshStatus({
-                    channelsCreated: channelsCreated.length, 
-                    channelsUpdated: channelsUpdated.length, 
-                    channelsDeleted: channelsDeleted.length
-                });
-            }
+            if (channels.length === 0) throw new GuildHasNoVoiceChannels();
 
             const channelsRefreshed: IVoiceChannel[] = [];
 
@@ -102,16 +98,19 @@ export class VoiceChannelEventController {
 
                 channelsDeleted.push(channelObsolete);
             }
-
-            printVoiceChannelRefreshStatus({
-                channelsCreated: channelsCreated.length, 
-                channelsUpdated: channelsUpdated.length, 
-                channelsDeleted: channelsDeleted.length
-            });
         }
         catch (e) {
-            logger.warn(e);
+            if (!(e instanceof GuildHasNoVoiceChannels)) {
+                logger.warn(String(e))
+            }
         }
+        refreshLog({
+            itemsAdded: channelsCreated.length,
+            itemsUpdated: channelsUpdated.length, 
+            itemsRemoved: channelsDeleted.length, 
+            singular: "voicechannel", 
+            plural: "voicechannels"
+        });
     }
 
     createRecord = async (voiceChannel: DiscordVoiceChannel): Promise<void> => {
