@@ -10,7 +10,8 @@ import { ITextChannel } from "../domain/ITextChannel.js";
 import { Result } from "../../shared/domain/Result.js";
 import { ICategoryChannelInput } from "../../CategoryChannel/domain/ICategoryChannelInput.js";
 import { ICategoryChannel } from "../../CategoryChannel/domain/ICategoryChannel.js";
-import { printTextChannelRefreshStatus } from "../domain/TextChannelFreshStatus.js";
+import { GuildHasNoTextChannels } from "../../Guild/domain/GuildExceptions.js";
+import { refreshLog } from "../../shared/utils/RefreshLog.js";
 
 export class TextChannelEventController {
     constructor (
@@ -20,10 +21,11 @@ export class TextChannelEventController {
     ) {}
 
     refresh = async (guild: DiscordGuild): Promise<void> => {
+        const channelsCreated: ITextChannel[] = [];
+        const channelsUpdated: ITextChannel[] = [];
+        const channelsDeleted: ITextChannel[] = [];
+
         try {
-            const channelsCreated: ITextChannel[] = [];
-            const channelsUpdated: ITextChannel[] = [];
-            const channelsDeleted: ITextChannel[] = [];
 
             const [guildCachedResult, channelsCachedResult] = await Promise.all([
                 this.guildService.get(guild.id),
@@ -47,13 +49,7 @@ export class TextChannelEventController {
                 throw new Error(`Error fetching text channels: ${String(e)}`);
             }
 
-            if (channels.length === 0) {
-                return printTextChannelRefreshStatus({
-                    channelsCreated: channelsCreated.length, 
-                    channelsUpdated: channelsUpdated.length, 
-                    channelsDeleted: channelsDeleted.length
-                });
-            }
+            if (channels.length === 0) throw new GuildHasNoTextChannels();
 
             const channelsRefreshed: ITextChannel[] = [];
 
@@ -100,16 +96,20 @@ export class TextChannelEventController {
 
                 channelsDeleted.push(channelObsolete);
             }
-
-            printTextChannelRefreshStatus({
-                channelsCreated: channelsCreated.length, 
-                channelsUpdated: channelsUpdated.length, 
-                channelsDeleted: channelsDeleted.length
-            });
         }
         catch (e) {
-            logger.warn(e);
+            if (!(e instanceof GuildHasNoTextChannels)) {
+                logger.info(String(e))
+                return;
+            }
         }
+        refreshLog({ 
+            itemsAdded: channelsCreated.length, 
+            itemsUpdated: channelsUpdated.length, 
+            itemsRemoved: channelsDeleted.length, 
+            singular: "textchannel", 
+            plural: "textchannels"
+        });
     }
 
     createRecord = async (textChannel: DiscordTextChannel): Promise<void> => {
