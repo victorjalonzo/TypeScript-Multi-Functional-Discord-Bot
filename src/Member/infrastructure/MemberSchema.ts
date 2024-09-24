@@ -8,7 +8,8 @@ const memberSchema = new Schema<IMember & Document>({
     guildId: { type: String, required: true },
     guild: { type: Schema.Types.ObjectId, ref: "Guilds", required: true},
     avatarURL: { type: String, default: null },
-    invitedBy: { type: String, default: null },
+    invitedById: { type: String, default: null },
+    invitedBy: { type: Schema.Types.ObjectId, ref: "Members", default: null }
 });
 
 export const memberModel = model<IMember & Document>('Members', memberSchema);
