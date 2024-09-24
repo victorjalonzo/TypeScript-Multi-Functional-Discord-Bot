@@ -7,7 +7,8 @@ import { IGuildInput } from "../../Guild/domain/IGuildInput.js";
 import { IRole } from "../domain/IRole.js";
 import { IGuild } from "../../Guild/domain/IGuild.js";
 import { Result } from "../../shared/domain/Result.js";
-import { printRoleRefreshStatus } from "../domain/RoleFreshStatus.js";
+import { refreshLog } from "../../shared/utils/RefreshLog.js";
+import { GuildHasNoRoles } from "../../Guild/domain/GuildExceptions.js";
 
 export class RoleEventController {
     constructor (
@@ -16,11 +17,11 @@ export class RoleEventController {
     ) {}
 
     refresh = async (guild: DiscordGuild) => {
-        try {
-            const rolesCreated: IRole[] = []
-            const rolesUpdated: IRole[] = []
-            const rolesDeleted: IRole[] = []
+        const rolesCreated: IRole[] = []
+        const rolesUpdated: IRole[] = []
+        const rolesDeleted: IRole[] = []
 
+        try {
             const [guildCachedResult, rolesCachedResult] = await Promise.all([
                 this.guildService.get(guild.id),
                 this.service.getAll(guild.id)
@@ -42,11 +43,7 @@ export class RoleEventController {
                 throw new Error(`Error fetching roles: ${String(e)}`)
             }
 
-            if (roles.length === 0) return printRoleRefreshStatus({
-                    rolesCreated: rolesCreated.length, 
-                    rolesUpdated: rolesUpdated.length, 
-                    rolesDeleted: rolesDeleted.length
-                })
+            if (roles.length === 0) throw new GuildHasNoRoles()
 
             const rolesRefreshed: IRole[] = []
 
@@ -83,16 +80,19 @@ export class RoleEventController {
 
                 rolesDeleted.push(roleObsolete)
             }
-            
-            printRoleRefreshStatus({
-                rolesCreated: rolesCreated.length, 
-                rolesUpdated: rolesUpdated.length, 
-                rolesDeleted: rolesDeleted.length
-            })
         }
         catch (e) {
-            logger.warn(e)
+            if (!(e instanceof GuildHasNoRoles)) {
+                logger.warn(e)
+            }
         }
+        refreshLog({
+            itemsAdded: rolesCreated.length,
+            itemsUpdated: rolesUpdated.length,
+            itemsRemoved: rolesDeleted.length,
+            singular: "role",
+            plural: "roles"
+        })
     }
 
     create = async (role: DiscordRole) => {
