@@ -7,5 +7,6 @@ export interface IMember {
     guildId: string
     guild: IGuild
     avatarURL?: string | null
-    invitedBy?: string | null
+    invitedById?: string | null
+    invitedBy: IMember
 }
