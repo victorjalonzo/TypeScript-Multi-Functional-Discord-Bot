@@ -6,7 +6,9 @@ export interface IMember {
     discriminator: string
     guildId: string
     guild: IGuild
-    avatarURL?: string | null
-    invitedById?: string | null
-    invitedBy: IMember
+    avatarURL?: string
+    invitedById?: string
+    invitedBy?: IMember
+
+    setInvitedBy(inviter: IMember): void
 }
