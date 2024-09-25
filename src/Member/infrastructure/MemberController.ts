@@ -3,6 +3,10 @@ import { Guild as DiscordGuild, GuildMember } from "discord.js";
 import { MemberTransformer } from "../infrastructure/MemberTransformer.js";
 import { logger } from "../../shared/utils/logger.js";
 import { IGuildInput } from "../../Guild/domain/IGuildInput.js";
+import { IMember } from "../domain/IMember.js";
+import { Result } from "../../shared/domain/Result.js";
+import { GuildHasNoMembers } from "../../Guild/domain/GuildExceptions.js";
+import { refreshLog } from "../../shared/utils/RefreshLog.js";
 
 export class MemberController {
     constructor(
@@ -11,42 +15,67 @@ export class MemberController {
     ) {}
 
     async refresh (guild: DiscordGuild): Promise<void> {
+        const membersCreated: IMember[] = []
+        const membersUpdated: IMember[] = []
+        const membersDeleted: IMember[] = []
+        const membersRefreshed: IMember[] = []
+
         try {
-            const guildCachedResult = await this.guildService.get(guild.id)
-            if (!guildCachedResult.isSuccess()) throw guildCachedResult.error
+            const [guildCachedResult, membersCachedResult] = await Promise.all([
+                await this.guildService.get(guild.id),
+                await this.service.getAll(guild.id)
+            ])
+
+            if (!guildCachedResult.isSuccess() || !membersCachedResult.isSuccess()) {
+                throw guildCachedResult.error || membersCachedResult.error
+            }
 
             const guildCached = guildCachedResult.value
+            const membersCached = membersCachedResult.value
 
-            const guildMembers = (await guild.members.fetch()).toJSON();
+            let guildMembers: GuildMember[]
 
-            const membersStoredResult = await this.service.getAll(guild.id)
-            if (!membersStoredResult.isSuccess()) throw membersStoredResult.error
-
-            const membersStored = membersStoredResult.value
-
-            const guildMembersNotStored = guildMembers.filter(guildMember => {
-                return !membersStored.some(member => member.id === guildMember.id)
-            })
-
-            if (guildMembersNotStored.length === 0) {
-                logger.info("members: up to date.")
-                return
+            try {
+                guildMembers = (await guild.members.fetch()).toJSON();
+            }
+            catch (e) {
+                throw new Error(`Error fetching members: ${String(e)}`)
             }
 
-            for (const guildMember of guildMembersNotStored) {
-                const member = MemberTransformer.parse(guildMember, guildCached)
+            if (guildMembers.length == 0) throw new GuildHasNoMembers()
 
-                const memberCreatedResult = await this.service.create(member)
-                if (!memberCreatedResult.isSuccess()) throw memberCreatedResult.error
+            for (const guildMember of guildMembers) {
+                const match = membersCached.find((m) => m.id == guildMember.id)
+                
+                const memberParsed = MemberTransformer.parse(guildMember, guildCached)
 
-                logger.info(`The member ${member.username} (${member.id}) was created`)
+                let result: Result<IMember>
+
+                if (match) {
+                    result = await this.service.update(memberParsed)
+                    if (!result.isSuccess()) throw result.error
+
+                    membersUpdated.push(result.value)
+                }
+                else {
+                    result = await this.service.create(memberParsed)
+                    if (!result.isSuccess()) throw result.error
+
+                    membersCreated.push(result.value)
+                }
+                membersRefreshed.push(result.value)
             }
-
-            logger.info(`The members of ${guild.name} (${guild.id}) were refreshed.\nTotal members stored after refresh: ${guildMembersNotStored.length}`)
         }
         catch (e) {
-            logger.warn(e)
+            if (!(e instanceof GuildHasNoMembers)) logger.warn(e)
         }
+        refreshLog({
+            itemsAdded: membersCreated.length,
+            itemsUpdated: membersUpdated.length,
+            itemsRemoved: membersDeleted.length,
+            singular: 'member',
+            plural: 'members'
+        })
     }
 
     async create(member: GuildMember): Promise<void> {
