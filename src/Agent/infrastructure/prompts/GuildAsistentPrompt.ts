@@ -1,40 +1,56 @@
 import { IRoleReward } from "../../../RoleReward/domain/IRoleReward.js";
 import { IPaypoint } from "../../../Paypoint/domain/IPaypoint.js";
 import { IRoleProduct } from "../../../RoleProduct/domain/IRoleProduct.js";
+import { ICreditProduct } from "../../../CreditProduct/domain/ICreditProduct.js";
+import { ICreditReward } from "../../../CreditReward/domain/ICreditReward.js";
 
 interface IOptions {
-    inviteRewards: IRoleReward[],
     paypoint: IPaypoint,
-    products: IRoleProduct[],
+    creditProducts: ICreditProduct[],
+    creditRewards: ICreditReward[],
+    roleProducts: IRoleProduct[],
+    roleRewards: IRoleReward[],
     conversaction: string[]
-    clientId: string
 }
 
 export const createGuildAsistentPrompt = (options: IOptions) => {
-    let inviteRewardsData = ""
-    let paypointData = ""
-    let productsData = ""
-    let conversationData = ""
+    const creditProductsData = options.creditProducts.length == 0
+    ? `There are no credit products in this guild.`
+    : `There are ${options.creditProducts.length} credit products available:\n` + 
+      options.creditProducts.map(product => 
+        `Product: ${product.name}\n
+        Price: ${product.price} USD\n
+        Description: ${product.description}`
+    ).join("\n")
 
-    inviteRewardsData += options.inviteRewards.length === 0 
-    ? `There are no invitation rewards created.` 
-    : `There are ${options.inviteRewards.length} invitation rewards.\n` + 
-      options.inviteRewards.map(reward => `*<@&${reward.id}>: ${reward.invitesRequired} invites needed.`).join("\n");
-
-    paypointData += options.paypoint 
-    ? `There is a payment point in the channel <#${options.paypoint.channelId}>.` 
-    : "There is no payment point."
-
-    productsData += options.products.length == 0
-    ? `There are zero products created.`
-    : `There are ${options.products.length} products available: ` +
-      options.products.map(product => 
+    const creditRewardsData = options.creditRewards.length == 0
+    ? `There are no credit rewards in this guild.`
+    : `There are ${options.creditRewards.length} credit rewards.\n` + 
+      options.creditRewards.map(reward => 
+        `*<@&${reward.name}>: ${reward.invitesRequired} invites needed.`)
+        .join("\n")
+      
+    const roleProductsData = options.roleProducts.length == 0
+    ? `There are no role products in this guild.`
+    : `There are ${options.roleProducts.length} role products available:\n` + 
+      options.roleProducts.map(product => 
         `Product: <@&${product.role.id}>\n
         Price: ${product.price} USD\n
         Description: ${product.description}`
     ).join("\n")
 
-    conversationData += options.conversaction.length == 0
+    const roleRewardsData = options.roleRewards.length == 0
+    ? `There are no role rewards in this guild.`
+    : `There are ${options.roleRewards.length} role rewards.\n` + 
+      options.roleRewards.map(reward => 
+        `*<@&${reward.role.id}>: ${reward.invitesRequired} invites needed.`)
+        .join("\n")
+
+    const paypointData = (!options.paypoint || !options.paypoint.channelId)
+    ? "There is no payment point."
+    : `There is a PayPoint in the channel <#${options.paypoint.channelId}>.` 
+
+    const conversationData = options.conversaction.length == 0
     ? `There are no current conversation.`
     : options.conversaction.join("\n")
 
@@ -42,25 +58,36 @@ export const createGuildAsistentPrompt = (options: IOptions) => {
     return `
 *** PERSONALITY ***
 You are an AI in charge of managing a Discord server (Guild).
-Your duty is to respond to user concerns with information based on the DATABASE.
-Your answers are not long, they are usually short.
+Your duty is to respond to user concerns with precise information based on the DATABASE.
+Your answers are concise, delivering key details efficiently.
 
 *** CONCEPTS ***
-PAYPOINT: Is a component in a channel where users can buy roles as products.
-ROLE PRODUCTS: These are discordroles that can be bought thorough the paypoint.
-ROLE REWARDS: These are roles that are awarded to members when they reach certain amount of invites.
+PAYPOINT: An interactive component in a channel where users can purchase credits or roles as products.
 
+ROLE PRODUCTS: Discord roles available for purchase through the paypoint. These roles can grant access to exclusive channels and special permissions within the server.
+
+ROLE REWARDS: Roles awarded for free when members reach a specific number of invites. These roles may unlock certain server features.
+
+CREDIT PRODUCTS: Credits that can be bought through the paypoint. Credits allow members to unlock individual channels by purchasing them with specific credit amounts.
+
+CREDIT REWARDS: Credits that are given for free when members reach a particular number of invites.
 
 **** DATABASE INFORMATION ****
 
-INVITATION ROLE REWARDS:
-${inviteRewardsData}
+ROLE REWARDS:
+${roleRewardsData}
+
+ROLE PRODUCTS:
+${roleProductsData}
+
+CREDIT REWARDS:
+${creditRewardsData}
+
+CREDIT PRODUCTS:
+${creditProductsData}
 
 PAYMENT POINT:
 ${paypointData}
-
-ROLE PRODUCTS AVAILABLE:
-${productsData}
 
 RESPONSE FORMAT:
 
