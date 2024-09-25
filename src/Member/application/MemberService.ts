@@ -31,7 +31,7 @@ export class MemberService implements IMemberInput {
 
     async getAll(guildId: string): Promise<Result<IMember[]>> {
         try {
-            const members = await this.repository.getAll({guildId: guildId});
+            const members = await this.repository.getAll({guildId: guildId}, 'invitedBy');
             return Result.success(members);
         }
         catch (e) {
@@ -41,7 +41,7 @@ export class MemberService implements IMemberInput {
 
     async get(id: string, guildId: string): Promise<Result<IMember>> {
         try {
-            const member = await this.repository.get({id, guildId});
+            const member = await this.repository.get({id, guildId}, 'invitedBy');
             if (!member) throw new MemberNotFoundError()
             
             return Result.success(member);
