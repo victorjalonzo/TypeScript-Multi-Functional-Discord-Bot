@@ -1,6 +1,5 @@
 import {GuildMember} from "discord.js";
 import { Member } from "../domain/Member.js";
-import { ICachedGuild } from "../../shared/intraestructure/ICachedGuild.js";
 import { IGuild } from "../../Guild/domain/IGuild.js";
 
 export class MemberTransformer {
@@ -10,9 +9,8 @@ export class MemberTransformer {
                 id: guildMember.id,
                 username: guildMember.user.username,
                 discriminator: guildMember.user.discriminator,
-                guildId: guild.id,
                 guild: guild,
-                avatarURL: guildMember.user.avatarURL()
+                avatarURL: guildMember.user.avatarURL() ?? undefined
             })
         }
         catch (e) {
