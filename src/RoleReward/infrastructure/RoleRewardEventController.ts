@@ -42,28 +42,36 @@ export class RoleRewardEventController {
         try {
             const guild = member.guild;
 
+            //Get all the rewards available in the guild
             const rewardsResult = await this.service.getAll(guild.id);
             if (!rewardsResult.isSuccess()) throw rewardsResult.error
-            
             const rewards = rewardsResult.value;
+
+            //If there are no rewards, end the flow
             if (rewards.length === 0) return
     
-            const inviterResult = await this.memberService.get(member.id, guild.id);
-            if (!inviterResult.isSuccess()) throw inviterResult.error;
+            //Get the user record (inviter) who invited the new member
+            const inviterRecordResult = await this.memberService.get(member.id, guild.id);
+            if (!inviterRecordResult.isSuccess()) throw inviterRecordResult.error;
+            const inviterRecord = inviterRecordResult.value.invitedBy;
+
+            //Check if the user record (inviter) was found
+            if (!inviterRecord) return new Error("The inviter was not found.");
     
-            const inviterId = inviterResult.value.invitedBy;
-            if (!inviterId) return new Error("The inviterId was not found.");
-    
-            const inviter = guild.members.cache.get(inviterId);
+            //Get the inviter in the guild
+            const inviter = guild.members.cache.get(inviterRecord.id) ?? 
+            await guild.members.fetch(inviterRecord.id).catch(() => undefined);
             if (!inviter) return new Error("The inviter was not found in the guild.");
     
-            const invitesCountResult = await this.memberService.getInviteMembersCount(inviterId, guild.id);
+            //Get the number of invites of the inviter
+            const invitesCountResult = await this.memberService.getInviteMembersCount(inviter.id, guild.id);
             if (!invitesCountResult.isSuccess()) throw invitesCountResult.error;
-    
             const invitesCount = invitesCountResult.value;
     
+            //Sort the role rewards from lowest to highest
             const sortedRewards = rewards.sort((a, b) => a.invitesRequired - b.invitesRequired)
     
+            //Get the role that matches the number of invites
             let roleId: string | undefined;
 
             for (const reward of sortedRewards) {
@@ -71,14 +79,21 @@ export class RoleRewardEventController {
                 roleId = reward.id;
             }
     
+            //If the role was not found
             if (!roleId) throw new InviteCountMismatchRewardsError()
             
-            const role = guild.roles.cache.get(roleId);
+            //Get the role in the guild
+            const role = guild.roles.cache.get(roleId) ?? 
+            await guild.roles.fetch(roleId).catch(() => undefined);
+
+            //If the role was not found
             if (!role) throw new Error("The role was not found in the guild.");
     
-            if (role === member.roles.cache.get(roleId)) return;
+            //Check if the user already has the role
+            if (role === inviter.roles.cache.get(roleId)) return;
     
-            await member.roles.add(role);
+            //Add the role
+            await inviter.roles.add(role);
 
             logger.info(`The role ${role.name} (${role.id}) was added to the member ${member.user.tag}`);
         }
