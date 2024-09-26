@@ -14,28 +14,22 @@ export class InviteCodeEventController {
         try {
             const guild = member.guild
 
-            const memberCachedResult = await this.memberService.get(member.id, guild.id)
-            if (!memberCachedResult.isSuccess()) throw memberCachedResult.error
-
-            const memberCached = memberCachedResult.value
+            const memberRecordResult = await this.memberService.get(member.id, guild.id)
+            if (!memberRecordResult.isSuccess()) throw memberRecordResult.error
+            const memberRecord = memberRecordResult.value
     
             const result = await this.service.getActiveOne(guild.id)
             if (!result.isSuccess()) throw result.error
 
             const inviteCode = result.value
-            const inviterId = inviteCode.memberId
-
-            const inviter = guild.members.cache.get(inviterId) 
-            ?? await guild.members.fetch(inviterId).catch(() => undefined)
-
-            if (!inviter) throw new Error('Inviter not found')
+            const inviterRecord = inviteCode.member
             
-            memberCached.invitedBy = inviter.id
-            await this.memberService.update(memberCached)
+            memberRecord.setInvitedBy(inviterRecord)
+            await this.memberService.update(memberRecord)
 
             await this.inviteCodeService.deactivate(guild.id)
 
-            logger.info(`The member ${member.user.username} (${member.id}) just joined. They were invited by ${inviter.user.username} (${inviter.id})`)
+            logger.info(`The member ${member.user.username} (${member.id}) just joined. They were invited by ${inviterRecord.username} (${inviterRecord.id})`)
 
         }
         catch (e) {
