@@ -20,7 +20,7 @@ export class InviteCodeService implements IInviteCodeInput {
 
     async getActiveOne(guildId: string): Promise<Result<IInviteCode>> {
         try {
-            const inviteCode = await this.repository.get({guildId, active: true});
+            const inviteCode = await this.repository.get({guildId, active: true}, 'member');
             if (!inviteCode) throw new InviteCodeNotFoundError()
             return Result.success(inviteCode);
         }
