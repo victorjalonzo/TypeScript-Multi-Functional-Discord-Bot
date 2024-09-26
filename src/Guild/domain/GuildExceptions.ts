@@ -52,3 +52,32 @@ export class DefaultInvoiceChannelNotProvidedError extends Error {
     }
 }
 
+export class GuildHasNoRoles extends Error {
+    constructor () {
+        super('No roles available')
+    }
+}
+
+export class GuildHasNoCategoryChannels extends Error {
+    constructor () {
+        super('No category channels available')
+    }
+}
+
+export class GuildHasNoTextChannels extends Error {
+    constructor () {
+        super('No text channels available')
+    }
+}
+
+export class GuildHasNoVoiceChannels extends Error {
+    constructor () {
+        super('No voice channels available')
+    }
+}
+
+export class GuildHasNoMembers extends Error {
+    constructor () {
+        super('No members available')
+    }
+}
