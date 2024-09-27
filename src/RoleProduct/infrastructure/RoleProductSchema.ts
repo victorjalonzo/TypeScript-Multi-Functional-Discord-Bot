@@ -8,8 +8,10 @@ const RoleProductSchema = new Schema<IRoleProduct & Document>({
     media: { type: Buffer, default: null },
     mediaFilename : { type: String, default: null },
     description: { type: String, default: null },
+    type: { type: String, required: true },
     guild: { type: Schema.Types.ObjectId, ref: "Guilds", required: true },
     guildId: { type: String, required: true },
+    createdAt: { type: Date, required: true }
 })
 
 export const RoleProductModel = model<IRoleProduct & Document>('RoleProducts', RoleProductSchema);
