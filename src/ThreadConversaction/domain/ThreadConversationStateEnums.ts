@@ -1,4 +1,4 @@
-export enum DMConversactionState {
+export enum ThreadConversationState {
     WAITING_USER_TO_CONFIRM_MARKED_PAYMENT = 1,
     WAITING_USER_TO_PROVIDE_ACCOUNT_NAME = 2,
     WAITING_USER_TO_PROVIDE_RECEIPT_IMAGE = 3,

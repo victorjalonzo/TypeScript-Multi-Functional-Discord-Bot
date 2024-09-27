@@ -1,7 +1,7 @@
 import {Document, Schema, model} from "mongoose";
-import {IDMConversaction} from "../domain/IDMConversaction.js"
+import {IThreadConversation} from "../domain/IThreadConversation.js"
 
-const DMConversactionSchema = new Schema<IDMConversaction & Document>({
+const ThreadConversationSchema = new Schema<IThreadConversation & Document>({
     id: { type: String, required: true, unique: true },
     member: { type: Schema.Types.ObjectId, ref: "Members", required: true },
     memberId: { type: String, required: true },
@@ -24,4 +24,4 @@ const DMConversactionSchema = new Schema<IDMConversaction & Document>({
 
 });
 
-export const DMConversactionModel = model<IDMConversaction & Document>('DMConversaction', DMConversactionSchema)
+export const ThreadConversationModel = model<IThreadConversation & Document>('ThreadConversation', ThreadConversationSchema)

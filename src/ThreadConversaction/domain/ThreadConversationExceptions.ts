@@ -1,28 +1,28 @@
-export class DMConversactionCreationError extends Error {
+export class ThreadConversationCreationError extends Error {
     constructor() {
         super('The DM conversaction could not be created');
     }
 }
 
-export class DMConversactionUpdateError extends Error {
+export class ThreadConversationUpdateError extends Error {
     constructor() {
         super('The DM conversaction could not be updated');
     }
 }
 
-export class DMConversactionNotFoundError extends Error {
+export class ThreadConversationNotFoundError extends Error {
     constructor() {
         super('The DM conversaction could not be found');
     }
 }
 
-export class DMConversactionDeletionError extends Error {
+export class ThreadConversationDeletionError extends Error {
     constructor() {
         super('The DM conversaction could not be deleted');
     }
 }
 
-export class DMConversactionUpdatableMessageNotFoundError extends Error {
+export class ThreadConversationUpdatableMessageNotFoundError extends Error {
     constructor() {
         super('The updatable message could not be found');
     }
