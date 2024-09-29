@@ -31,7 +31,7 @@ export class ThreadConversation implements IThreadConversation {
     public productPrice: number
     public productType: ProductType
     public botTurn: boolean = true
-    public state: ThreadConversationState = ThreadConversationState.WAITING_USER_TO_CONFIRM_MARKED_PAYMENT
+    public state: ThreadConversationState = ThreadConversationState.WAITING_USER_TO_PROVIDE_RECEIPT_IMAGE
     public history: string[] = []
     public paymentFrom?: string | undefined
     public invoices: Buffer[] = []
