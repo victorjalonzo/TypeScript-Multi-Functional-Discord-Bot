@@ -36,6 +36,21 @@ export class ThreadConversationService implements IThreadConversationInput {
         }
     }
 
+    async getActiveOneByThreadChannel (threadChannelId: string, guildId: string): Promise<Result<IThreadConversation>> {
+        try {
+            const threadConversation = await this.repository.get({
+                threadChannelId, 
+                guildId,
+                state: {$ne: ThreadConversationState.CLOSED},
+            })
+            if (!threadConversation) throw new ThreadConversationNotFoundError();
+            return Result.success(threadConversation);
+
+        } catch(e) {
+            return Result.failure(e);
+        }
+    }
+
     async getActiveOneByMember (memberId: string): Promise<Result<IThreadConversation>> {
         try {
             const ThreadConversation = await this.repository.get({
@@ -79,20 +94,6 @@ export class ThreadConversationService implements IThreadConversationInput {
             const ThreadConversationDeleted = await this.repository.delete({memberId});
             if (!ThreadConversationDeleted) throw new ThreadConversationDeletionError();
             return Result.success(ThreadConversationDeleted);
-        }
-        catch (e) {
-            return Result.failure(e);
-        }
-    }
-
-    async isAwaitingMemberApproval(memberId: string): Promise<Result<boolean>> {
-        try {
-            const ThreadConversation = await this.repository.get({memberId});
-            if (!ThreadConversation) return Result.success(false)
-
-            if (ThreadConversation.state != ThreadConversationState.WAITING_USER_TO_CONFIRM_MARKED_PAYMENT) return Result.success(false)
-
-            return Result.success(true)
         }
         catch (e) {
             return Result.failure(e);
