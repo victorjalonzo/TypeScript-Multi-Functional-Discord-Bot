@@ -1,23 +1,26 @@
+import { IGuild } from "../../Guild/domain/IGuild.js"
 import { IMember } from "../../Member/domain/IMember.js"
-import { IRoleProduct } from "../../RoleProduct/domain/IRoleProduct.js"
-import { TProductType } from "../../shared/domain/TProductType.js"
+import { ProductType } from "../../shared/domain/ProductTypeEnums.js"
 import { CasualTransactionState } from "./CasualTransactionStateEnums.js"
 
 export interface ICasualTransaction {
     id: string
     member: IMember
 	memberId: string
+	guild: IGuild
 	guildId: string
 	state: CasualTransactionState
-	paymentMethodId: string
-	paymentMethodName: string
-	paymentMethodValue: string
+	casualPaymentMethodId: string
+	casualPaymentMethodName: string
+	casualPaymentMethodValue: string
 	productId: string
-	productType: TProductType
 	productName: string
+	productType: ProductType
 	productPrice: number
 	paymentFrom: string
 	invoices: Buffer[]
 	createAt: Date
 	expiredAt: Date
+
+	isPending(): boolean
 }
