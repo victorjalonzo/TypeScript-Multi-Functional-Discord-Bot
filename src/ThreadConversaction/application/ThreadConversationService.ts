@@ -27,7 +27,7 @@ export class ThreadConversationService implements IThreadConversationInput {
 
     async get(id: string): Promise<Result<IThreadConversation>> {
         try {
-            const ThreadConversation = await this.repository.get({id});
+            const ThreadConversation = await this.repository.get({id}, 'guild');
             if (!ThreadConversation) throw new ThreadConversationNotFoundError();
             return Result.success(ThreadConversation);
         }
@@ -42,7 +42,7 @@ export class ThreadConversationService implements IThreadConversationInput {
                 threadChannelId, 
                 guildId,
                 state: {$ne: ThreadConversationState.CLOSED},
-            })
+            }, 'guild');
             if (!threadConversation) throw new ThreadConversationNotFoundError();
             return Result.success(threadConversation);
 
@@ -56,7 +56,7 @@ export class ThreadConversationService implements IThreadConversationInput {
             const ThreadConversation = await this.repository.get({
                 memberId, 
                 state: {$ne: ThreadConversationState.CLOSED},
-            });
+            }, 'guild');
             
             if (!ThreadConversation) throw new ThreadConversationNotFoundError();
             return Result.success(ThreadConversation);
@@ -68,7 +68,7 @@ export class ThreadConversationService implements IThreadConversationInput {
 
     async getByMember(memberId: string): Promise<Result<IThreadConversation>> {
         try {
-            const ThreadConversation = await this.repository.get({memberId});
+            const ThreadConversation = await this.repository.get({memberId}, 'guild');
             if (!ThreadConversation) throw new ThreadConversationNotFoundError();
             return Result.success(ThreadConversation);
         }
