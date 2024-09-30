@@ -91,14 +91,12 @@ export class RoleProductCommandActions {
             }
 
             const roleProduct = new RoleProduct({
-                id: role.id,
                 role: roleCached, 
                 price: price, 
                 media: mediaBuffer,
                 mediaFilename: mediaFilename,
                 description: description,
                 guild: guildCached,
-                guildId: guildId,
             })
 
             const roleProductResult = await this.service.create(roleProduct)
