@@ -18,7 +18,6 @@ export class MemberController {
         const membersCreated: IMember[] = []
         const membersUpdated: IMember[] = []
         const membersDeleted: IMember[] = []
-        const membersRefreshed: IMember[] = []
 
         try {
             const [guildCachedResult, membersCachedResult] = await Promise.all([
@@ -63,7 +62,6 @@ export class MemberController {
 
                     membersCreated.push(result.value)
                 }
-                membersRefreshed.push(result.value)
             }
         }
         catch (e) {
