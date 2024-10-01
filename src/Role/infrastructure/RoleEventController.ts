@@ -48,6 +48,7 @@ export class RoleEventController {
             const rolesRefreshed: IRole[] = []
 
             for (const role of roles) {
+                if (role.managed) continue
                 const match = rolesCached.find(r => r.id === role.id)
 
                 const roleParsed: IRole = RoleTransformer.parse(role, guildCached)
@@ -97,17 +98,15 @@ export class RoleEventController {
 
     create = async (role: DiscordRole) => {
         try {
-            const guildCachedResult = await this.guildService.get(role.guild.id)
-            if (!guildCachedResult.isSuccess()) throw guildCachedResult.error
+            if (role.managed) return
 
-            const guildCached = guildCachedResult.value
+            const guildRecord = await this.guildService.get(role.guild.id)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
 
-            const roleParsed = RoleTransformer.parse(role, guildCached)
+            const roleParsed = RoleTransformer.parse(role, guildRecord)
             
-            const result = await this.service.create(roleParsed)
-            if (!result.isSuccess()) throw result.error
-
-            const roleCreated = result.value
+            const roleCreated = await this.service.create(roleParsed)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
 
             logger.info(`Role ${roleCreated.name} (${roleCreated.id}) was created`)
         }
@@ -117,17 +116,15 @@ export class RoleEventController {
     }
     update = async (oldRole: DiscordRole, newRole: DiscordRole) => {
         try {
-            const guildCachedResult = await this.guildService.get(newRole.guild.id)
-            if (!guildCachedResult.isSuccess()) throw guildCachedResult.error
+            if (oldRole.managed) return
 
-            const guildCached = guildCachedResult.value
+            const guildRecord = await this.guildService.get(newRole.guild.id)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
 
-            const newRoleParsed = RoleTransformer.parse(newRole, guildCached)
+            const newRoleParsed = RoleTransformer.parse(newRole, guildRecord)
 
-            const result = await this.service.update(newRoleParsed)
-            if (!result.isSuccess()) throw result.error
-
-            const roleUpdated = result.value
+            const roleUpdated = await this.service.update(newRoleParsed)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
 
             logger.info(`Role ${roleUpdated.name} (${roleUpdated.id}) was updated`)
         }
@@ -139,12 +136,12 @@ export class RoleEventController {
 
     delete = async (role: DiscordRole) => {
         try {
+            if (role.managed) return
+
             const guild = role.guild
-            const result = await this.service.delete(role.id, guild.id)
+            const roleDeleted = await this.service.delete(role.id, guild.id)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
 
-            if (!result.isSuccess()) throw result.error
-
-            const roleDeleted = result.value
             logger.info(`Role ${roleDeleted.name} (${roleDeleted.id}) was deleted`)
         }
         catch (e) {
