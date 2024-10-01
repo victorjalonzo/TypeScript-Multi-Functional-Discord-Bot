@@ -1,13 +1,15 @@
-import { Guild, GuildMember } from "discord.js";
+import { Guild, GuildMember, TextChannel } from "discord.js";
 import { IRoleRewardInput } from "../domain/IRoleRewardInput.js";
 import { IMemberInput } from "../../Member/domain/IMemberInput.js";
 import { logger } from "../../shared/utils/logger.js";
 
 import { InviteCountMismatchRewardsError } from "../domain/RoleRewardExceptions.js";
+import { IGuildInput } from "../../Guild/domain/IGuildInput.js";
 
 export class RoleRewardEventController {
     constructor (
-        private service: IRoleRewardInput, 
+        private service: IRoleRewardInput,
+        private guildService: IGuildInput,
         private memberService: IMemberInput
     ) {}
 
@@ -96,6 +98,19 @@ export class RoleRewardEventController {
             await inviter.roles.add(role);
 
             logger.info(`The role ${role.name} (${role.id}) was added to the member ${member.user.tag}`);
+
+            const guildRecord = await this.guildService.get(guild.id)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error));
+
+            if (guildRecord.defaultInvoiceChannel) {
+                const channel = <TextChannel> await guild.channels.fetch(guildRecord.defaultInvoiceChannel.id)
+                if (!channel) return
+
+                await channel.send({
+                    content: `<@${member.user.id}> was rewarded with the role <@&${role.id}> for completing the challenge of inviting **${invitesCount} friends**`
+                })
+            }
+
         }
         catch (e) {
             logger.error(e);
