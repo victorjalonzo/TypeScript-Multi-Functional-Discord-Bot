@@ -6,7 +6,8 @@ import { IGuildInput } from "../../Guild/domain/IGuildInput.js";
 import { IGuild } from "../../Guild/domain/IGuild.js";
 import { ICategoryChannel } from "../domain/ICategoryChannel.js";
 import { Result } from "../../shared/domain/Result.js";
-import { printCategoryRefreshStatus } from "../domain/CategoryFreshStatus.js";
+import { GuildHasNoCategoryChannels } from "../../Guild/domain/GuildExceptions.js";
+import { refreshLog } from "../../shared/utils/RefreshLog.js";
 
 export class CategoryChannelEventController {
     constructor (
@@ -15,11 +16,11 @@ export class CategoryChannelEventController {
     ) {}
 
     async refresh (guild: DiscordGuild) {
-        try {
-            const categoriesCreated = []
-            const categoriesUpdated = []
-            const categoriesDeleted = []
+        const categoriesCreated = []
+        const categoriesUpdated = []
+        const categoriesDeleted = []
 
+        try {
             const [guildCachedResult, categoriesCachedResult] = await Promise.all([
                 this.guildService.get(guild.id),
                 this.service.getAll(guild.id)
@@ -42,11 +43,7 @@ export class CategoryChannelEventController {
                 throw new Error(`Error fetching categories channels: ${String(e)}`);
             }
 
-            if (categories.length === 0) return printCategoryRefreshStatus({
-                categoriesCreated: categoriesCreated.length, 
-                categoriesUpdated: categoriesUpdated.length, 
-                categoriesDeleted: categoriesDeleted.length
-            })
+            if (categories.length === 0) throw new GuildHasNoCategoryChannels()
 
             const categoriesRefreshed: ICategoryChannel[] = []
 
@@ -83,17 +80,19 @@ export class CategoryChannelEventController {
 
                 categoriesDeleted.push(categoryObsolete)
             }
-            
-            printCategoryRefreshStatus({
-                categoriesCreated: categoriesCreated.length, 
-                categoriesUpdated: categoriesUpdated.length, 
-                categoriesDeleted: categoriesDeleted.length
-            })
-
         }
         catch (e) {
-            logger.warn(e)
+            if (!(e instanceof GuildHasNoCategoryChannels)) {
+                logger.warn(String(e))
+            }
         }
+        refreshLog({
+            itemsAdded: categoriesCreated.length,
+            itemsUpdated: categoriesUpdated.length,
+            itemsRemoved: categoriesDeleted.length,
+            singular: "categorychannel",
+            plural: "categorychannels"
+        })
     }
 
     async createRecord(categoryChannel: DiscordCategoryChannel) {
