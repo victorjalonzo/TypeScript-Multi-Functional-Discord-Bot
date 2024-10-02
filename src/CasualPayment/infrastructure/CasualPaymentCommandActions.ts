@@ -2,7 +2,6 @@ import { ChatInputCommandInteraction } from "discord.js";
 import { logger } from "../../shared/utils/logger.js";
 import { cache }  from "../../shared/intraestructure/Cache.js";
 import { CasualPayment } from "../domain/CasualPayment.js";
-import { TPaymentMethods } from "../domain/ICasualPayment.js";
 import { ICasualPaymentInput } from "../domain/ICasualPaymentInput.js";
 import { ICachedGuild } from "../../shared/intraestructure/ICachedGuild.js";
 import { EmbedResult } from "../../shared/intraestructure/EmbedResult.js";
@@ -10,6 +9,7 @@ import { InlineBlockText } from "../../shared/utils/textFormating.js";
 
 import {GuildNotFoundError} from "../../shared/domain/Exceptions.js";
 import { MethodNotProvidedError,ValueNotProvidedError} from "../domain/CasualPaymentExceptions.js";
+import { CasualPaymentMethodType } from "../domain/CasualPaymentMethodType.js";
 
 export class CasualPaymentCommandActions {
     constructor (private service: ICasualPaymentInput) {}
@@ -56,7 +56,7 @@ export class CasualPaymentCommandActions {
 
     add = async (interaction: ChatInputCommandInteraction) => {
         try {
-            const method = <TPaymentMethods> interaction.options.getString('name')
+            const method = <CasualPaymentMethodType> interaction.options.getString('name')
             const value = interaction.options.getString('value')
             const guildId = interaction.guildId
 
@@ -97,7 +97,7 @@ export class CasualPaymentCommandActions {
 
     remove = async (interaction: ChatInputCommandInteraction) => {
         try {
-            const method = <TPaymentMethods> interaction.options.getString('name')
+            const method = <CasualPaymentMethodType> interaction.options.getString('name')
             const guildId = interaction.guildId
     
             if (!method) throw new MethodNotProvidedError
