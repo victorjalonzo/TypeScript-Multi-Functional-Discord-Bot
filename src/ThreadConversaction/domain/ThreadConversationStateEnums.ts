@@ -1,5 +1,6 @@
 export enum ThreadConversationState {
     WAITING_USER_TO_PROVIDE_RECEIPT_IMAGE = 1,
     WAITING_ADMIN_TO_APPROVE_PAYMENT = 2,
-    CLOSED = 3
+    CANCELLED = 3,
+    CLOSED = 4
 }
