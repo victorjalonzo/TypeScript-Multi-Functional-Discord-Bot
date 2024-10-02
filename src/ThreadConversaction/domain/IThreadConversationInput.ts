@@ -8,6 +8,8 @@ export interface IThreadConversationInput {
     getActiveOneByThreadChannel(threadChannelId: string, guildId: string): Promise<Result<IThreadConversation>>
     getActiveOneByMember(memberId: string): Promise<Result<IThreadConversation>>
     update(DMConversaction: IThreadConversation): Promise<Result<IThreadConversation>>
-    delete(memberId: string): Promise<Result<IThreadConversation>>
+    cancel(id: string): Promise<Result<IThreadConversation>>
+    close(id: string): Promise<Result<IThreadConversation>>
+    delete(id: string): Promise<Result<IThreadConversation>>
     isAwaitingAdminApproval(memberId: string): Promise<Result<boolean>>
 }
