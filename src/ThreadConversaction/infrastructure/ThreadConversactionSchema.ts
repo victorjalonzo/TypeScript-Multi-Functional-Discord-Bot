@@ -1,5 +1,6 @@
 import {Document, Schema, model} from "mongoose";
 import {IThreadConversation} from "../domain/IThreadConversation.js"
+import { ThreadConversationState } from "../domain/ThreadConversationStateEnums.js";
 
 const ThreadConversationSchema = new Schema<IThreadConversation & Document>({
     id: { type: String, required: true, unique: true },
@@ -25,5 +26,21 @@ const ThreadConversationSchema = new Schema<IThreadConversation & Document>({
     createdAt: { type: Date, required: true },
 
 });
+
+ThreadConversationSchema.methods.isWaitingAdminApproval = function () {
+    return this.state === ThreadConversationState.WAITING_ADMIN_TO_APPROVE_PAYMENT
+}
+
+ThreadConversationSchema.methods.isWaitingUserPaymentReceipt = function () {
+    return this.state === ThreadConversationState.WAITING_USER_TO_PROVIDE_RECEIPT_IMAGE
+}
+
+ThreadConversationSchema.methods.isClosed = function () {
+    return this.state === ThreadConversationState.CLOSED
+}
+
+ThreadConversationSchema.methods.isCancelled = function () {
+    return this.state === ThreadConversationState.CANCELLED
+}
 
 export const ThreadConversationModel = model<IThreadConversation & Document>('ThreadConversation', ThreadConversationSchema)
