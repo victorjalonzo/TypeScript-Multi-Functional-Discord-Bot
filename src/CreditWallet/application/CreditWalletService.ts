@@ -1,6 +1,6 @@
 import { IRepository } from "../../shared/domain/IRepository.js";
 import { Result } from "../../shared/domain/Result.js";
-import { CreditWalletCreationError, CreditWalletInsufficientCreditsError, CreditWalletNotFoundError, CreditWalletUpdateError } from "../domain/CreditWalletExceptions.js";
+import { CreditWalletAlreadyExistsError, CreditWalletCreationError, CreditWalletInsufficientCreditsError, CreditWalletNotFoundError, CreditWalletUpdateError } from "../domain/CreditWalletExceptions.js";
 import { ICreditWallet } from "../domain/ICreditWallet.js";
 import { ICreditWalletInput } from "../domain/ICreditWalletInput.js";
 
@@ -9,8 +9,12 @@ export class CreditWalletService implements ICreditWalletInput{
 
     async create (creditWallet: ICreditWallet): Promise<Result<ICreditWallet>> {
         try {
+            const existingWallet = await this.repository.get({memberId: creditWallet.memberId, guildId: creditWallet.guildId})
+            if (existingWallet) throw new CreditWalletAlreadyExistsError(creditWallet)
+
             const creditWalletCreated = await this.repository.create(creditWallet)
             if (!creditWalletCreated) throw new CreditWalletCreationError()
+
             return Result.success(creditWalletCreated)
         }
         catch (error) {
@@ -20,7 +24,7 @@ export class CreditWalletService implements ICreditWalletInput{
 
     async get (memberId: string, guildId: string): Promise<Result<ICreditWallet>> {
         try {
-            const creditWallet = await this.repository.get({memberId, guildId})
+            const creditWallet = await this.repository.get({memberId, guildId}, ['member', 'guild'])
             if (!creditWallet) throw new CreditWalletNotFoundError()
             return Result.success(creditWallet)
         }
@@ -31,7 +35,7 @@ export class CreditWalletService implements ICreditWalletInput{
 
     async getAll (guildId: string): Promise<Result<ICreditWallet[]>> {
         try {
-            const creditWallets = await this.repository.getAll({guildId})
+            const creditWallets = await this.repository.getAll({guildId}, ['member', 'guild'])
             return Result.success(creditWallets)
         }
         catch (error) {
