@@ -87,7 +87,14 @@ export class EmbedResult {
             }
         }
 
-        if (interaction.deferred) return await interaction.editReply({ embeds: [embed], files })
-        return await interaction.reply({ embeds: [embed], files, ephemeral: true })
+        if (interaction.deferred) return await interaction.editReply({
+            embeds: [embed], files, components: []
+        })
+        
+        return await interaction.reply({
+            embeds: [embed], 
+            files, components: [], 
+            ephemeral: true
+        })
     }
 }
