@@ -7,6 +7,7 @@ const CreditWalletSchema = new Schema<ICreditWallet & Document>({
     guild: { type: Object, required: true, ref: 'Guilds' },
     guildId: { type: String, required: true },
     credits: { type: Number, required: true },
+    creditRewardChallengesCompleted: [{type: Schema.Types.ObjectId, ref: "CreditRewards"}]
 })
 
 export const CreditWalletModel = model<ICreditWallet & Document>('CreditWallets', CreditWalletSchema)
