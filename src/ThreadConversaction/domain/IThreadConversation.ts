@@ -26,4 +26,9 @@ export interface IThreadConversation {
     guildId: string 
 	invoices: Buffer[]
     createdAt: Date
+
+    isWaitingAdminApproval(): boolean
+    isWaitingUserPaymentReceipt(): boolean
+    isClosed(): boolean
+    isCancelled(): boolean
 }
