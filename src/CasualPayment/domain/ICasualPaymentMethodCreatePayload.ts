@@ -1,7 +1,7 @@
-import { TPaymentMethods } from "./ICasualPayment.js"
+import { CasualPaymentMethodType } from "./CasualPaymentMethodType.js"
 
 interface IPartialCasualPaymentMethod {
-    paymentMethodName: TPaymentMethods
+    paymentMethodName: CasualPaymentMethodType
     paymentMethodValue: string | string[]
 }
 
