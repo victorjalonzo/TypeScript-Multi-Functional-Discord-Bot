@@ -47,7 +47,7 @@ export const generateCreditBalanceCard = async (options: IOptions): Promise<Atta
 
   ctx.fillStyle = '#FFFFFF';
   ctx.font = '16px Arial';
-  ctx.fillText('Credits Available', 380, 40);
+  ctx.fillText('Credit Balance', 380, 40);
 
   ctx.fillStyle = '#7289DA';
   ctx.font = 'bold 24px Arial';
