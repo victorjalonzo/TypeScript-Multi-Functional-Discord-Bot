@@ -59,6 +59,11 @@ export class ThreadConversation implements IThreadConversation {
         this.guild = props.guild
         this.guildId = props.guild.id
     }
+
+    isWaitingAdminApproval = (): boolean => this.state === ThreadConversationState.WAITING_ADMIN_TO_APPROVE_PAYMENT
+    isWaitingUserPaymentReceipt = (): boolean => this.state === ThreadConversationState.WAITING_USER_TO_PROVIDE_RECEIPT_IMAGE
+    isClosed = (): boolean => this.state === ThreadConversationState.CLOSED
+    isCancelled = (): boolean => this.state === ThreadConversationState.CANCELLED
 }
 
 export const nextState = (DMConversaction: IThreadConversation, botTurn?: boolean): void => {
