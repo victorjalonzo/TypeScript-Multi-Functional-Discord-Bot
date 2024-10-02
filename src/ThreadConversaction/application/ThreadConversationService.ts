@@ -6,7 +6,10 @@ import {
     ThreadConversationCreationError,
     ThreadConversationNotFoundError,
     ThreadConversationDeletionError,
-    ThreadConversationUpdateError
+    ThreadConversationUpdateError,
+    ThreadConversationClosedAlreadyError,
+    ThreadConversationCancelledAlreadyError,
+    ThreadConversationAlreadyWaitingApprovalError
 } from "../domain/ThreadConversationExceptions.js";
 import { IThreadConversationInput } from "../domain/IThreadConversationInput.js";
 import { ThreadConversationState } from "../domain/ThreadConversationStateEnums.js";
@@ -55,7 +58,7 @@ export class ThreadConversationService implements IThreadConversationInput {
         try {
             const ThreadConversation = await this.repository.get({
                 memberId, 
-                state: {$ne: ThreadConversationState.CLOSED},
+                state: {$nin: [ThreadConversationState.CLOSED, ThreadConversationState.CANCELLED]},
             }, 'guild');
             
             if (!ThreadConversation) throw new ThreadConversationNotFoundError();
@@ -89,9 +92,36 @@ export class ThreadConversationService implements IThreadConversationInput {
         }
     }
 
-    async delete (memberId: string): Promise<Result<IThreadConversation>> {
+    async cancel (id: string): Promise<Result<IThreadConversation>> {
+        return await this._setStatus(id, ThreadConversationState.CANCELLED);
+    }
+    async close (id: string): Promise<Result<IThreadConversation>> {
+        return await this._setStatus(id, ThreadConversationState.CLOSED);
+    }
+
+    async _setStatus(id: string, state: ThreadConversationState): Promise<Result<IThreadConversation>> {
         try {
-            const ThreadConversationDeleted = await this.repository.delete({memberId});
+            const threadConversation = await this.repository.get({id});
+            if (!threadConversation) throw new ThreadConversationNotFoundError();
+
+            if (threadConversation.isWaitingAdminApproval() && state == ThreadConversationState.CANCELLED) throw new ThreadConversationAlreadyWaitingApprovalError()
+
+            if (threadConversation.isClosed()) throw new ThreadConversationClosedAlreadyError()
+            if (threadConversation.isCancelled()) throw new ThreadConversationCancelledAlreadyError()
+
+            const ThreadConversationUpdated = await this.repository.update({id}, {state: state});
+            if (!ThreadConversationUpdated) throw new ThreadConversationUpdateError();
+            
+            return Result.success(ThreadConversationUpdated);
+        }
+        catch (e) {
+            return Result.failure(e);
+        }
+    }
+
+    async delete (id: string): Promise<Result<IThreadConversation>> {
+        try {
+            const ThreadConversationDeleted = await this.repository.delete({id});
             if (!ThreadConversationDeleted) throw new ThreadConversationDeletionError();
             return Result.success(ThreadConversationDeleted);
         }
