@@ -1,16 +1,17 @@
 import { SlashCommandCallable } from "../../shared/intraestructure/SlashCommandCallable.js"
+import { CasualPaymentMethodType } from "../domain/CasualPaymentMethodType.js";
 
 const CasualPaymentCommand = new SlashCommandCallable()
 
 const choices = [
-    {name: 'Cash App', value: 'Cash App'},
-    {name: 'Zelle', value: 'Zelle'},
-    {name: 'PayPal', value: 'PayPal'},
-    {name: 'Venmo', value: 'Venmo'},
-    {name: 'Apple Pay', value: 'Apple Pay'},
-    {name: 'Google Pay', value: 'Google Pay'},
-    {name: 'Bitcoin', value: 'Bitcoin'},
-    {name: 'Ethereum', value: 'Ethereum'},
+    {name: 'Cash App', value: CasualPaymentMethodType.CashApp},
+    {name: 'Zelle', value: CasualPaymentMethodType.Zelle},
+    {name: 'PayPal', value: CasualPaymentMethodType.Paypal},
+    {name: 'Venmo', value: CasualPaymentMethodType.Venmo},
+    {name: 'Apple Pay', value: CasualPaymentMethodType.ApplePay},
+    {name: 'Google Pay', value: CasualPaymentMethodType.GooglePay},
+    {name: 'Bitcoin', value: CasualPaymentMethodType.Bitcoin},
+    {name: 'Ethereum', value: CasualPaymentMethodType.Ethereum},
 ]
 
 CasualPaymentCommand
