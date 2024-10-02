@@ -1,3 +1,5 @@
+import { ICreditWallet } from "./ICreditWallet.js"
+
 export class CreditWalletCreationError extends Error {
     constructor () {
         super("Failed to create credit wallet")
@@ -19,6 +21,12 @@ export class CreditWalletUpdateError extends Error {
 export class CreditWalletDeletionError extends Error {
     constructor () {
         super("Failed to delete credit wallet")
+    }
+}
+
+export class CreditWalletAlreadyExistsError extends Error {
+    constructor (creditWallet: ICreditWallet) {
+        super(`member: ${creditWallet.member.username} (${creditWallet.member.id}) already has a credit wallet in this guild.`)
     }
 }
 
