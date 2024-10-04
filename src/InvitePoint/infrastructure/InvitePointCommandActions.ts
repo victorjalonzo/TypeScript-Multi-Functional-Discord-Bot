@@ -1,4 +1,4 @@
-import { AttachmentBuilder, ChatInputCommandInteraction } from "discord.js";
+import { AttachmentBuilder, ChannelType, ChatInputCommandInteraction } from "discord.js";
 import { IInvitePointInput } from "../domain/IInvitePointInput.js";
 import { IGuildInput } from "../../Guild/domain/IGuildInput.js";
 import { GuildNotFoundError } from "../../shared/domain/Exceptions.js";
@@ -7,7 +7,9 @@ import { getAttachmentFromBuffer, getBufferFromAttachment } from "../../shared/u
 import { InlineBlockText } from "../../shared/utils/textFormating.js";
 import { logger } from "../../shared/utils/logger.js";
 import { InvitePoint } from "../domain/InvitePoint.js";
-import { createGuildMenuEmbed } from "./Embeds/GuildMenuEmbed.js";
+import { createInvitePointMenuEmbed } from "./Embeds/InvitePointMenuEmbed.js";
+import { InvitePointMessage } from "./InvitePointMessage.js";
+import { TextChannel as DiscordTextChannel } from "discord.js";
 
 export class InvitePointCommandActions {
     constructor (
@@ -29,34 +31,16 @@ export class InvitePointCommandActions {
             const guild = interaction.guild
             if (!guild) throw new GuildNotFoundError()
 
-            const guildCachedResult = await this.guildService.get(guild.id)
-            if (!guildCachedResult.isSuccess()) throw guildCachedResult.error
+            const channel = interaction.channel
 
-            const result = await this.service.get(guild.id)
-            if (!result.isSuccess()) throw result.error
+            if (!channel) throw new Error('Channel not found')
+            if (channel.type != ChannelType.GuildText) throw new Error('Wrong channel type')
 
-            const invitePoint = result.value
-
-            const media = invitePoint.media
-                ? await getAttachmentFromBuffer(invitePoint.media)
-                : undefined
-
-            const {embed, buttonRow, files, } = await createGuildMenuEmbed({
-                title: invitePoint.title, 
-                description: invitePoint.description,
-                media: media
+            await InvitePointMessage.create({
+                service: this.service,
+                channel: channel,
+                guildId: guild.id
             })
-
-            const message =  await interaction.editReply({
-                embeds: [embed],
-                components: [<any>buttonRow], 
-                files: files
-            })
-
-            invitePoint.channelId = message.channelId
-            invitePoint.messageId = message.id
-            
-            await this.service.update(invitePoint)
 
             logger.info(`The invite point was created`)
         }
@@ -79,10 +63,8 @@ export class InvitePointCommandActions {
             const guildId = interaction.guildId
             if (!guildId) throw new GuildNotFoundError()
 
-            const guildCachedResult = await this.guildService.get(guildId)
-            if (!guildCachedResult.isSuccess()) throw guildCachedResult.error
-
-            const guildCached = guildCachedResult.value
+            const guildRecord = await this.guildService.get(guildId)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
     
             const invitePointResult = await this.service.get(guildId)
 
@@ -94,12 +76,11 @@ export class InvitePointCommandActions {
                 description: description ?? undefined,
                 media: media ? await getBufferFromAttachment(media) : undefined,
                 mediaCodec: media ? media.name.split('.').pop() : undefined,
-                guild: guildCached, 
-                guildId: guildCached.id, 
+                guild: guildRecord
             })
     
-            const invitePointCreatedResult = await this.service.create(invitePoint)
-            if (!invitePointCreatedResult.isSuccess()) throw invitePointCreatedResult.error
+            await this.service.create(invitePoint)
+            .then(r => !r.isSuccess() ? Promise.reject(r.error) : null)
 
             await EmbedResult.success({interaction, 
                 title: 'Configuration updated', 
