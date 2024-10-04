@@ -3,7 +3,14 @@ import { IGuild } from "../../Guild/domain/IGuild.js";
 import { createRandomId } from "../../shared/utils/IDGenerator.js";
 import { ProductType } from "../../shared/domain/ProductTypeEnums.js";
 
-interface IProps extends Omit<ICreditProduct, "id" | "name" | "type" | "createdAt">{}
+interface IProps {
+    credits: number,
+    price: number,
+    media?: Buffer,
+    mediaFilename?: string,
+    description?: string,
+    guild: IGuild
+}
 
 export class CreditProduct implements ICreditProduct {
     public id: string = createRandomId()
@@ -25,7 +32,7 @@ export class CreditProduct implements ICreditProduct {
         this.media = props.media
         this.mediaFilename = props.mediaFilename
         this.description = props.description
-        this.guildId = props.guildId
         this.guild = props.guild
+        this.guildId = props.guild.id
     }
 }
