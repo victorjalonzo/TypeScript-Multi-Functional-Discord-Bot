@@ -30,38 +30,27 @@ export class InvitePointComponentsActions implements IComponentAction{
             const guildId = interaction.guildId
             if (!guildId) throw new GuildNotFoundError()
 
-            const guildCachedResult = await this.guildService.get(guildId)
-            if (!guildCachedResult.isSuccess()) throw guildCachedResult.error
-
-            const guildCached = guildCachedResult.value
+            const guildRecord = await this.guildService.get(guildId)
+            .then(result => result.isSuccess() ? result.value : Promise.reject(result.error))
 
             const user: User = interaction.user
 
-            const memberCachedResult = await this.memberService.get(user.id, guildId)
-            if (!memberCachedResult.isSuccess()) throw memberCachedResult.error
+            const memberRecord = await this.memberService.get(user.id, guildId)
+            .then(result => result.isSuccess() ? result.value : Promise.reject(result.error))
 
-            const memberCached = memberCachedResult.value
+            const inviteCode: InviteCode = await this.inviteCodeService.getByMember(user.id, guildId)
+            .then(async r => {
+                if (r.isSuccess()) return r.value
 
-            let inviteCode: InviteCode
-            
-            const result = await this.inviteCodeService.getByMember(user.id, guildId)
+                else if (r.error instanceof InviteCodeNotFoundError) {
+                    const inviteCode = new InviteCode({member:memberRecord, guild:guildRecord})
 
-            if (result.isSuccess()) {
-                inviteCode = result.value
-            }
-            else {
-                if (result.error instanceof InviteCodeNotFoundError) {
-                    const newInviteCode = new InviteCode({
-                        member:memberCached,
-                        guild:guildCached
-                    })
-                    const result = await this.inviteCodeService.create(newInviteCode)
-                    if (!result.isSuccess()) throw result.error
-
-                    inviteCode = result.value
+                    return await this.inviteCodeService.create(inviteCode)
+                    .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
                 }
-                else throw result.error
-            }
+
+                else return Promise.reject(r.error)
+            })
 
             const link = `${Config.domain}/invite/${inviteCode.code}`
 
