@@ -11,7 +11,7 @@ interface IProps {
     media?: AttachmentBuilder
 }
 
-export const createGuildMenuEmbed = async (props: IProps) => {
+export const createInvitePointMenuEmbed = async (props: IProps) => {
     const files: Attachment[] & AttachmentBuilder[] = []
     const embed = new EmbedBuilder()
 
