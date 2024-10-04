@@ -3,7 +3,12 @@ import { IGuild } from "../../Guild/domain/IGuild.js"
 import { IMember } from "../../Member/domain/IMember.js"
 import { ICreditWallet } from "./ICreditWallet.js"
 
-interface IProps extends Omit<ICreditWallet, "guildId" | "memberId" |"creditRewardChallengesCompleted"> {}
+interface IProps {
+    member: IMember
+    guild: IGuild
+    credits: number,
+    creditRewardChallengesCompleted?: ICreditReward[]
+}
 
 export class CreditWallet implements ICreditWallet {
     memberId: string
@@ -15,10 +20,10 @@ export class CreditWallet implements ICreditWallet {
 
     constructor (props: IProps) {
         this.member = props.member
-        this.guild = props.guild
-        this.credits = props.credits
         this.memberId = props.member.id
+        this.guild = props.guild
         this.guildId = props.guild.id
-        this.creditRewardChallengesCompleted = []
+        this.credits = props.credits
+        this.creditRewardChallengesCompleted = props.creditRewardChallengesCompleted ?? []
     }
 }
