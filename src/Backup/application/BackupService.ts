@@ -58,7 +58,7 @@ export class BackupService implements IBackupInput{
     async delete(name: string): Promise<Result<IBackup>> {
         try {
             const backup = await this.repository.delete({name});
-            if (!backup) throw new BackupDeletionError()
+            if (!backup) throw new BackupNotFoundError()
             return Result.success(backup);
         }
         catch (e) {
