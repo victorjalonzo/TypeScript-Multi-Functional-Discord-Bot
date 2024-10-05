@@ -16,7 +16,7 @@ export class RoleEventController {
         private guildService: IGuildInput
     ) {}
 
-    refresh = async (guild: DiscordGuild) => {
+    refresh = async (guild: DiscordGuild, roles: DiscordRole[]) => {
         const rolesCreated: IRole[] = []
         const rolesUpdated: IRole[] = []
         const rolesDeleted: IRole[] = []
@@ -33,15 +33,6 @@ export class RoleEventController {
 
             const guildCached = guildCachedResult.value as IGuild;
             const rolesCached = rolesCachedResult.value as IRole[];
-
-            let roles: DiscordRole[]
-
-            try {
-                roles = (await guild.roles.fetch()).map(role => role)
-            }
-            catch(e) {
-                throw new Error(`Error fetching roles: ${String(e)}`)
-            }
 
             if (roles.length === 0) throw new GuildHasNoRoles()
 
