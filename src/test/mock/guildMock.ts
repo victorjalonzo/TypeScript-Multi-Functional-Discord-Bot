@@ -21,7 +21,7 @@ import {
   } from 'discord.js';
   
   import { MockProxy, mock } from 'vitest-mock-extended';
-  import { createRandomId } from '../../shared/utils/generate.js';
+  import { createRandomId } from '../../shared/utils/IDGenerator.js';
   
   export function createMockGuild(): MockProxy<Guild> {
     const mockGuild = mock<Guild>();

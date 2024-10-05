@@ -1,7 +1,7 @@
 // tests/mocks/TextChannelMock.ts
 import { TextChannel, ChannelType, Guild, CategoryChannel, PermissionOverwriteManager, GuildMessageManager, GuildMember, Message, ThreadChannel, GuildTextThreadManager, AllowedThreadTypeForTextChannel, Collection, Snowflake } from 'discord.js';
 import { MockProxy, mock} from 'vitest-mock-extended';
-import { createRandomId } from '../../shared/utils/generate.js';
+import { createRandomId } from '../../shared/utils/IDGenerator.js';
 
 export function createMockTextChannel(): MockProxy<TextChannel> {
   const mockGuild = mock<Guild>();
