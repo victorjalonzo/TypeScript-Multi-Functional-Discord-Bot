@@ -65,12 +65,3 @@ export class ThreadConversation implements IThreadConversation {
     isClosed = (): boolean => this.state === ThreadConversationState.CLOSED
     isCancelled = (): boolean => this.state === ThreadConversationState.CANCELLED
 }
-
-export const nextState = (DMConversaction: IThreadConversation, botTurn?: boolean): void => {
-    DMConversaction.state += 1
-    DMConversaction.botTurn = botTurn ? botTurn : true;
-}
-
-export const switchTurn = (DMConversaction: IThreadConversation): void => {
-    DMConversaction.botTurn = DMConversaction.botTurn ? false : true
-}
