@@ -26,64 +26,59 @@ export class TextChannelEventController {
         const channelsDeleted: ITextChannel[] = [];
 
         try {
-
-            const [guildCachedResult, channelsCachedResult] = await Promise.all([
-                this.guildService.get(guild.id),
-                this.service.getAll(guild.id)
-            ]);
-
-            if (!guildCachedResult.isSuccess() || !channelsCachedResult.isSuccess()) {
-                throw guildCachedResult.error || channelsCachedResult.error;
-            }
-
-            const guildCached = guildCachedResult.value as IGuild;
-            const channelsCached = channelsCachedResult.value as ITextChannel[];
-
-            let textChannels: DiscordTextChannel[];
-
-            textChannels = channels
+            const textChannels: DiscordTextChannel[] = channels
                 .filter(channel => channel !== null && channel.type === ChannelType.GuildText)
                 .map(channel => channel as DiscordTextChannel);
 
             if (textChannels.length === 0) throw new GuildHasNoTextChannels();
 
-            const channelsRefreshed: ITextChannel[] = [];
+            const [guildRecordResult, textChannelRecordsResult] = await Promise.all([
+                this.guildService.get(guild.id),
+                this.service.getAll(guild.id)
+            ]);
+
+            if (!guildRecordResult.isSuccess() || !textChannelRecordsResult.isSuccess()) {
+                throw guildRecordResult.error || textChannelRecordsResult.error;
+            }
+
+            const guildRecord: IGuild = guildRecordResult.value;
+            const textChannelRecords: ITextChannel[] = textChannelRecordsResult.value;
+
+            const textChannelsRefreshed: ITextChannel[] = [];
 
             for (const channel of textChannels) {
-                const match = channelsCached.find(c => c.id === channel.id);
+                const match = textChannelRecords.find(c => c.id === channel.id);
 
-                let categoryChannelCached: ICategoryChannel | undefined;
+                const categoryChannelRecord: ICategoryChannel | undefined = channel.parentId
+                    ? await this.categoryChannelService.get(channel.parentId, guild.id)
+                        .then(r => r.isSuccess() ? r.value : undefined)
+                    : undefined;
 
-                if (channel.parentId !== null) {
-                    const categoryChannelResult = await this.categoryChannelService.get(channel.parentId, guild.id);
-                    if (!categoryChannelResult.isSuccess()) categoryChannelCached = categoryChannelResult.value;
-                }
-
-                const channelParsed: ITextChannel = TextChannelTransformer.parse({
+                const textChannelParsed: ITextChannel = TextChannelTransformer.parse({
                     discordTextChannel: channel,
-                    parent: categoryChannelCached ?? null,
-                    guild: guildCached
+                    parent: categoryChannelRecord ?? null,
+                    guild: guildRecord
                 });
 
                 let result: Result<ITextChannel>;
 
                 if (match) {
-                    result = await this.service.update(channelParsed);
+                    result = await this.service.update(textChannelParsed);
                     if (!result.isSuccess()) throw result.error;
 
                     channelsUpdated.push(result.value);
                 } else {
-                    result = await this.service.create(channelParsed);
+                    result = await this.service.create(textChannelParsed);
                     if (!result.isSuccess()) throw result.error;
 
                     channelsCreated.push(result.value);
                 }
 
-                channelsRefreshed.push(result.value);
+                textChannelsRefreshed.push(result.value);
             }
 
-            const channelObsoletes = channelsCached.filter(channelCached => {
-                return !channelsRefreshed.some(channelRefreshed => channelRefreshed.id === channelCached.id);
+            const channelObsoletes = textChannelRecords.filter(channelCached => {
+                return !textChannelsRefreshed.some(channelRefreshed => channelRefreshed.id === channelCached.id);
             });
 
             for (const channelObsolete of channelObsoletes) {
@@ -110,22 +105,19 @@ export class TextChannelEventController {
 
     createRecord = async (textChannel: DiscordTextChannel): Promise<void> => {
         try {
-            const guildCachedResult = await this.guildService.get(textChannel.guildId);
-            if (!guildCachedResult.isSuccess()) throw guildCachedResult.error
+            const guildRecord = await this.guildService.get(textChannel.guildId)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
 
-            const guildCached = guildCachedResult.value as IGuild
-
-            const guild = GuildTransformer.parse(textChannel.guild)
-            const parent = textChannel.parent 
-                ? CategoryChannelTransformer.parse(textChannel.parent, guildCached) 
+            const guildParsed = GuildTransformer.parse(textChannel.guild)
+            
+            const categoryParsed = textChannel.parent 
+                ? CategoryChannelTransformer.parse(textChannel.parent, guildRecord) 
                 : null
 
-            const textChannelParsed = TextChannelTransformer.parse({discordTextChannel: textChannel, parent, guild});
+            const textChannelParsed = TextChannelTransformer.parse({discordTextChannel: textChannel, parent: categoryParsed, guild: guildParsed});
             
-            const result = await this.service.create(textChannelParsed);
-            if (!result.isSuccess()) throw result.error
-    
-            const textChannelCreated = result.value
+            const textChannelCreated = await this.service.create(textChannelParsed)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error));
     
             logger.info(`Text channel ${textChannelCreated.name} (${textChannelCreated.id}) was created`)
         }
