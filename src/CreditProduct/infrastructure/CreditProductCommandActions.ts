@@ -59,19 +59,17 @@ export class CreditProductsCommandActions {
             const credits = interaction.options.getInteger('credits')
             const guildId = interaction.guildId
             const productMedia = interaction.options.getAttachment('media')
-            const productDescription = interaction.options.getString('description')
+            const productDescription = interaction.options.getString('description') ?? undefined
 
             if (!price) throw new CreditProductPriceNotProvidedError()
             if (!credits) throw new CreditProductAmountNotProvidedError()
             if (!guildId) throw new GuildNotFoundError()
     
-            const guildCachedResult = await this.guildService.get(guildId)
-            if (!guildCachedResult.isSuccess()) throw guildCachedResult.error
+            const guildRecord = await this.guildService.get(guildId)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
 
-            const guildCached = guildCachedResult.value
-
-            const media = productMedia ? await getBufferFromAttachment(productMedia) : null
-            const mediaFilename = productMedia ? productMedia.name : null
+            const media = productMedia ? await getBufferFromAttachment(productMedia) : undefined
+            const mediaFilename = productMedia ? productMedia.name : undefined
     
             const creditProduct = new CreditProduct({
                 price:price, 
@@ -79,8 +77,7 @@ export class CreditProductsCommandActions {
                 media:media,
                 mediaFilename:mediaFilename,
                 description:productDescription,
-                guild:guildCached,
-                guildId:guildId,
+                guild:guildRecord
             })
     
             const result = await this.service.create(creditProduct)
