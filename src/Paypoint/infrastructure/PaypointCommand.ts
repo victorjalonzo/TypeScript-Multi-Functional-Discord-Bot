@@ -1,3 +1,4 @@
+import { ProductType } from "../../shared/domain/ProductTypeEnums.js"
 import { SlashCommandCallable } from "../../shared/intraestructure/SlashCommandCallable.js"
 
 const PaypointCommand = new SlashCommandCallable()
@@ -33,10 +34,10 @@ PaypointCommand
                 .setRequired(true)
                 .addChoices({
                     name: 'Credit products',
-                    value: 'Credit'
+                    value: ProductType.CREDIT
                 }, {
                     name: 'Role products',
-                    value: 'Role'
+                    value: ProductType.ROLE
                 })
             )
 
