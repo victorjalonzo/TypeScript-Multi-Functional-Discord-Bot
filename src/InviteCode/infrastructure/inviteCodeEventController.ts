@@ -2,6 +2,7 @@ import { GuildMember } from "discord.js";
 import { IMemberInput } from "../../Member/domain/IMemberInput.js";
 import { IInviteCodeInput } from "../domain/IInviteCodeInput.js";
 import { logger } from "../../shared/utils/logger.js";
+import { InviteCodeNotFoundError } from "../domain/InviteCodeExceptions.js";
 
 export class InviteCodeEventController {
     constructor (
@@ -14,14 +15,12 @@ export class InviteCodeEventController {
         try {
             const guild = member.guild
 
-            const memberRecordResult = await this.memberService.get(member.id, guild.id)
-            if (!memberRecordResult.isSuccess()) throw memberRecordResult.error
-            const memberRecord = memberRecordResult.value
+            const memberRecord = await this.memberService.get(member.id, guild.id)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
     
-            const result = await this.service.getActiveOne(guild.id)
-            if (!result.isSuccess()) throw result.error
+            const inviteCode = await this.service.getActiveOne(guild.id)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
 
-            const inviteCode = result.value
             const inviterRecord = inviteCode.member
             
             memberRecord.setInvitedBy(inviterRecord)
@@ -33,6 +32,7 @@ export class InviteCodeEventController {
 
         }
         catch (e) {
+            if (e instanceof InviteCodeNotFoundError) return
             logger.warn(String(e))
         }
     } 
