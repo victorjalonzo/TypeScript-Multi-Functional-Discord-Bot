@@ -1,4 +1,4 @@
-import { Client, BaseInteraction, CategoryChannel, DMChannel, User } from 'discord.js'
+import { Client, BaseInteraction, CategoryChannel, DMChannel, User, ThreadChannel } from 'discord.js'
 import { CommandHandler } from './CommandHandler.js';
 import { ComponentHandler } from './ComponentHandler.js';
 import { TextChannel, VoiceChannel } from 'discord.js';
@@ -46,34 +46,31 @@ export class DiscordAdapter {
             const guildManager = this.client.guilds
             await this.controllers.guildController.createCache(guildManager)
 
-            console.log(`
- ▗▄▄▖ ▗▄▖  ▗▄▖▗▄▄▄▖▗▖   ▗▄▄▄▖▗▖ ▗▖▗▄▄▄▖   ▗▖ ▗▄▄▖
-▐▌   ▐▌ ▐▌▐▌ ▐▌ █  ▐▌     █  ▐▌▗▞▘▐▌      ▐▌▐▌   
-▐▌▝▜▌▐▌ ▐▌▐▛▀▜▌ █  ▐▌     █  ▐▛▚▖ ▐▛▀▀▘   ▐▌ ▝▀▚▖
-▝▚▄▞▘▝▚▄▞▘▐▌ ▐▌ █  ▐▙▄▄▖▗▄█▄▖▐▌ ▐▌▐▙▄▄▖▗▄▄▞▘▗▄▄▞▘
-      By Victor J. Alonzo                            
-`)
-
             console.log("\n")
             for (const guild of guildManager.cache.values()) {
-                logger.info(`Refreshing ${guild.name} (${guild.id}):`)
-                await this.controllers.roleEventController.refresh(guild)
-                await this.controllers.categoryChannelEventController.refresh(guild)
-                await this.controllers.textChannelEventController.refresh(guild)
-                await this.controllers.voiceChannelEventController.refresh(guild)
-                await this.controllers.memberController.refresh(guild)
+              logger.info(`Refreshing ${guild.name} (${guild.id}):`)
+              
+              const roles = await guild.roles.fetch().then(r => r.toJSON()).catch(_ => [])
+              const members = await guild.members.fetch().then(r => r.toJSON()).catch(_ => [])
+              const channels = await guild.channels.fetch().then(r => r.toJSON()).catch(_ => [])
 
-                await this.controllers.roleProductEventController.refresh(guild)
-                await this.controllers.roleRewardEventController.refresh(guild)
+              await this.controllers.roleEventController.refresh(guild, roles)
+              await this.controllers.categoryChannelEventController.refresh(guild, channels)
+              await this.controllers.textChannelEventController.refresh(guild, channels)
+              await this.controllers.voiceChannelEventController.refresh(guild, channels)
+              await this.controllers.memberController.refresh(guild, members)
+              await this.controllers.roleProductEventController.refresh(guild, roles)
+              await this.controllers.roleRewardEventController.refresh(guild, roles)
+              await this.controllers.creditWalletEventController.refresh(guild, members)
 
-                console.log("\n")
+              console.log("\n")
             }
         })
 
         this.client.on('interactionCreate', async (interaction: BaseInteraction) => {
             if (interaction.isChatInputCommand()) return await this.commandHandler.handle(interaction);
 
-            if (interaction.isButton() || interaction.isStringSelectMenu()) {
+            if (interaction.isButton() || interaction.isStringSelectMenu() || interaction.isModalSubmit()) {
               return await this.componentHandler.handle(interaction);
             }
 
@@ -84,23 +81,18 @@ export class DiscordAdapter {
             if (message.author.bot) return;
 
             if (message.channel instanceof TextChannel) {
-              const mentions = message.mentions
-              if (!mentions) return
-  
-              const clientUser = this.client.user
-              if (!clientUser) return
-  
-              const mention = mentions.has(clientUser)
-              if (!mention) return
-
+              if (!message.mentions || !message.mentions.has(this.client.user!)) return
               return await this.controllers.agentEventController.replyTextChannel(message)
             }
 
-            if (message.channel instanceof DMChannel) {
-              return await this.controllers.agentEventController.replyDM(message)
+            else if (message.channel instanceof ThreadChannel) {
+              return await this.controllers.paypointEventController.replyActiveThreadConversation(message)
             }
-
-            logger.warn(`Unknow channel... ${message}`)
+          
+            else if (message.channel instanceof DMChannel) {
+              return logger.info(`Receive a DM message: ${message.content}`)
+            }
+            else return logger.warn(`Unknow channel type.. ${message}`)
         })
 
         this.client.on('raw', async (event) => {
@@ -117,10 +109,6 @@ export class DiscordAdapter {
 
           await this.controllers.paypointEventController.deleteUpdatableMessageID(message)
 
-        })
-
-        this.client.on("UserConfirmedMarkedCasualPayment", async (user: User, DMConversactionId: string) => {
-          return await this.controllers.agentEventController.replyMarkedCasualPaymentConfirmation(user, DMConversactionId)
         })
 
         this.client.on('guildMemberAdd', async (member) => {
