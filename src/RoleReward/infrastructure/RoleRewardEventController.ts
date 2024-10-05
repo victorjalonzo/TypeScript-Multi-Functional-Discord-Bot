@@ -1,4 +1,4 @@
-import { Guild, GuildMember, TextChannel } from "discord.js";
+import { Guild, GuildMember, Role, TextChannel } from "discord.js";
 import { IRoleRewardInput } from "../domain/IRoleRewardInput.js";
 import { IMemberInput } from "../../Member/domain/IMemberInput.js";
 import { logger } from "../../shared/utils/logger.js";
@@ -13,16 +13,10 @@ export class RoleRewardEventController {
         private memberService: IMemberInput
     ) {}
 
-    refresh = async (guild: Guild) => {
+    refresh = async (guild: Guild, roles: Role[]) => {
         try {
-            const roles = guild.roles.cache.size > 0 
-            ? guild.roles.cache.map(role => role) 
-            : (await guild.roles.fetch()).map(role => role);
-
-            const result = await this.service.getAll(guild.id)
-            if (!result.isSuccess()) throw result.error
-
-            const roleRewards = result.value
+            const roleRewards = await this.service.getAll(guild.id)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
 
             const roleRewardsObsolete = roleRewards.filter(roleReward => {
                 return !roles.some(role => role.id === roleReward.id)
