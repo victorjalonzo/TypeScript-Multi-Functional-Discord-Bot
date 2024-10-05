@@ -14,39 +14,30 @@ export class MemberController {
         private guildService: IGuildInput
     ) {}
 
-    async refresh (guild: DiscordGuild): Promise<void> {
+    async refresh (guild: DiscordGuild, guildMembers: GuildMember[]): Promise<void> {
         const membersCreated: IMember[] = []
         const membersUpdated: IMember[] = []
         const membersDeleted: IMember[] = []
 
         try {
-            const [guildCachedResult, membersCachedResult] = await Promise.all([
+            const [guildRecordResult, memberRecordsResult] = await Promise.all([
                 await this.guildService.get(guild.id),
                 await this.service.getAll(guild.id)
             ])
 
-            if (!guildCachedResult.isSuccess() || !membersCachedResult.isSuccess()) {
-                throw guildCachedResult.error || membersCachedResult.error
+            if (!guildRecordResult.isSuccess() || !memberRecordsResult.isSuccess()) {
+                throw guildRecordResult.error || memberRecordsResult.error
             }
 
-            const guildCached = guildCachedResult.value
-            const membersCached = membersCachedResult.value
-
-            let guildMembers: GuildMember[]
-
-            try {
-                guildMembers = (await guild.members.fetch()).toJSON();
-            }
-            catch (e) {
-                throw new Error(`Error fetching members: ${String(e)}`)
-            }
+            const guildRecord = guildRecordResult.value
+            const memberRecords = memberRecordsResult.value
 
             if (guildMembers.length == 0) throw new GuildHasNoMembers()
 
             for (const guildMember of guildMembers) {
-                const match = membersCached.find((m) => m.id == guildMember.id)
+                const match = memberRecords.find((m) => m.id == guildMember.id)
                 
-                const memberParsed = MemberTransformer.parse(guildMember, guildCached)
+                const memberParsed = MemberTransformer.parse(guildMember, guildRecord)
 
                 let result: Result<IMember>
 
