@@ -1,4 +1,4 @@
-import { ChannelType, CategoryChannel as DiscordCategoryChannel, Guild as DiscordGuild } from "discord.js";
+import { ChannelType, CategoryChannel as DiscordCategoryChannel, Guild as DiscordGuild, NonThreadGuildBasedChannel } from "discord.js";
 import { ICategoryChannelInput } from "../domain/ICategoryChannelInput.js";
 import { CategoryChannelTransformer } from "./CategoryChannelTransformer.js";
 import { logger } from "../../shared/utils/logger.js";
@@ -15,7 +15,7 @@ export class CategoryChannelEventController {
         private guildService: IGuildInput
     ) {}
 
-    async refresh (guild: DiscordGuild) {
+    async refresh (guild: DiscordGuild, channels: (NonThreadGuildBasedChannel | null)[]) {
         const categoriesCreated = []
         const categoriesUpdated = []
         const categoriesDeleted = []
@@ -35,13 +35,9 @@ export class CategoryChannelEventController {
 
             let categories: DiscordCategoryChannel[]
 
-            try {
-                categories = (await guild.channels.fetch())
-                    .filter(channel => channel !== null &&channel.type === ChannelType.GuildCategory) 
-                    .map(channel => channel as DiscordCategoryChannel);
-            } catch (e) {
-                throw new Error(`Error fetching categories channels: ${String(e)}`);
-            }
+            categories = channels
+                .filter(channel => channel !== null &&channel.type === ChannelType.GuildCategory) 
+                .map(channel => channel as DiscordCategoryChannel);
 
             if (categories.length === 0) throw new GuildHasNoCategoryChannels()
 
