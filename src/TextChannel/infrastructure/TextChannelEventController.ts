@@ -1,5 +1,5 @@
 import { ITextChannelInput } from "../domain/ITextChannelInput.js";
-import { TextChannel as DiscordTextChannel, Guild as DiscordGuild, ChannelType } from "discord.js";
+import { TextChannel as DiscordTextChannel, Guild as DiscordGuild, ChannelType, NonThreadGuildBasedChannel } from "discord.js";
 import { TextChannelTransformer } from "./TextChannelTransformer.js";
 import { logger } from "../../shared/utils/logger.js";
 import { GuildTransformer } from "../../Guild/infrastructure/GuildTransformer.js";
@@ -20,7 +20,7 @@ export class TextChannelEventController {
         private categoryChannelService: ICategoryChannelInput
     ) {}
 
-    refresh = async (guild: DiscordGuild): Promise<void> => {
+    refresh = async (guild: DiscordGuild, channels: (NonThreadGuildBasedChannel | null)[]): Promise<void> => {
         const channelsCreated: ITextChannel[] = [];
         const channelsUpdated: ITextChannel[] = [];
         const channelsDeleted: ITextChannel[] = [];
@@ -39,21 +39,17 @@ export class TextChannelEventController {
             const guildCached = guildCachedResult.value as IGuild;
             const channelsCached = channelsCachedResult.value as ITextChannel[];
 
-            let channels: DiscordTextChannel[];
+            let textChannels: DiscordTextChannel[];
 
-            try {
-                channels = (await guild.channels.fetch())
-                    .filter(channel => channel !== null && channel.type === ChannelType.GuildText)
-                    .map(channel => channel as DiscordTextChannel);
-            } catch (e) {
-                throw new Error(`Error fetching text channels: ${String(e)}`);
-            }
+            textChannels = channels
+                .filter(channel => channel !== null && channel.type === ChannelType.GuildText)
+                .map(channel => channel as DiscordTextChannel);
 
-            if (channels.length === 0) throw new GuildHasNoTextChannels();
+            if (textChannels.length === 0) throw new GuildHasNoTextChannels();
 
             const channelsRefreshed: ITextChannel[] = [];
 
-            for (const channel of channels) {
+            for (const channel of textChannels) {
                 const match = channelsCached.find(c => c.id === channel.id);
 
                 let categoryChannelCached: ICategoryChannel | undefined;
