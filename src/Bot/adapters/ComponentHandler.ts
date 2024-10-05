@@ -1,7 +1,8 @@
-import { ButtonInteraction, StringSelectMenuInteraction } from "discord.js"
+import { ButtonInteraction, ModalSubmitInteraction, StringSelectMenuInteraction } from "discord.js"
 import { ComponentActions } from "../../shared/intraestructure/Container.js"
 import { logger } from "../../shared/utils/logger.js"
 import { ComponentActionDataTransformer } from "../../shared/domain/ComponentActionDataTransformer.js"
+import { M } from "vitest/dist/reporters-yx5ZTtEV.js"
 
 export class ComponentHandler {
     actions: Record<string, any>[]
@@ -10,7 +11,7 @@ export class ComponentHandler {
         this.actions = ComponentActions
     }
 
-    async handle(interaction: ButtonInteraction | StringSelectMenuInteraction) {
+    async handle(interaction: ButtonInteraction | StringSelectMenuInteraction | ModalSubmitInteraction) {
         const componentActionData = ComponentActionDataTransformer.parse(interaction.customId)
 
         for (const action of this.actions) {
@@ -19,6 +20,6 @@ export class ComponentHandler {
             }
         }
 
-        return logger.warn(`Unknow button interaction type received... ${interaction.customId}`)
+        return logger.warn(`Unknow component interaction type received... ${interaction.customId}`)
     }
 }
