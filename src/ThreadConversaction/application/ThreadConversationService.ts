@@ -54,10 +54,11 @@ export class ThreadConversationService implements IThreadConversationInput {
         }
     }
 
-    async getActiveOneByMember (memberId: string): Promise<Result<IThreadConversation>> {
+    async getActiveOneByMember (memberId: string, guildId: string): Promise<Result<IThreadConversation>> {
         try {
             const ThreadConversation = await this.repository.get({
                 memberId, 
+                guildId,
                 state: {$nin: [ThreadConversationState.CLOSED, ThreadConversationState.CANCELLED]},
             }, 'guild');
             
@@ -69,9 +70,9 @@ export class ThreadConversationService implements IThreadConversationInput {
         }
     }
 
-    async getByMember(memberId: string): Promise<Result<IThreadConversation>> {
+    async getByMember(memberId: string, guildId: string): Promise<Result<IThreadConversation>> {
         try {
-            const ThreadConversation = await this.repository.get({memberId}, 'guild');
+            const ThreadConversation = await this.repository.get({memberId, guildId}, 'guild');
             if (!ThreadConversation) throw new ThreadConversationNotFoundError();
             return Result.success(ThreadConversation);
         }
