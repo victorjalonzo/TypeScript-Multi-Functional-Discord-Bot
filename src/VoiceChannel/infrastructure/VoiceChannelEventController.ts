@@ -1,6 +1,6 @@
 import { IVoiceChannelInput } from "../domain/IVoiceChannelInput.js";
 import { logger } from "../../shared/utils/logger.js";
-import { VoiceChannel as DiscordVoiceChannel, Guild as DiscordGuild, ChannelType } from "discord.js";
+import { VoiceChannel as DiscordVoiceChannel, Guild as DiscordGuild, ChannelType, NonThreadGuildBasedChannel } from "discord.js";
 import { VoiceChannelTransformer } from "./VoiceChannelTransformer.js";
 import { GuildTransformer } from "../../Guild/infrastructure/GuildTransformer.js";
 import { CategoryChannelTransformer } from "../../CategoryChannel/infrastructure/CategoryChannelTransformer.js";
@@ -20,13 +20,12 @@ export class VoiceChannelEventController {
         private categoryChannelService: ICategoryChannelInput
     ) {}
 
-    refresh = async (guild: DiscordGuild): Promise<void> => {
+    refresh = async (guild: DiscordGuild, channels: (NonThreadGuildBasedChannel | null)[]): Promise<void> => {
         const channelsCreated: IVoiceChannel[] = [];
         const channelsUpdated: IVoiceChannel[] = [];
         const channelsDeleted: IVoiceChannel[] = [];
 
         try {
-
             const [guildCachedResult, channelsCachedResult] = await Promise.all([
                 this.guildService.get(guild.id),
                 this.service.getAll(guild.id)
@@ -39,21 +38,17 @@ export class VoiceChannelEventController {
             const guildCached = guildCachedResult.value as IGuild;
             const channelsCached = channelsCachedResult.value as IVoiceChannel[];
 
-            let channels: DiscordVoiceChannel[];
+            let voiceChannels: DiscordVoiceChannel[];
 
-            try {
-                channels = (await guild.channels.fetch())
-                    .filter(channel => channel !== null && channel.type === ChannelType.GuildVoice)
-                    .map(channel => channel as DiscordVoiceChannel);
-            } catch (e) {
-                throw new Error(`Error fetching voice channels: ${String(e)}`);
-            }
-
-            if (channels.length === 0) throw new GuildHasNoVoiceChannels();
+            voiceChannels = channels
+                .filter(channel => channel !== null && channel.type === ChannelType.GuildVoice)
+                .map(channel => channel as DiscordVoiceChannel);
+                
+            if (voiceChannels.length === 0) throw new GuildHasNoVoiceChannels();
 
             const channelsRefreshed: IVoiceChannel[] = [];
 
-            for (const channel of channels) {
+            for (const channel of voiceChannels) {
                 const match = channelsCached.find(c => c.id === channel.id);
 
                 let categoryChannelCached: ICategoryChannel | undefined;
