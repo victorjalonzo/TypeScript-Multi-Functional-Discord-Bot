@@ -57,3 +57,9 @@ export class PaypointDeletionError extends Error {
         super('The paypoint could not be deleted');
     }
 }
+
+export class ProductTypeNotSupported extends Error {
+    constructor() {
+        super('The product type is not supported');
+    }
+}
