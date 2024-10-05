@@ -6,16 +6,10 @@ import { Guild } from "discord.js";
 export class RoleProductEventController {
     constructor (private service: IRoleProductInput) {}
 
-    refresh = async (guild: Guild) => {
+    refresh = async (guild: Guild, roles: Role[]) => {
         try {
-            const roles = guild.roles.cache.size > 0 
-            ? guild.roles.cache.map(role => role) 
-            : (await guild.roles.fetch()).map(role => role);
-
-            const result = await this.service.getAll(guild.id)
-            if (!result.isSuccess()) throw result.error
-
-            const roleProducts = result.value
+            const roleProducts = await this.service.getAll(guild.id)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
 
             const roleProductsObsolete = roleProducts.filter(roleProduct => {
                 return !roles.some(role => role.id === roleProduct.id)
