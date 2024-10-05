@@ -71,8 +71,8 @@ import { CasualTransactionService } from "../../CasualTransaction/application/Ca
 
 import { AgentEventController } from "../../Agent/infrastructure/AgentEventController.js";
 
-import { DMConversactionService } from "../../DMConversaction/application/DMConversactionService.js";
-import { DMConversactionModel } from "../../DMConversaction/infrastructure/DMConversactionSchema.js";
+import { ThreadConversationService } from "../../ThreadConversaction/application/ThreadConversationService.js";
+import { ThreadConversationModel } from "../../ThreadConversaction/infrastructure/ThreadConversactionSchema.js";
 import { IComponentAction } from "../domain/IComponentAction.js";
 import { AgentComponentsActions } from "../../Agent/infrastructure/AgentComponentsActions.js";
 
@@ -169,31 +169,31 @@ RoleProductCommand.setCallback(roleProductCommandActions.execute);
 const casualTransactionRepository = new Repository(CasualTransactionModel);
 const casualTransactionService = new CasualTransactionService(casualTransactionRepository);
 
-const DMConversactionRepository = new Repository(DMConversactionModel);
-const dmConversactionService = new DMConversactionService(DMConversactionRepository);
+const threadConversationRepository = new Repository(ThreadConversationModel);
+const threadConversationService = new ThreadConversationService(threadConversationRepository);
 
 const paypointService = new PaypointService(paypointRepository, guildRepository);
 const paypointCommandAction = new PaypointCommandActions(paypointService, guildService, roleProductService, creditProductService, casualPaymentService);
-const paypointComponentAction = new PaypointComponentActions(paypointService, casualPaymentService, roleProductService, creditProductService, dmConversactionService, memberService);
-const paypointEventController = new PaypointEventController(paypointService);
+const paypointComponentAction = new PaypointComponentActions(paypointService, guildService, casualPaymentService, roleProductService, creditProductService, threadConversationService, memberService, casualTransactionService, creditWalletService);
+const paypointEventController = new PaypointEventController(paypointService, threadConversationService, memberService, creditProductService, roleProductService, casualPaymentService, casualTransactionService);
 PaypointCommand.setCallback(paypointCommandAction.execute);
 
 const creditChannelLockerRepository = new Repository(CreditChannelLockerModel);
 const creditChannelLockerService = new CreditChannelLockerService(creditChannelLockerRepository);
 const creditChannelLockerComponentAction = new CreditChannelLockerComponentActions(creditChannelLockerService, creditWalletService, paypointService);
-const creditChannelLockerCommandAction = new CreditChannelLockerCommandActions(creditChannelLockerService);
+const creditChannelLockerCommandAction = new CreditChannelLockerCommandActions(creditChannelLockerService, guildService);
 CreditChannelLockerCommand.setCallback(creditChannelLockerCommandAction.execute);
 
 const creditRewardRepository = new Repository(CreditRewardModel)
 const creditRewardService = new CreditRewardService(creditRewardRepository)
-const creditRewardEventController = new CreditRewardEventController(creditRewardService, memberService, creditWalletService)
+const creditRewardEventController = new CreditRewardEventController(creditRewardService, guildService, memberService, creditWalletService)
 const creditRewardCommandActions = new CreditRewardCommandActions(creditRewardService, guildService)
 CreditRewardCommand.setCallback(creditRewardCommandActions.execute);
 
 const roleRewardRespository = new Repository(RoleRewardModel);
 const roleRewardService = new RoleRewardService(roleRewardRespository);
 const roleRewardCommandAction = new RoleRewardCommandActions(roleRewardService, roleService);
-const roleRewardEventController = new RoleRewardEventController(roleRewardService, memberService);
+const roleRewardEventController = new RoleRewardEventController(roleRewardService, guildService, memberService);
 RoleRewardCommand.setCallback(roleRewardCommandAction.execute);
 
 const inviteCommandActions = new InviteCommandActions(memberService, roleRewardService, creditRewardService);
@@ -212,12 +212,12 @@ const invitePointCommandActions = new InvitePointCommandActions(invitePointServi
 const invitePointComponentsActions = new InvitePointComponentsActions(guildService, memberService, inviteCodeService);
 InvitePointCommand.setCallback(invitePointCommandActions.execute);
 
-const agentEventController = new AgentEventController(casualTransactionService, paypointService, roleProductService, roleRewardService, dmConversactionService, memberService);
-const agentComponentActions = new AgentComponentsActions(dmConversactionService, casualTransactionService, roleProductService, creditProductService, creditWalletService);
+const agentEventController = new AgentEventController(casualTransactionService, paypointService, creditProductService, creditRewardService, roleProductService, roleRewardService, threadConversationService, memberService);
+const agentComponentActions = new AgentComponentsActions(threadConversationService, casualTransactionService, roleProductService, creditProductService, creditWalletService);
 
 const backupRepository = new Repository(BackupModel);
 const backupService = new BackupService(backupRepository);
-const backupCommandAction = new BackupCommandAction(backupService, guildService, roleService, textChannelService, voiceChannelService, categoryChannelService, memberService, roleProductService, creditProductService, roleRewardService, casualPaymentService, paypointService);
+const backupCommandAction = new BackupCommandAction(backupService, guildService, roleService, textChannelService, voiceChannelService, categoryChannelService, memberService, creditChannelLockerService, roleProductService, roleRewardService, creditWalletService, creditProductService, creditRewardService, casualPaymentService, invitePointService, paypointService);
 BackupCommand.setCallback(backupCommandAction.execute);
 
 export const Services = {
