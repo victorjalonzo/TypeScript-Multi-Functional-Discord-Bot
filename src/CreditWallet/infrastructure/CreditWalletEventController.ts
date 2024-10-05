@@ -16,7 +16,7 @@ export class CreditWalletEventController {
         private memberService: IMemberInput
     ) {}
 
-    refresh = async (guildMembers: DiscordMember[], guild: DiscordGuild): Promise<void> => {
+    refresh = async (guild: DiscordGuild, guildMembers: DiscordMember[]): Promise<void> => {
         const walletsCreated: CreditWallet[] = [];
 
         try {
