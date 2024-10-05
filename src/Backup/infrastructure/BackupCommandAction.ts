@@ -15,7 +15,7 @@ import { IBackupInput } from "../domain/IBackupInput.js";
 import { BotMemberNotFoundError, BotMissingPermissionsError, GuildNotFoundError } from "../../shared/domain/Exceptions.js";
 import { IGuildInput } from "../../Guild/domain/IGuildInput.js";
 import { Backup } from "../domain/Backup.js";
-import { BackupAlreadyExistsError, BackupNameRequiredError } from "../domain/BackupExceptions.js";
+import { BackupAlreadyExistsError, BackupNameRequiredError, BackupNotFoundError } from "../domain/BackupExceptions.js";
 import { EmbedResult } from "../../shared/intraestructure/EmbedResult.js";
 import { logger } from "../../shared/utils/logger.js";
 import { IRoleInput } from "../../Role/domain/IRoleInput.js";
@@ -50,7 +50,25 @@ import { IRoleProduct } from "../../RoleProduct/domain/IRoleProduct.js";
 import { IRoleReward } from "../../RoleReward/domain/IRoleReward.js";
 import { ICasualPayment } from "../../CasualPayment/domain/ICasualPayment.js";
 import { ICreditProductInput } from "../../CreditProduct/domain/ICreditProductInput.js";
-import { IProduct } from "../../shared/domain/IProduct.js";
+import { ICreditProduct } from "../../CreditProduct/domain/ICreditProduct.js";
+import { PaypointMessage } from "../../Paypoint/infrastructure/PaypointMessage.js";
+import { ICreditWalletInput } from "../../CreditWallet/domain/ICreditWalletInput.js";
+import { ICreditRewardInput } from "../../CreditReward/domain/ICreditRewardInput.js";
+import { ICreditChannelLockerInput } from "../../CreditChannelLocker/domain/ICreditChannelLockerInput.js";
+import { IInvitePointInput } from "../../InvitePoint/domain/IInvitePointInput.js";
+import { CreditWallet } from "../../CreditWallet/domain/CreditWallet.js";
+import { ICreditWallet } from "../../CreditWallet/domain/ICreditWallet.js";
+import { CreditProduct } from "../../CreditProduct/domain/CreditProduct.js";
+import { ICreditReward } from "../../CreditReward/domain/ICreditReward.js";
+import { CreditReward } from "../../CreditReward/domain/CreditReward.js";
+import { InvitePoint } from "../../InvitePoint/domain/InvitePoint.js";
+import { InvitePointMessage } from "../../InvitePoint/infrastructure/InvitePointMessage.js";
+import { IInvitePoint } from "../../InvitePoint/domain/IInvitePoint.js";
+import { InvitePointNotFoundError } from "../../InvitePoint/domain/InvitePointExceptions.js";
+import { ICreditChannelLocker } from "../../CreditChannelLocker/domain/ICreditChannelLock.js";
+import { CreditChannelLockerMessage } from "../../CreditChannelLocker/infraestructure/CreditChannelLockerMessage.js";
+import { CreditChannelLocker } from "../../CreditChannelLocker/domain/CreditChannelLocker.js";
+import { InlineBlockText } from "../../shared/utils/textFormating.js";
 
 export class BackupCommandAction {
     constructor (
@@ -61,11 +79,15 @@ export class BackupCommandAction {
         private voiceChannelService: IVoiceChannelInput,
         private categoryChannelService: ICategoryChannelInput,
         private memberService: IMemberInput,
+        private creditChannelLockerService: ICreditChannelLockerInput,
         private roleProductService: IRoleProductInput,
+        private roleRewardService: IRoleRewardInput,
+        private creditWalletService: ICreditWalletInput,
         private creditProductService: ICreditProductInput,
-        private rewardRoleService: IRoleRewardInput,
-        private casualPaymentService: ICasualPaymentInput,
-        private paypointRoleService: IPaypointInput
+        private creditRewardService: ICreditRewardInput,
+        private casualPaymentMethodService: ICasualPaymentInput,
+        private invitePointService: IInvitePointInput,
+        private payPointService: IPaypointInput
     ) {}
 
     execute = async (interaction: ChatInputCommandInteraction) => {
@@ -74,7 +96,7 @@ export class BackupCommandAction {
         if (subcommand === 'create') return await this.create(interaction)
         if (subcommand === 'load') return await this.load(interaction)
         if (subcommand === 'list') return await this.list(interaction)
-        if (subcommand === 'delete') return await this.delete(interaction)
+        if (subcommand === 'remove') return await this.delete(interaction)
     }
 
     load = async (interaction: ChatInputCommandInteraction) => {
@@ -94,15 +116,11 @@ export class BackupCommandAction {
                 throw new BotMissingPermissionsError()
             }
 
-            const guildCachedResult = await this.guildService.get(guild.id)
-            if (!guildCachedResult.isSuccess()) throw guildCachedResult.error
+            const guildRecord = await this.guildService.get(guild.id)
+            .then(result => result.isSuccess() ? result.value : Promise.reject(result.error))
 
-            const guildCached = guildCachedResult.value
-
-            const result = await this.service.get(name)
-            if (!result.isSuccess()) throw result.error
-
-            const backup = result.value
+            const backup = await this.service.get(name)
+            .then(result => result.isSuccess() ? result.value : Promise.reject(result.error))
 
             const currentRoles = await guild.roles.fetch()
 
@@ -127,23 +145,31 @@ export class BackupCommandAction {
             await this._deleteCurrentAddOns(guild)
 
             const rolesLastReference: Record<string, DiscordRole> = await this._retrieveRoles(backup.guildId, guild)
-
             const categoriesLastReference: Record<string, any> = await this._retrieveCategoryChannels(backup.guildId, guild, rolesLastReference)
             const textChannelsLastReference: Record<string, DiscordTextChannel> = await this._retrieveTextAndVoiceChannels(backup.guildId, guild, categoriesLastReference, rolesLastReference)
-            
-            const membersRetrieved: IMember[] = await this._retrieveMembers(backup.guildId, guildCached)
-            const roleProductsRetrieved: IRoleProduct[] = await this._retrieveRoleProducts(backup.guildId, guildCached, rolesLastReference)
-            const roleRewardsRetrieved: RoleReward[] = await this._retrieveRoleRewards(backup.guildId, guildCached, rolesLastReference)
-            const casualPaymentMethodsRetrieved: ICasualPayment[] = await this._retrieveCasualPaymentMethods(backup.guildId, guildCached)
-            const paypointRetrieved: IPaypoint | undefined = await this._retrievePaypoint(backup.guildId, guildCached, textChannelsLastReference)
+            const membersRetrieved: IMember[] = await this._retrieveMembers(backup.guildId, guildRecord)
+            const creditChannelLockersRetrieved: ICreditChannelLocker[] = await this._retrieveCreditChannelLockers(backup.guildId, guildRecord, textChannelsLastReference)
+            const roleProductsRetrieved: IRoleProduct[] = await this._retrieveRoleProducts(backup.guildId, guildRecord, rolesLastReference)
+            const roleRewardsRetrieved: RoleReward[] = await this._retrieveRoleRewards(backup.guildId, guildRecord, rolesLastReference)
+            const casualPaymentMethodsRetrieved: ICasualPayment[] = await this._retrieveCasualPaymentMethods(backup.guildId, guildRecord)
+            const creditWalletsRetrieved: ICreditWallet[] = await this._retrieveCreditWallets(backup.guildId, guildRecord)
+            const creditProductsRetrieved: ICreditProduct[] = await this._retrieveCreditProducts(backup.guildId, guildRecord)
+            const creditRewardsRetrieved: ICreditReward[] = await this._retrieveCreditRewards(backup.guildId, guildRecord)
+            const invitePointRetrieved: IInvitePoint | undefined = await this._retrieveInvitePoint(backup.guildId, guildRecord, textChannelsLastReference)
+            const paypointRetrieved: IPaypoint | undefined = await this._retrievePaypoint(backup.guildId, guildRecord, textChannelsLastReference)
 
             logger.info(`Roles retrieved: ${Object.keys(rolesLastReference).length}`)
             logger.info(`Categories retrieved: ${Object.keys(categoriesLastReference).length}`)
             logger.info(`Members retrieved: ${membersRetrieved.length}`)
+            logger.info(`Credit channel lockers retrieved: ${creditChannelLockersRetrieved.length}`)
             logger.info(`Role products retrieved: ${roleProductsRetrieved.length}`)
             logger.info(`Role rewards retrieved: ${roleRewardsRetrieved.length}`)
-            logger.info(`Casual payments retrieved: ${casualPaymentMethodsRetrieved.length}`)
-            logger.info(`Paypoint retrieved: ${paypointRetrieved ? 'true' : 'false'}`)
+            logger.info(`Casual payment methods retrieved: ${casualPaymentMethodsRetrieved.length}`)
+            logger.info(`Credit wallets retrieved: ${creditWalletsRetrieved.length}`)
+            logger.info(`Credit products retrieved: ${creditProductsRetrieved.length}`)
+            logger.info(`Credit rewards retrieved: ${creditRewardsRetrieved.length}`)
+            logger.info(invitePointRetrieved ? `Invite point retrieved` : `No Invite point retrieved`)
+            logger.info(paypointRetrieved ? `Paypoint retrieved` : `No Paypoint retrieved`)
 
             await EmbedResult.success({
                 title: 'Backup loaded',
@@ -161,51 +187,86 @@ export class BackupCommandAction {
         }
     }
 
-    _deleteCurrentAddOns = async (guild: DiscordGuild): Promise<void> => {
-        const rewardRolesRemovedResult = await this.rewardRoleService.deleteAll(guild.id)
-        if (!rewardRolesRemovedResult.isSuccess()) throw rewardRolesRemovedResult.error
+    _deleteCurrentAddOns = async (guild: DiscordGuild): Promise<Record<string, any>> => {
+        const result = await Promise.all([
+            this.roleRewardService.deleteAll(guild.id),
+            this.roleProductService.deleteAll(guild.id),
+            this.creditWalletService.deleteAll(guild.id),
+            this.creditProductService.deleteAll(guild.id),
+            this.creditRewardService.deleteAll(guild.id),
+            this.casualPaymentMethodService.deleteAll(guild.id),
+            this.creditChannelLockerService.deleteAll(guild.id)
+        ])
 
-        const roleProductsRemovedResult = await this.roleProductService.deleteAll(guild.id)
-        if (!roleProductsRemovedResult.isSuccess()) throw roleProductsRemovedResult.error
+        result.forEach(r => !r.isSuccess() ? Promise.reject(r.error) : null)
 
-        const casualPaymentMethodsRemovedResult = await this.casualPaymentService.deleteAll(guild.id)
-        if (!casualPaymentMethodsRemovedResult.isSuccess()) throw casualPaymentMethodsRemovedResult.error
+        const [
+            roleRewardsDeleted, 
+            roleProductsDeleted, 
+            creditWalletsDeleted, 
+            creditProductsDeleted, 
+            creditRewardsDeleted, 
+            casualPaymentMethodsDeleted,
+            channelLockersDeleted
+        ] = result
 
-        const paypointRemovedResult = await this.paypointRoleService.delete(guild.id)
-        if (!paypointRemovedResult.isSuccess() && !(paypointRemovedResult.error instanceof PaypointDeletionError)) throw paypointRemovedResult.error
+        const payPointDeleted = await this.payPointService.delete(guild.id)
+        .then(r => {
+            if (r.isSuccess()) return r.value
+            if (!r.isSuccess() && r.error instanceof PaypointNotFoundError) return null
+            return Promise.reject(r.error)
+        })
+
+        const invitePointDeleted = await this.invitePointService.delete(guild.id)
+        .then(r => {
+            if (r.isSuccess()) return r.value
+            if (!r.isSuccess() && r.error instanceof InvitePointNotFoundError) return null
+            return Promise.reject(r.error)
+        })
+
+        return {
+            roleRewardsDeleted,
+            roleProductsDeleted,
+            creditWalletsDeleted,
+            creditProductsDeleted,
+            creditRewardsDeleted,
+            casualPaymentMethodsDeleted,
+            payPointDeleted,
+            invitePointDeleted,
+            channelLockersDeleted
+        }
+
     }
 
     _retrieveRoles = async (backupGuildId: string, guild: DiscordGuild): Promise<Record<string, DiscordRole>> => {
-        const rolesResult = await this.roleService.getAll(backupGuildId)
-        if (!rolesResult.isSuccess()) throw rolesResult.error
-
-        const roles = rolesResult.value
+        const roleRecords = await this.roleService.getAll(backupGuildId)
+        .then(result => result.isSuccess() ? result.value : Promise.reject(result.error))
         
         const lastReference: Record<string, DiscordRole> = {}
 
-        roles.sort((a, b) => a.position - b.position)
+        roleRecords.sort((a, b) => a.position - b.position)
 
-        for (const role of roles) {
+        for (const roleRecord of roleRecords) {
             try {
-                let newRole: DiscordRole
+                let role: DiscordRole
 
-                if (role.name == '@everyone' && role.position == 0) {
-                    newRole = await guild.roles.everyone.edit({
-                        permissions: new PermissionsBitField(<any>role.permissions)
+                if (roleRecord.name == '@everyone' && roleRecord.position == 0) {
+                    role = await guild.roles.everyone.edit({
+                        permissions: new PermissionsBitField(<any>roleRecord.permissions)
                     })
                 }
                 else {
-                    newRole = await guild.roles.create({
-                        name: role.name,
-                        color: role.color,
-                        position: role.position,
-                        hoist: role.hoist,
-                        mentionable: role.mentionable,
-                        permissions: new PermissionsBitField(<any>role.permissions)
+                    role = await guild.roles.create({
+                        name: roleRecord.name,
+                        color: roleRecord.color,
+                        position: roleRecord.position,
+                        hoist: roleRecord.hoist,
+                        mentionable: roleRecord.mentionable,
+                        permissions: new PermissionsBitField(<any>roleRecord.permissions)
                     })
                 }
-                lastReference[role.id] = newRole
-                logger.info(`The role ${newRole.name} (${newRole.id}) was restored`)
+                lastReference[roleRecord.id] = role
+                logger.info(`The role ${role.name} (${role.id}) was restored`)
             }
             catch (e) {
                 continue
@@ -214,105 +275,106 @@ export class BackupCommandAction {
         return lastReference
     }
 
-    _retrieveCategoryChannels = async (backupGuildId: string, guild: DiscordGuild, rolesLastReference: Record<string, DiscordRole>): Promise<Record<string, DiscordCategoryChannel>> => {
-        const categoryChannelsResult = await this.categoryChannelService.getAll(backupGuildId)
-        if (!categoryChannelsResult.isSuccess()) throw categoryChannelsResult.error
-
-        const categoryChannels = categoryChannelsResult.value
+    _retrieveCategoryChannels = async (
+        backupGuildId: string, 
+        guild: DiscordGuild, 
+        rolesLastReference: Record<string, DiscordRole>
+    ): Promise<Record<string, DiscordCategoryChannel>> => {
+        const categoryChannelRecords = await this.categoryChannelService.getAll(backupGuildId)
+        .then(result => result.isSuccess() ? result.value : Promise.reject(result.error))
         
         const lastReference: Record<string, DiscordCategoryChannel> = {}
 
-        for (const categoryChannel of categoryChannels) {
-            const permissionOverwrites = this._getUpdatedPermissionOverwrites(categoryChannel.permissionOverwrites, rolesLastReference)
+        for (const categoryChannelRecord of categoryChannelRecords) {
+            const permissionOverwrites = this._getUpdatedPermissionOverwrites(categoryChannelRecord.permissionOverwrites, rolesLastReference)
 
-            const newCategory = await guild.channels.create({
-                name: categoryChannel.name,
+            const categoryChannel: DiscordCategoryChannel = await guild.channels.create({
+                name: categoryChannelRecord.name,
                 type: ChannelType.GuildCategory,
-                position: categoryChannel.position,
+                position: categoryChannelRecord.position,
                 permissionOverwrites: <any>permissionOverwrites
             })
 
-            lastReference[categoryChannel.id] = newCategory
+            lastReference[categoryChannelRecord.id] = categoryChannel
 
-            logger.info(`The category ${newCategory.name} (${newCategory.id}) was restored`)
+            logger.info(`The category ${categoryChannel.name} (${categoryChannel.id}) was restored`)
         }
 
         return lastReference
 
     }
 
-    _retrieveTextAndVoiceChannels = async (backupGuildId: string, guild: DiscordGuild, categoryLastReference: Record<string, DiscordCategoryChannel>, rolesLastReference: Record<string, DiscordRole>): Promise<Record<string, DiscordTextChannel>> => {
-        const textChannelsResult = await this.textChannelService.getAll(backupGuildId)
-        if (!textChannelsResult.isSuccess()) throw textChannelsResult.error
+    _retrieveTextAndVoiceChannels = async (
+        backupGuildId: string, 
+        guild: DiscordGuild, 
+        categoryLastReference: Record<string, DiscordCategoryChannel>, 
+        rolesLastReference: Record<string, DiscordRole>
+    ): Promise<Record<string, DiscordTextChannel>> => {
+        const textChannelRecords = await this.textChannelService.getAll(backupGuildId)
+        .then(result => result.isSuccess() ? result.value : Promise.reject(result.error))
 
-        const voiceChannelsResult = await this.voiceChannelService.getAll(backupGuildId)
-        if (!voiceChannelsResult.isSuccess()) throw voiceChannelsResult.error
+        const voiceChannelRecords = await this.voiceChannelService.getAll(backupGuildId)
+        .then(result => result.isSuccess() ? result.value : Promise.reject(result.error))
 
-        const textChannels = textChannelsResult.value
-        const voiceChannels = voiceChannelsResult.value
-
-        const channels = <ITextChannel[] & IVoiceChannel[]> [...textChannels, ...voiceChannels]
+        const channelRecords = <ITextChannel[] & IVoiceChannel[]> [...textChannelRecords, ...voiceChannelRecords]
         
         const lastReference: Record<string, DiscordTextChannel> = {}
-        channels.sort((a, b) => a.position - b.position)
+        channelRecords.sort((a, b) => a.position - b.position)
 
-        for (const channel of channels) {
-            const permissionOverwrites = this._getUpdatedPermissionOverwrites(channel.permissionOverwrites, rolesLastReference)
+        for (const channelRecord of channelRecords) {
+            const permissionOverwrites = this._getUpdatedPermissionOverwrites(channelRecord.permissionOverwrites, rolesLastReference)
             
-            const category = channel.parentId ? categoryLastReference[channel.parentId] : undefined
+            const category: DiscordCategoryChannel | undefined = channelRecord.parentId ? categoryLastReference[channelRecord.parentId] : undefined
 
-            if (channel instanceof TextChannelModel) {
-                const newTextChannel = await guild.channels.create({
-                    name: channel.name,
+            if (channelRecord instanceof TextChannelModel) {
+                const textChannel: DiscordTextChannel = await guild.channels.create({
+                    name: channelRecord.name,
                     type: ChannelType.GuildText,
-                    position: channel.position,
+                    position: channelRecord.position,
                     parent: category,
                     permissionOverwrites: <any>permissionOverwrites
                 })
 
-                lastReference[channel.id] = newTextChannel
+                lastReference[channelRecord.id] = textChannel
 
-                logger.info(`The text channel ${newTextChannel.name} (${newTextChannel.id}) was restored`)
+                logger.info(`The text channel ${textChannel.name} (${textChannel.id}) was restored`)
             }
 
-            if (channel instanceof VoiceChannelModel) {
-                const newVoiceChannel = await guild.channels.create({
-                    name: channel.name,
+            if (channelRecord instanceof VoiceChannelModel) {
+                const voiceChannel: DiscordVoiceChannel = await guild.channels.create({
+                    name: channelRecord.name,
                     type: ChannelType.GuildVoice,
-                    position: channel.position,
-                    bitrate: channel.bitrate,
-                    rateLimitPerUser: channel.rateLimitPerUser,
-                    rtcRegion: channel.rtcRegion,
+                    position: channelRecord.position,
+                    bitrate: channelRecord.bitrate,
+                    rateLimitPerUser: channelRecord.rateLimitPerUser,
+                    rtcRegion: channelRecord.rtcRegion,
                     parent: category,
                     permissionOverwrites: <any>permissionOverwrites
                 })
-                logger.info(`The voice channel ${newVoiceChannel.name} (${newVoiceChannel.id}) was restored`)
+                logger.info(`The voice channel ${voiceChannel.name} (${voiceChannel.id}) was restored`)
             }
         }
 
         return lastReference
     }
 
-    _retrieveMembers = async (backupGuildId: string, guildCached: IGuild): Promise<IMember[]> => {
-        const membersResult = await this.memberService.getAll(backupGuildId)
-        if (!membersResult.isSuccess()) throw membersResult.error
-
-        const members = membersResult.value
+    _retrieveMembers = async (backupGuildId: string, guildRecord: IGuild): Promise<IMember[]> => {
+        const memberRecords = await this.memberService.getAll(backupGuildId)
+        .then(result => result.isSuccess() ? result.value : Promise.reject(result.error))
 
         const membersRetrieved: IMember[] = []
 
-        for (const member of members) {
-            const newMember = new Member({
-                id: member.id,
-                username: member.username,
-                discriminator: member.discriminator,
-                avatarURL: member.avatarURL,
-                invitedBy: member.invitedBy,
-                guild: guildCached,
-                guildId: guildCached.id
+        for (const memberRecord of memberRecords) {
+            const member: IMember = new Member({
+                id: memberRecord.id,
+                username: memberRecord.username,
+                discriminator: memberRecord.discriminator,
+                avatarURL: memberRecord.avatarURL,
+                invitedBy: memberRecord.invitedBy,
+                guild: guildRecord
             })
 
-            const result = await this.memberService.create(newMember)
+            const result = await this.memberService.create(member)
 
             if (!result.isSuccess()) {
                 if (result.error instanceof MemberAlreadyExistsError) continue
@@ -327,32 +389,63 @@ export class BackupCommandAction {
         return membersRetrieved
     }
 
-    _retrieveRoleProducts = async (backupGuildId: string, guildCached: IGuild, rolesLastReference: Record<string, DiscordRole>): Promise<IRoleProduct[]> => {
-        const roleProductsResult = await this.roleProductService.getAll(backupGuildId)
-        if (!roleProductsResult.isSuccess()) throw roleProductsResult.error
+    _retrieveCreditChannelLockers = async (backupGuildId: string, guildRecord: IGuild, channelLastReference: Record<string, DiscordTextChannel>): Promise<ICreditChannelLocker[]> => {
+        const creditChannelLockerRecords = await this.creditChannelLockerService.getAll(backupGuildId)
+        .then(result => result.isSuccess() ? result.value : Promise.reject(result.error))
 
-        const roleProducts = roleProductsResult.value
+        const creditChannelLockersRetrieved: ICreditChannelLocker[] = []
+
+        for (const channelLockerRecord of creditChannelLockerRecords) {
+            const lockedChannel = channelLastReference[channelLockerRecord.id]
+            const sourceChannel = channelLastReference[channelLockerRecord.sourceChannelId]
+            
+            if (!lockedChannel || !sourceChannel) continue
+            
+            const creditChannelLocker = new CreditChannelLocker({
+                id: lockedChannel.id,
+                sourceChannelId: sourceChannel.id,
+                price: channelLockerRecord.price,
+                description: channelLockerRecord.description,
+                media: channelLockerRecord.media,
+                mediaCodec: channelLockerRecord.mediaCodec,
+                guild: guildRecord,
+            })
+
+            const creditChannelLockerCreated = await this.creditChannelLockerService.create(creditChannelLocker)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
+
+            await CreditChannelLockerMessage.create({
+                service: this.creditChannelLockerService,
+                channel: lockedChannel
+            })
+
+            creditChannelLockersRetrieved.push(creditChannelLockerCreated)
+        }
+
+        return creditChannelLockersRetrieved
+    }
+
+    _retrieveRoleProducts = async (backupGuildId: string, guildRecord: IGuild, rolesLastReference: Record<string, DiscordRole>): Promise<IRoleProduct[]> => {
+        const roleProducts = await this.roleProductService.getAll(backupGuildId)
+        .then(result => result.isSuccess() ? result.value : Promise.reject(result.error))
         
         const roleProductsRetrieved: IRoleProduct[] = []
 
         for (const roleProduct of roleProducts) {
             const role = rolesLastReference[roleProduct.id]
 
-            const roleCachedResult = await this.roleService.get(role.id, guildCached.id)
-            if (!roleCachedResult.isSuccess()) continue
+            const roleRecordResult = await this.roleService.get(role.id, guildRecord.id)
+            if (!roleRecordResult.isSuccess()) continue
 
             const newRoleProduct = new RoleProduct({
-                id: role.id,
-                role: roleCachedResult.value,
-                guild: guildCached,
-                guildId: guildCached.id,
+                role: roleRecordResult.value,
+                guild: guildRecord,
                 price: roleProduct.price,
             })
 
-            const result = await this.roleProductService.create(newRoleProduct)
-            if (!result.isSuccess()) throw result.error
+            const roleProductCreated = await this.roleProductService.create(newRoleProduct)
+            .then(result => result.isSuccess() ? result.value : Promise.reject(result.error))
 
-            const roleProductCreated = result.value
             roleProductsRetrieved.push(roleProductCreated)
 
             logger.info(`The role product ${roleProduct.role.name} (${roleProduct.id}) was restored`)
@@ -361,32 +454,29 @@ export class BackupCommandAction {
         return roleProductsRetrieved
     }
 
-    _retrieveRoleRewards = async (backupGuildId: string, guildCached: IGuild, rolesLastReference: Record<string, DiscordRole>): Promise<IRoleReward[]> => {
-        const roleRewardsResult = await this.rewardRoleService.getAll(backupGuildId)
-        if (!roleRewardsResult.isSuccess()) throw roleRewardsResult.error
-
-        const roleRewards = roleRewardsResult.value
+    _retrieveRoleRewards = async (backupGuildId: string, guildRecord: IGuild, rolesLastReference: Record<string, DiscordRole>): Promise<IRoleReward[]> => {
+        const roleRewards = await this.roleRewardService.getAll(backupGuildId)
+        .then(result => result.isSuccess() ? result.value : Promise.reject(result.error))
         
         const roleRewardsRetrieved: IRoleReward[] = []
 
         for (const roleReward of roleRewards) {
             const role = rolesLastReference[roleReward.id]
 
-            const roleCachedResult = await this.roleService.get(role.id, guildCached.id)
-            if (!roleCachedResult.isSuccess()) continue
+            const roleRecordResult = await this.roleService.get(role.id, guildRecord.id)
+            if (!roleRecordResult.isSuccess()) continue
 
             const newRoleReward = new RoleReward({
                 id: role.id,
-                role: roleCachedResult.value,
+                role: roleRecordResult.value,
                 invitesRequired: roleReward.invitesRequired,
-                guild: guildCached,
-                guildId: guildCached.id
+                guild: guildRecord,
+                guildId: guildRecord.id
             })
 
-            const result = await this.rewardRoleService.create(newRoleReward)
-            if (!result.isSuccess()) throw result.error
+            const roleRewardCreated = await this.roleRewardService.create(newRoleReward)
+            .then(result => result.isSuccess() ? result.value : Promise.reject(result.error))
 
-            const roleRewardCreated = result.value
             roleRewardsRetrieved.push(roleRewardCreated)
 
             logger.info(`The reward role ${roleRewardCreated.id} (${roleRewardCreated.invitesRequired} invites) was restored`)
@@ -395,127 +485,184 @@ export class BackupCommandAction {
 
     }
 
-    _retrieveCasualPaymentMethods = async (backupGuildId: string, guildCached: IGuild): Promise<ICasualPayment[]> => {
-        const casualPaymentsResult = await this.casualPaymentService.getAll(backupGuildId)
-        if (!casualPaymentsResult.isSuccess()) throw casualPaymentsResult.error
-
-        const casualPaymentMethods = casualPaymentsResult.value
+    _retrieveCasualPaymentMethods = async (backupGuildId: string, guildRecord: IGuild): Promise<ICasualPayment[]> => {
+        const casualPaymentMethods = await this.casualPaymentMethodService.getAll(backupGuildId)
+        .then(result => result.isSuccess() ? result.value : Promise.reject(result.error))
 
         const casualPaymentMethodsRetrieved: ICasualPayment[] = []
 
         for (const casualPaymentMethod of casualPaymentMethods) {
-            const newCasualPayment = new CasualPayment({
+            const newCasualPaymentMethod = new CasualPayment({
                 name: casualPaymentMethod.name,
                 value: casualPaymentMethod.value,
-                guild: guildCached,
-                guildId: guildCached.id
+                guild: guildRecord,
+                guildId: guildRecord.id
             })
 
-            const result = await this.casualPaymentService.create(newCasualPayment)
-            if (!result.isSuccess()) throw result.error
+            const casualPaymentMethodCreated = await this.casualPaymentMethodService.create(newCasualPaymentMethod)
+            .then(result => result.isSuccess() ? result.value : Promise.reject(result.error))
 
-            const casualPaymentCreated = result.value
-            casualPaymentMethodsRetrieved.push(casualPaymentCreated)
+            casualPaymentMethodsRetrieved.push(casualPaymentMethodCreated)
 
-            logger.info(`The casual payment ${casualPaymentCreated.name} (${casualPaymentCreated.value}) was restored`)
+            logger.info(`The casual payment method ${casualPaymentMethodCreated.name} (${casualPaymentMethodCreated.value}) was restored`)
         }
         return casualPaymentMethodsRetrieved
     }
 
-    _retrievePaypoint = async (backupGuildId: string, guildCached: IGuild, textChannelsLastReference: Record<string, DiscordTextChannel>): Promise<IPaypoint | undefined> => {
-        const paypointResult = await this.paypointRoleService.get(backupGuildId)
-        
-        if (!paypointResult.isSuccess()) {
-            if (paypointResult.error instanceof PaypointNotFoundError) return
-            throw paypointResult.error
-        }
-
-        const paypoint = paypointResult.value
-
-        const createPaypointOnTextChannel = async (): Promise<undefined> => {
-            if (!paypoint.channelId) return 
-
-            const textChannelReference = textChannelsLastReference[paypoint.channelId]
-            if (!textChannelReference) return
-
-            paypoint.channelId = textChannelReference.id
-
-            let products: IProduct[]
-
-            if (paypoint.productType == 'Credit') {
-                const creditProductsResult = await this.creditProductService.getAll(backupGuildId)
-                if (!creditProductsResult.isSuccess()) return
-
-                const creditProducts = creditProductsResult.value
-                if (creditProducts.length === 0) return
-
-                products = creditProducts.map(product => {
-                    return {
-                        id: product.id,
-                        price: product.price,
-                        name: product.name
-                    }
-                })
-            }
-            else {
-                const roleProductsResult = await this.roleProductService.getAll(backupGuildId)
-                if (!roleProductsResult.isSuccess()) return
-    
-                const roleProducts = roleProductsResult.value
-                if (roleProducts.length === 0) return
-
-                products = roleProducts.map(product => {
-                    return {
-                        id: product.id,
-                        price: product.price,
-                        name: product.role.name
-                    }
-                })
-            }
-            
-            const casualPaymentMethodsResult = await this.casualPaymentService.getAll(backupGuildId)
-            if (!casualPaymentMethodsResult.isSuccess()) return
-
-            const casualPaymentMethods = casualPaymentMethodsResult.value
-            if (casualPaymentMethods.length === 0) return
-
-            const media = paypoint.media ? await getAttachmentFromBuffer(paypoint.media) : undefined
-
-            const { embed, selectRow, files } = await createGuildMenuEmbed({
-                title: paypoint.title, 
-                description: paypoint.description,
-                media: media,
-                products: products,
-                casualPaymentMethods: casualPaymentMethods
-            })
-            const message = await textChannelReference.send({
-                embeds: [embed], 
-                components: [<any>selectRow], 
-                files: files
-            })
-            paypoint.messageId = message.id
-        }
-
-        await createPaypointOnTextChannel()
-
-        const newPaypointRole = new Paypoint({
-            title: paypoint.title,
-            description: paypoint.description,
-            media: paypoint.media,
-            mediaCodec: paypoint.mediaCodec,
-            paymentMethod: paypoint.paymentMethod,
-            productType: paypoint.productType,
-            messageId: paypoint.messageId,
-            channelId: paypoint.channelId,
-            guild: guildCached,
-            guildId: guildCached.id
+    _retrievePaypoint = async (backupGuildId: string, guildRecord: IGuild, textChannelsLastReference: Record<string, DiscordTextChannel>): Promise<IPaypoint | undefined> => {
+        const payPointRecord = await this.payPointService.get(backupGuildId)
+        .then(r => {
+            if (!r.isSuccess() && !(r.error instanceof PaypointNotFoundError)) return Promise.reject(r.error) 
+            return r.value
         })
 
-        const paypointRoleCreationResult = await this.paypointRoleService.create(newPaypointRole)
-        if (!paypointRoleCreationResult.isSuccess()) throw paypointRoleCreationResult.error
+        if (!payPointRecord) return
 
-        const paypointRoleCreated = paypointRoleCreationResult.value
-        logger.info(`The paypoint role ${paypointRoleCreated.title} was retrieved successfully`)
+        const paypoint = new Paypoint({
+            guild: guildRecord,
+            guildId: guildRecord.id,
+            title: payPointRecord.title,
+            description: payPointRecord.description,
+            media: payPointRecord.media,
+            mediaCodec: payPointRecord.mediaCodec,
+            productType: payPointRecord.productType,
+            paymentMethod: payPointRecord.paymentMethod
+        })
+
+        const paypointCreated = await this.payPointService.create(paypoint)
+        .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
+
+        if (payPointRecord.channelId && payPointRecord.messageId) {
+            const textChannel = textChannelsLastReference[payPointRecord.channelId]
+            
+            if (textChannel) await PaypointMessage.create({
+                guildId: guildRecord.id,
+                channel: textChannel,
+                service: this.payPointService,
+                roleProductService: this.roleProductService,
+                creditProductService: this.creditProductService,
+                casualPaymentMethodService: this.casualPaymentMethodService
+            })
+        }
+
+        logger.info(`The paypoint was retrieved successfully`)
+        return paypointCreated
+    }
+
+    _retrieveCreditWallets = async (backupGuildId: string, guildRecord: IGuild): Promise<ICreditWallet[]> => {
+        const creditWalletRecords = await this.creditWalletService.getAll(backupGuildId)
+        .then(result => result.isSuccess() ? result.value : Promise.reject(result.error))
+
+        const creditWalletsRetrieved: ICreditWallet[] = []
+
+        for (const creditWalletRecord of creditWalletRecords) {
+            const memberRecord = await this.memberService.get(creditWalletRecord.memberId, guildRecord.id)
+            .then(result => result.isSuccess() ? result.value : null)
+
+            if (!memberRecord) continue
+
+            const creditWallet = new CreditWallet({
+                guild: guildRecord,
+                member: memberRecord,
+                credits: creditWalletRecord.credits,
+            })
+
+            const creditWalletCreated = await this.creditWalletService.create(creditWallet)
+            .then(result => result.isSuccess() ? result.value : Promise.reject(result.error))
+
+            creditWalletsRetrieved.push(creditWalletCreated)
+
+            logger.info(`The credit wallet for ${creditWalletCreated.member.username} was restored`)
+        }
+        return creditWalletsRetrieved
+    }
+
+    _retrieveCreditProducts = async (backupGuildId: string, guildRecord: IGuild): Promise<ICreditProduct[]> => {
+        const creditProductRecords = await this.creditProductService.getAll(backupGuildId)
+        .then(result => result.isSuccess() ? result.value : Promise.reject(result.error))
+
+        const creditProductsRetrieved: ICreditProduct[] = []
+
+        for (const creditProductRecord of creditProductRecords) {
+            const creditProduct = new CreditProduct({
+                guild: guildRecord,
+                credits: creditProductRecord.credits,
+                price: creditProductRecord.price,
+                media: creditProductRecord.media ?? undefined,
+                mediaFilename: creditProductRecord.mediaFilename ?? undefined,
+                description: creditProductRecord.description ?? undefined
+            })
+
+            const creditProductCreated = await this.creditProductService.create(creditProduct)
+            .then(result => result.isSuccess() ? result.value : Promise.reject(result.error))
+
+            creditProductsRetrieved.push(creditProductCreated)
+
+            logger.info(`The credit product ${creditProductCreated.name} was restored`)
+        }
+        return creditProductsRetrieved
+    }
+
+    _retrieveCreditRewards = async (backupGuildId: string, guildRecord: IGuild): Promise<ICreditReward[]> => {
+        const creditRewardRecords = await this.creditRewardService.getAll(backupGuildId)
+        .then(result => result.isSuccess() ? result.value : Promise.reject(result.error))
+
+        const creditRewardsRetrieved: ICreditReward[] = []
+
+        for (const creditRewardRecord of creditRewardRecords) {
+            const creditReward = new CreditReward({
+                guild: guildRecord,
+                credits: creditRewardRecord.credits,
+                invitesRequired: creditRewardRecord.invitesRequired,
+            })
+
+            const creditRewardCreated = await this.creditRewardService.create(creditReward)
+            .then(result => result.isSuccess() ? result.value : Promise.reject(result.error))
+
+            creditRewardsRetrieved.push(creditRewardCreated)
+
+            logger.info(`The credit reward ${creditRewardCreated.name} was restored`)
+        }
+        return creditRewardsRetrieved
+    }
+
+    _retrieveInvitePoint = async (
+        backupGuildId: string, 
+        guildRecord: IGuild, 
+        textChannelsLastReference: Record<string, DiscordTextChannel>
+    ): Promise<IInvitePoint | undefined> => {
+        const invitePointRecord = await this.invitePointService.get(backupGuildId)
+        .then(r => {
+            if (!r.isSuccess() && !(r.error instanceof PaypointNotFoundError)) return Promise.reject(r.error) 
+            return r.value
+        })
+
+        if (!invitePointRecord) return
+
+        const invitePoint = new InvitePoint({
+            title: invitePointRecord.title,
+            description: invitePointRecord.description,
+            media: invitePointRecord.media ?? undefined,
+            mediaCodec: invitePointRecord.mediaCodec ?? undefined,
+            messageId: invitePointRecord.messageId ?? undefined,
+            channelId: invitePointRecord.channelId ?? undefined,
+            guild: guildRecord
+        })
+
+        const invitePointCreated = await this.invitePointService.create(invitePoint)
+        .then(result => result.isSuccess() ? result.value : Promise.reject(result.error))
+
+        if (invitePointRecord.channelId && invitePointRecord.messageId) {
+            const textChannel: DiscordTextChannel = textChannelsLastReference[invitePointRecord.channelId]
+            
+            if (textChannel) await InvitePointMessage.create({
+                service: this.invitePointService, 
+                channel: textChannel, 
+                guildId: guildRecord.id 
+            })
+        }
+
+        return invitePointCreated
     }
 
     _getUpdatedPermissionOverwrites = (overwrites: PermissionOverwrite[], rolesLastReference: Record<string, DiscordRole>): PermissionOverwrite[] => {
@@ -537,19 +684,13 @@ export class BackupCommandAction {
 
             if (!guild) throw new GuildNotFoundError()
 
-            const guildResult = await this.guildService.get(guild.id)
-            if (!guildResult.isSuccess()) throw guildResult.error
+            const guildRecord = await this.guildService.get(guild.id)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
 
-            const cachedGuild = guildResult.value
+            const backups = await this.service.getAll(guildRecord.id)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
 
-            const result = await this.service.getAll(cachedGuild.id)
-            if (!result.isSuccess()) throw result.error
-
-            const backups = result.value
-
-            let description: string
-
-            description = backups.length === 0
+            const description = backups.length === 0
                 ? 'There are no backups'
                 : '' + backups
                     .map(backup => `${backup.name.toUpperCase()} : ${backup.createdBy.toUpperCase()}`)
@@ -558,7 +699,6 @@ export class BackupCommandAction {
             await EmbedResult.success({
                 title: 'Backup list',
                 description: description,
-                thumbnail: 'success',
                 interaction: interaction
             })
 
@@ -567,7 +707,6 @@ export class BackupCommandAction {
             await EmbedResult.fail({
                 title: 'Failed to get backup list',
                 description: String(e),
-                thumbnail: 'error',
                 interaction: interaction
             })
         }
@@ -581,34 +720,31 @@ export class BackupCommandAction {
             if (!guild) throw new GuildNotFoundError()
             if (!name) throw new BackupNameRequiredError()
             
-            const guildResult = await this.guildService.get(guild.id)
-            if (!guildResult.isSuccess()) throw guildResult.error
+            const guildRecord = await this.guildService.get(guild.id)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
     
-            const cachedGuild = guildResult.value
-    
-            const backupResult = await this.service.get(name)
-            if (backupResult.isSuccess()) throw new BackupAlreadyExistsError()
+            await this.service.get(name)
+            .then(r => r.isSuccess() ? Promise.reject(new BackupAlreadyExistsError()) : null)
     
             const backup = new Backup({
                 name: name,
                 guildId: guild.id,
-                guild: cachedGuild,
+                guild: guildRecord,
                 createdBy: interaction.user.id,
             })
     
-            const result = await this.service.create(backup)
-            if (!result.isSuccess()) throw result.error
+            const backupCreated = await this.service.create(backup)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
+
+            const title = 'Backup created'
+            const description = InlineBlockText(`Backup ${backupCreated.name} created successfully by ${backupCreated.createdBy}`)
     
-            await EmbedResult.success({
-                title: 'Backup created',
-                description: `Backup ${name} created successfully`,
-                interaction: interaction
-            })
+            await EmbedResult.success({title, description, interaction})
         }
         catch (e) {
             await EmbedResult.fail({
                 title: 'Failed to create backup',
-                description: (e as Error).message,
+                description: InlineBlockText((e as Error).message),
                 interaction: interaction
             })
         }
@@ -617,24 +753,27 @@ export class BackupCommandAction {
     delete = async (interaction: ChatInputCommandInteraction) => {
         try {
             const name = interaction.options.getString('name')
-
             if (!name) throw new BackupNameRequiredError()
 
-            const result = await this.service.delete(name)
-            if (!result.isSuccess()) throw result.error
+            const backupDeleted = await this.service.delete(name)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
 
             await EmbedResult.success({
                 title: 'Backup deleted',
-                description: `Backup ${name} deleted successfully`,
-                thumbnail: 'success',
+                description: `Backup ${backupDeleted.name} deleted successfully`,
                 interaction: interaction
             })
         }
         catch (e) {
+            let descriptionError: string | undefined
+
+            if (e instanceof BackupNotFoundError) {
+                descriptionError = 'The backup does not exist'
+            }
+
             await EmbedResult.fail({
-                title: 'Failed to delete backup',
-                description: (e as Error).message,
-                thumbnail: 'failed',
+                title: 'Backup deletion failed',
+                description: InlineBlockText(descriptionError ?? String((e as Error).message)),
                 interaction: interaction
             })
         }
