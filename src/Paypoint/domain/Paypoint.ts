@@ -1,7 +1,14 @@
 import { IPaypoint, TPaymentMethodType } from './IPaypoint.js';
 import { IGuild } from '../../Guild/domain/IGuild.js';
 import { createRandomId } from '../../shared/utils/IDGenerator.js';
-import { TProductType } from '../../shared/domain/TProductType.js';
+import { ProductType } from '../../shared/domain/ProductTypeEnums.js';
+
+interface IProps extends Omit <
+        IPaypoint,
+        "id" |
+        "isBasedOnCreditProduct" | 
+        "isBasedOnRoleProduct"
+    >{}
 
 export class Paypoint implements IPaypoint {
     public id: string = createRandomId();
@@ -10,25 +17,35 @@ export class Paypoint implements IPaypoint {
     public media?: Buffer
     public mediaCodec?: string
     public paymentMethod: TPaymentMethodType
-    public productType: TProductType
+    public productType: ProductType
     public messageId?: string | null
     public channelId?: string | null
     public guild: IGuild;
     public guildId: string;
     public createdAt: Date = new Date();
 
-    constructor(options: Omit<IPaypoint, "id">) {
-        this.title = options.title
-        this.description = options.description
-        this.media = options.media
-        this.mediaCodec = options.mediaCodec
-        this.paymentMethod = options.paymentMethod
-        this.productType = options.productType
-        this.messageId = options.messageId
-        this.channelId = options.channelId
-        this.guild = options.guild;
-        this.guildId = options.guildId;
+    constructor(props: IProps) {
+        this.title = props.title
+        this.description = props.description
+        this.media = props.media
+        this.mediaCodec = props.mediaCodec
+        this.paymentMethod = props.paymentMethod
+        this.productType = props.productType
+        this.messageId = props.messageId
+        this.channelId = props.channelId
+        this.guild = props.guild;
+        this.guildId = props.guildId;
     }
 
     async save(): Promise<void> {}
+
+    isBasedOnCreditProduct(): boolean {
+        if (this.productType == ProductType.CREDIT) return true 
+        return false
+    }
+
+    isBasedOnRoleProduct(): boolean {
+        if (this.productType == ProductType.ROLE) return true
+        return false
+    }
 }
