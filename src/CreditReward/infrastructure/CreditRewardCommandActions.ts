@@ -35,10 +35,8 @@ export class CreditRewardCommandActions {
 
             if (!guild) throw new GuildNotFoundError()
 
-            const guildCachedResult = await this.guildService.get(guild.id)
-            if (!guildCachedResult.isSuccess()) throw guildCachedResult.error
-
-            const cachedGuild = guildCachedResult.value
+            const guildRecord = await this.guildService.get(guild.id)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
 
             if (!credits) throw new CreditsNotProvidedError()
             if (!invitesRequired) throw new InvitesRequiredNotProvidedError()
@@ -46,8 +44,7 @@ export class CreditRewardCommandActions {
             const creditReward = new CreditReward({
                 credits: credits,
                 invitesRequired: invitesRequired,
-                guildId: guild.id,
-                guild: cachedGuild,
+                guild: guildRecord,
             })
 
             const result = await this.service.create(creditReward)
