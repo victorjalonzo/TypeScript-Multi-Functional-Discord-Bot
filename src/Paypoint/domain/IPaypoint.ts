@@ -1,4 +1,5 @@
 import { IGuild } from "../../Guild/domain/IGuild.js"
+import { ProductType } from "../../shared/domain/ProductTypeEnums.js"
 import { TProductType } from "../../shared/domain/TProductType.js"
 
 export type TPaymentMethodType = "Casual" | "Integrated" | "Both"
@@ -6,7 +7,7 @@ export type TPaymentMethodType = "Casual" | "Integrated" | "Both"
 export interface IPaypoint {
     id: string
     paymentMethod: TPaymentMethodType
-    productType: TProductType
+    productType: ProductType
     title?: string
     description?: string
     media?: Buffer
@@ -16,4 +17,7 @@ export interface IPaypoint {
     guildId: string
     guild: IGuild
     createdAt?: Date
+
+    isBasedOnCreditProduct(): boolean
+    isBasedOnRoleProduct(): boolean
 }
