@@ -37,7 +37,7 @@ import { TextChannelEventController } from "../../TextChannel/infrastructure/Tex
 
 import { VoiceChannelModel } from "../../VoiceChannel/infrastructure/VoiceChannelSchema.js";
 import { VoiceChannelService } from "../../VoiceChannel/application/VoiceChannelService.js";
-import { VoiceChannelEventController } from "../../VoiceChannel/infrastructure/VoiceChannelController.js";
+import { VoiceChannelEventController } from "../../VoiceChannel/infrastructure/VoiceChannelEventController.js";
 
 import { RoleService } from "../../Role/application/RoleService.js";
 import { RoleRecordModel } from "../../Role/infrastructure/RoleSchema.js";
@@ -74,7 +74,6 @@ import { AgentEventController } from "../../Agent/infrastructure/AgentEventContr
 import { ThreadConversationService } from "../../ThreadConversaction/application/ThreadConversationService.js";
 import { ThreadConversationModel } from "../../ThreadConversaction/infrastructure/ThreadConversactionSchema.js";
 import { IComponentAction } from "../domain/IComponentAction.js";
-import { AgentComponentsActions } from "../../Agent/infrastructure/AgentComponentsActions.js";
 
 import { BackupModel } from "../../Backup/infrastructure/BackupSchema.js";
 import { BackupService } from "../../Backup/application/BackupService.js";
@@ -213,7 +212,6 @@ const invitePointComponentsActions = new InvitePointComponentsActions(guildServi
 InvitePointCommand.setCallback(invitePointCommandActions.execute);
 
 const agentEventController = new AgentEventController(casualTransactionService, paypointService, creditProductService, creditRewardService, roleProductService, roleRewardService, threadConversationService, memberService);
-const agentComponentActions = new AgentComponentsActions(threadConversationService, casualTransactionService, roleProductService, creditProductService, creditWalletService);
 
 const backupRepository = new Repository(BackupModel);
 const backupService = new BackupService(backupRepository);
@@ -297,7 +295,6 @@ export const CommandActions = {
 }
 
 export const ComponentActions: IComponentAction[] = [
-    agentComponentActions,
     paypointComponentAction,
     creditChannelLockerComponentAction,
     invitePointComponentsActions
