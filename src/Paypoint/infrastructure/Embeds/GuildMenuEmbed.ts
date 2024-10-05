@@ -9,14 +9,13 @@ import { IRoleProduct } from "../../../RoleProduct/domain/IRoleProduct.js"
 import { ComponentActionData } from "../../../shared/domain/ComponentActionData.js"
 import { PaypointComponentActionsEnum as Actions } from "../../domain/PaypointComponentActionsEnum.js"
 import { CustomComponentID } from "../../../shared/domain/CustomComponentID.js"
-import { IProduct } from "../../../shared/domain/IProduct.js"
+import { CreditProduct } from "../../../CreditProduct/domain/CreditProduct.js"
 
 interface IProps {
     title?: string
     description?: string
     media?: AttachmentBuilder
-    products: IProduct[],
-    casualPaymentMethods: ICasualPayment[]
+    products: CreditProduct[] | IRoleProduct[],
 }
 
 export const createGuildMenuEmbed = async (props: IProps) => {
