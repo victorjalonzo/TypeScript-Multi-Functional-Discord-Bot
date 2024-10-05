@@ -10,6 +10,12 @@ export class CreditChannelLockerNotFoundError extends Error {
     }
 }
 
+export class CreditChannelLockerUpdateError extends Error {
+    constructor() {
+        super('The credit channel locker could not be updated');
+    }
+}
+
 export class CreditChannelLockerDeletionError extends Error {
     constructor() {
         super('The credit channel locker could not be deleted');

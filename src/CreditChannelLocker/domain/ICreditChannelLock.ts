@@ -1,9 +1,13 @@
+import { IGuild } from "../../Guild/domain/IGuild.js"
+
 export interface ICreditChannelLocker {
 	id: string
 	sourceChannelId: string 
-	updatableMessageId: string 
 	price: number
-	description?: string | null
-	media?: Buffer | null 
-    mediaCodec?: string | null
+	updatableMessageId?: string 
+	description?: string
+	media?: Buffer
+    mediaCodec?: string
+	guild: IGuild
+	guildId: string
 }

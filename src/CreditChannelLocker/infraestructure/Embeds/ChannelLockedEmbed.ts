@@ -14,7 +14,7 @@ interface IProps {
     mediaCodec?: string | null
 }
 
-export const createGuildUnlockChannelEmbed = async (props: IProps) => {
+export const createChannelLockedEmbed = async (props: IProps) => {
     const files: AttachmentBuilder[] = []
 
     const embed = new EmbedBuilder()

@@ -1,15 +1,18 @@
+import { IGuild } from "../../Guild/domain/IGuild.js";
 import { ICreditChannelLocker } from "./ICreditChannelLock.js";
 
-export class CreditChannelLocker {
+export class CreditChannelLocker implements ICreditChannelLocker {
     id: string
     sourceChannelId: string
-    updatableMessageId: string
     price: number
-    description?: string | null
-    media?: Buffer | null
-    mediaCodec?: string | null
+    updatableMessageId?: string
+    description?: string
+    media?: Buffer
+    mediaCodec?: string
+    guild: IGuild
+    guildId: string;
 
-    constructor (props: ICreditChannelLocker) {
+    constructor (props: Omit<ICreditChannelLocker, 'guildId'>) {
         this.id = props.id
         this.sourceChannelId = props.sourceChannelId
         this.updatableMessageId = props.updatableMessageId
@@ -17,5 +20,8 @@ export class CreditChannelLocker {
         this.description = props.description
         this.media = props.media
         this.mediaCodec = props.mediaCodec
+
+        this.guild = props.guild
+        this.guildId = props.guild.id
     }
 }

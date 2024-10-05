@@ -1,6 +1,6 @@
 import { IRepository } from "../../shared/domain/IRepository.js";
 import { Result } from "../../shared/domain/Result.js";
-import { CreditChannelLockerCreationError, CreditChannelLockerNotFoundError } from "../domain/CreditChannelLockerExceptions.js";
+import { CreditChannelLockerCreationError, CreditChannelLockerNotFoundError, CreditChannelLockerUpdateError } from "../domain/CreditChannelLockerExceptions.js";
 import { ICreditChannelLocker } from "../domain/ICreditChannelLock.js";
 import { ICreditChannelLockerInput } from "../domain/ICreditChannelLockerInput.js";
 
@@ -12,6 +12,17 @@ export class CreditChannelLockerService implements ICreditChannelLockerInput {
             const createdCreditChannelLocker = await this.repository.create(props)
             if (!createdCreditChannelLocker) throw new CreditChannelLockerCreationError()
             return Result.success(createdCreditChannelLocker)
+        }
+        catch (e) {
+            return Result.failure(e)
+        }
+    }
+
+    update = async (props: ICreditChannelLocker): Promise<Result<ICreditChannelLocker>> => {
+        try {
+            const updatedCreditChannelLocker = await this.repository.update({id: props.id}, props)
+            if (!updatedCreditChannelLocker) throw new CreditChannelLockerUpdateError()
+            return Result.success(updatedCreditChannelLocker)
         }
         catch (e) {
             return Result.failure(e)
