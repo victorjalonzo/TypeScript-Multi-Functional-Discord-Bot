@@ -29,20 +29,14 @@ export class InviteCommandActions {
     
             if (!guild) throw new GuildNotFoundError()
 
-            const memberCountResult = await this.memberService.getInviteMembersCount(user.id, guild.id)
-            if (!memberCountResult.isSuccess()) throw memberCountResult.error
+            const currentInvites = await this.memberService.getInviteMembersCount(user.id, guild.id)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
 
-            const currentInvites = memberCountResult.value
+            const creditRewards = await this.creditRewardService.getAll(guild.id)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
 
-            const creditRewardsResult = await this.creditRewardService.getAll(guild.id)
-            if (!creditRewardsResult.isSuccess()) throw creditRewardsResult.error
-            
-            const creditRewards = creditRewardsResult.value
-
-            const roleRewardsResult = await this.rewardRoleService.getAll(guild.id)
-            if (!roleRewardsResult.isSuccess()) throw roleRewardsResult.error
-            
-            const roleRewards = roleRewardsResult.value
+            const roleRewards = await this.rewardRoleService.getAll(guild.id)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
             
             const avatarImage = user.displayAvatarURL()
             ? await getBufferFromURL(user.displayAvatarURL())
