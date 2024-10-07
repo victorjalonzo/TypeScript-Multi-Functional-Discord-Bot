@@ -17,9 +17,8 @@ export class InviteEventController {
     increaseInviteCount = async (member: GuildMember) => {
         try {
             //Get the member record
-            const memberRecordResult = await this.memberService.get(member.id, member.guild.id)
-            if (!memberRecordResult.isSuccess()) throw memberRecordResult.error
-            const memberRecord = memberRecordResult.value
+            const memberRecord = await this.memberService.get(member.id, member.guild.id)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
             
             //If the member already has an inviter, end the function
             if (memberRecord.invitedBy) throw new DuplicateUserInviteError()
@@ -48,17 +47,16 @@ export class InviteEventController {
             if (inviter === null) throw new InviterNotFoundError()
 
             //Get the inviter record
-            const inviterRecordResult = await this.memberService.get(inviter.id, member.guild.id)
-            if (!inviterRecordResult.isSuccess()) throw inviterRecordResult.error
-            const inviterRecord = inviterRecordResult.value
+            const inviterRecord = await this.memberService.get(inviter.id, member.guild.id)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
     
             //Update the member record object with the inviter data
             memberRecord.invitedBy = inviterRecord
             memberRecord.invitedById = inviter.id
     
             //Update the member record
-            const memberRecordUpdateResult = await this.memberService.update(memberRecord)
-            if (!memberRecordUpdateResult.isSuccess()) throw memberRecordUpdateResult.error
+            await this.memberService.update(memberRecord)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
     
             logger.info(`The user ${member.user.username} (${member.user.id}) joined with an invitation from ${inviter.username} (${inviter.id})`)
         }
