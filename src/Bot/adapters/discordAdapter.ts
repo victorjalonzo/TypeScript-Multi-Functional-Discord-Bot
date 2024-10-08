@@ -114,7 +114,7 @@ export class DiscordAdapter {
         this.client.on('guildMemberAdd', async (member) => {
             await this.controllers.memberController.create(member)
             await this.controllers.creditWalletEventController.create(member)
-            //await this.controllers.inviteEventController.increaseInviteCount(member)
+            await this.controllers.inviteEventController.increaseInviteCount(member)
             await this.controllers.inviteCodeEventController.increaseInviteCount(member)
             await this.controllers.roleRewardEventController.assignRoleOnInviteGoal(member)
         })
