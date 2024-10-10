@@ -93,17 +93,13 @@ export class CategoryChannelEventController {
 
     async createRecord(categoryChannel: DiscordCategoryChannel) {
         try {
-            const guildCachedResult = await this.guildService.get(categoryChannel.guildId);
-            if (!guildCachedResult.isSuccess()) throw guildCachedResult.error
+            const guildRecord = await this.guildService.get(categoryChannel.guildId)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
 
-            const guildCached = guildCachedResult.value as IGuild
+            const categoryChannelParsed = CategoryChannelTransformer.parse(categoryChannel, guildRecord)
 
-            const categoryChannelParsed = CategoryChannelTransformer.parse(categoryChannel, guildCached)
-
-            const result = await this.service.create(categoryChannelParsed)
-            if (!result.isSuccess()) throw result.error
-
-            const categoryChannelCreated = result.value
+            const categoryChannelCreated = await this.service.create(categoryChannelParsed)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
 
             logger.info(`Category channel ${categoryChannelCreated.name} (${categoryChannelCreated.id}) was created`)
         }
@@ -114,18 +110,15 @@ export class CategoryChannelEventController {
 
     async updateRecord(oldCategoryChannel: DiscordCategoryChannel, newCategoryChannel: DiscordCategoryChannel) {
         try {
-            const guildCachedResult = await this.guildService.get(newCategoryChannel.guildId);
-            if (!guildCachedResult.isSuccess()) throw guildCachedResult.error
+            const guildRecord = await this.guildService.get(newCategoryChannel.guildId)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
 
-            const guildCached = guildCachedResult.value as IGuild
+            const oldCategoryChannelParsed = CategoryChannelTransformer.parse(oldCategoryChannel, guildRecord)
+            const newCategoryChannelParsed = CategoryChannelTransformer.parse(newCategoryChannel, guildRecord)
 
-            const oldCategoryChannelParsed = CategoryChannelTransformer.parse(oldCategoryChannel, guildCached)
-            const newCategoryChannelParsed = CategoryChannelTransformer.parse(newCategoryChannel, guildCached)
+            const categoryChannelUpdated = await this.service.update(newCategoryChannelParsed)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
 
-            const result = await this.service.update(newCategoryChannelParsed)
-            if (!result.isSuccess()) throw result.error
-
-            const categoryChannelUpdated = result.value
             logger.info(`Category channel ${categoryChannelUpdated.name} (${categoryChannelUpdated.id}) was updated`)
         }
         catch (e) {
@@ -135,10 +128,9 @@ export class CategoryChannelEventController {
 
     async deleteRecord(categoryChannel: DiscordCategoryChannel) {
         try {
-            const result = await this.service.delete(categoryChannel.id, categoryChannel.guildId)
-            if (!result.isSuccess()) throw result.error
-
-            const categoryChannelDeleted = result.value
+            const categoryChannelDeleted = await this.service.delete(categoryChannel.id, categoryChannel.guildId)
+            .then(r => r.isSuccess() ? r.value : Promise.reject(r.error))
+            
             logger.info(`Category channel ${categoryChannelDeleted.name} (${categoryChannelDeleted.id}) was deleted`)
         }
         catch (e) {
