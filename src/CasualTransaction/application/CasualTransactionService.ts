@@ -10,10 +10,8 @@ export class CasualTransactionService implements ICasualTransactionInput{
 
     create = async (casualTransaction: ICasualTransaction): Promise<Result<ICasualTransaction>> => {
         try {
-            const createdCasualTransaction = await this.repository.create(casualTransaction);
-            if (!createdCasualTransaction) throw new CasualTransactionCreationError()
-
-            return Result.success(createdCasualTransaction);
+            return await this.repository.create(casualTransaction)
+            .then(r => r ? Result.success(r) : Promise.reject(r))
         }
         catch (e) {
             return Result.failure(e);
@@ -22,9 +20,8 @@ export class CasualTransactionService implements ICasualTransactionInput{
 
     get = async (id: string): Promise<Result<ICasualTransaction>> => {
         try {
-            const transaction = await this.repository.get({id});
-            if (!transaction) throw new CasualTransactionNotFoundError()
-            return Result.success(transaction);
+            return await this.repository.get({id})
+            .then(r => r ? Result.success(r) : Promise.reject(new CasualTransactionNotFoundError()))
         }
         catch (e) {
             return Result.failure(e);
