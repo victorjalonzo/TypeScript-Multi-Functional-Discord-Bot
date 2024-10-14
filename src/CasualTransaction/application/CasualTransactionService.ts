@@ -30,8 +30,8 @@ export class CasualTransactionService implements ICasualTransactionInput{
 
     getAllByGuild = async (guildId: string): Promise<Result<ICasualTransaction[]>> => {
         try {
-            const transactions = await this.repository.getAll({guildId});
-            return Result.success(transactions);
+            return await this.repository.getAll({guildId})
+            .then(r => Result.success(r))
         }
         catch (e) {
             return Result.failure(e);
@@ -40,8 +40,8 @@ export class CasualTransactionService implements ICasualTransactionInput{
 
     getAllByMemberOnGuild = async (memberId: string, guildId: string): Promise<Result<ICasualTransaction[]>> => {
         try {
-            const transactions = await this.repository.getAll({memberId, guildId});
-            return Result.success(transactions);
+            return await this.repository.getAll({memberId, guildId})
+            .then(r => Result.success(r))
         }
         catch (e) {
             return Result.failure(e);
@@ -50,8 +50,8 @@ export class CasualTransactionService implements ICasualTransactionInput{
 
     getAllByMember = async (memberId: string): Promise<Result<ICasualTransaction[]>> => {
         try {
-            const transactions = await this.repository.getAll({memberId});
-            return Result.success(transactions);
+            return await this.repository.getAll({memberId})
+            .then(r => Result.success(r))
         }
         catch (e) {
             return Result.failure(e);
@@ -60,9 +60,8 @@ export class CasualTransactionService implements ICasualTransactionInput{
 
     getLastOneByMember = async (memberId: string): Promise<Result<ICasualTransaction>> => {
         try {
-            const transaction = await this.repository.get({memberId});
-            if (!transaction) throw new CasualTransactionNotFoundError()
-            return Result.success(transaction);
+            return await this.repository.get({memberId})
+            .then(r => r ? Result.success(r) : Promise.reject(new CasualTransactionNotFoundError()))
         }
         catch (e) {
             return Result.failure(e);
@@ -71,9 +70,8 @@ export class CasualTransactionService implements ICasualTransactionInput{
 
     update = async (casualTransaction: ICasualTransaction): Promise<Result<ICasualTransaction>> => {
         try {
-            const updatedCasualTransaction = await this.repository.update({id: casualTransaction.id}, casualTransaction);
-            if (!updatedCasualTransaction) throw new CasualTransactionUpdateError()
-            return Result.success(updatedCasualTransaction);
+            return await this.repository.update({id: casualTransaction.id}, casualTransaction)
+            .then(r => r ? Result.success(r) : Promise.reject(new CasualTransactionNotFoundError()))
         }
         catch (e) {
             return Result.failure(e);
@@ -82,9 +80,8 @@ export class CasualTransactionService implements ICasualTransactionInput{
 
     delete = async (id: string): Promise<Result<ICasualTransaction>> => {
         try {
-            const deletedTransaction = await this.repository.delete({id});
-            if (!deletedTransaction) throw new CasualTransactionDeletionError()
-            return Result.success(deletedTransaction);
+            return await this.repository.delete({id})
+            .then(r => r ? Result.success(r) : Promise.reject(new CasualTransactionNotFoundError()))
         }
         catch (e) {
             return Result.failure(e);
